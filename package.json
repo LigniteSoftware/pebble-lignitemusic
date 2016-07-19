@@ -1,0 +1,64 @@
+{
+  "name": "Lignite Music",
+  "author": "Edwin Finch",
+  "version": "0.1.0",
+  "keywords": ["pebble-app"],
+  "private": true,
+  "dependencies": {},
+  "pebble": {
+    "displayName": "Lignite Music",
+    "uuid": "33825b0b-1eb3-4fad-a450-8e0136f392d8",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
+    "targetPlatforms": [
+      "aplite",
+      "basalt",
+      "chalk"
+    ],
+    "watchapp": {
+      "watchface": false
+    },
+    "messageKeys": [
+      "boolean_box", "color_picker"
+    ],
+    "resources": {
+      "media": [
+          {
+            "type": "png",
+            "name": "ICON_VOLUME_UP",
+            "file": "images/volume_up.png"
+        },
+        {
+            "type": "png",
+            "name": "ICON_VOLUME_DOWN",
+            "file": "images/volume_down.png"
+        },
+        {
+            "type": "png",
+            "name": "ICON_PLAY",
+            "file": "images/play.png"
+        },
+        {
+            "type": "png",
+            "name": "ICON_PAUSE",
+            "file": "images/pause.png"
+        },
+        {
+            "type": "png",
+            "name": "ICON_FAST_FORWARD",
+            "file": "images/ff.png"
+        },
+        {
+            "type": "png",
+            "name": "ICON_REWIND",
+            "file": "images/rw.png"
+        },
+        {
+            "type": "png",
+            "name": "APP_ICON",
+            "file": "images/icon.png"
+        }
+      ]
+      }
+  }
+}
