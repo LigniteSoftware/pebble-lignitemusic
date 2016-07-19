@@ -52,8 +52,6 @@ Discarded input sections
                 0x0000000000000000       0x24 src/common.c.28.o
  .text          0x0000000000000000        0x0 src/ipod.c.28.o
  .bss           0x0000000000000000        0x0 src/ipod.c.28.o
- .text.ipod_app_timer_handler
-                0x0000000000000000        0xe src/ipod.c.28.o
  .text          0x0000000000000000        0x0 src/ipod_state.c.28.o
  .bss           0x0000000000000000        0x0 src/ipod_state.c.28.o
  .text.ipod_get_repeat_mode
@@ -74,12 +72,8 @@ Discarded input sections
                 0x0000000000000000        0x6 src/marquee_text.c.28.o
  .text.marquee_text_layer_set_text_color
                 0x0000000000000000        0x6 src/marquee_text.c.28.o
- .text.marquee_text_layer_tick
-                0x0000000000000000       0x30 src/marquee_text.c.28.o
  .text          0x0000000000000000        0x0 src/now_playing.c.28.o
  .bss           0x0000000000000000        0x0 src/now_playing.c.28.o
- .text.now_playing_animation_tick
-                0x0000000000000000       0x38 src/now_playing.c.28.o
  .text          0x0000000000000000        0x0 src/progress_bar.c.28.o
  .bss           0x0000000000000000        0x0 src/progress_bar.c.28.o
  .text          0x0000000000000000        0x0 aplite/appinfo.auto.c.28.o
@@ -180,8 +174,6 @@ Discarded input sections
  .text.app_sync_set
                 0x0000000000000000        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
  .text.app_timer_cancel
-                0x0000000000000000        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
- .text.app_timer_register
                 0x0000000000000000        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
  .text.app_timer_reschedule
                 0x0000000000000000        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
@@ -356,8 +348,6 @@ Discarded input sections
  .text.menu_cell_basic_draw
                 0x0000000000000000        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
  .text.menu_cell_basic_header_draw
-                0x0000000000000000        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
- .text.menu_cell_title_draw
                 0x0000000000000000        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
  .text.menu_index_compare
                 0x0000000000000000        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
@@ -852,8 +842,6 @@ Discarded input sections
                 0x0000000000000000        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
  .text.action_bar_layer_clear_icon
                 0x0000000000000000        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
- .text.action_bar_layer_destroy
-                0x0000000000000000        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
  .text.action_bar_layer_get_layer
                 0x0000000000000000        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
  .text.action_bar_layer_set_background_color
@@ -1223,473 +1211,494 @@ LOAD /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none
  .note.gnu.build-id
                 0x0000000000000084       0x24 linker stubs
 
-.text           0x00000000000000a8     0x14df
+.text           0x00000000000000a8     0x158f
  *(.text)
  .text          0x00000000000000a8       0x14 /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
  *(.text.*)
  .text.ipod_message_outbox_get
-                0x00000000000000bc       0x3c src/common.c.28.o
+                0x00000000000000bc       0x54 src/common.c.28.o
                 0x00000000000000bc                ipod_message_outbox_get
  .text.tick_handler
-                0x00000000000000f8        0xe src/ipod.c.28.o
-                0x00000000000000f8                tick_handler
- *fill*         0x0000000000000106        0x2 
+                0x0000000000000110        0xe src/ipod.c.28.o
+                0x0000000000000110                tick_handler
+ *fill*         0x000000000000011e        0x2 
  .text.ipod_init
-                0x0000000000000108       0x30 src/ipod.c.28.o
-                0x0000000000000108                ipod_init
+                0x0000000000000120       0x30 src/ipod.c.28.o
+                0x0000000000000120                ipod_init
+ .text.ipod_app_timer_handler
+                0x0000000000000150        0xe src/ipod.c.28.o
+                0x0000000000000150                ipod_app_timer_handler
+ *fill*         0x000000000000015e        0x2 
  .text.startup.main
-                0x0000000000000138       0x28 src/ipod.c.28.o
-                0x0000000000000138                main
+                0x0000000000000160       0x28 src/ipod.c.28.o
+                0x0000000000000160                main
  .text.ipod_state_init
-                0x0000000000000160       0x30 src/ipod_state.c.28.o
-                0x0000000000000160                ipod_state_init
+                0x0000000000000188       0x30 src/ipod_state.c.28.o
+                0x0000000000000188                ipod_state_init
  .text.ipod_state_tick
-                0x0000000000000190       0x5c src/ipod_state.c.28.o
-                0x0000000000000190                ipod_state_tick
+                0x00000000000001b8       0x5c src/ipod_state.c.28.o
+                0x00000000000001b8                ipod_state_tick
  .text.ipod_state_set_callback
-                0x00000000000001ec       0x14 src/ipod_state.c.28.o
-                0x00000000000001ec                ipod_state_set_callback
- .text.ipod_state_current_time
-                0x0000000000000200       0x14 src/ipod_state.c.28.o
-                0x0000000000000200                ipod_state_current_time
- .text.ipod_state_duration
                 0x0000000000000214       0x14 src/ipod_state.c.28.o
-                0x0000000000000214                ipod_state_duration
- .text.ipod_get_playback_state
+                0x0000000000000214                ipod_state_set_callback
+ .text.ipod_state_current_time
                 0x0000000000000228       0x14 src/ipod_state.c.28.o
-                0x0000000000000228                ipod_get_playback_state
+                0x0000000000000228                ipod_state_current_time
+ .text.ipod_state_duration
+                0x000000000000023c       0x14 src/ipod_state.c.28.o
+                0x000000000000023c                ipod_state_duration
+ .text.ipod_get_playback_state
+                0x0000000000000250       0x14 src/ipod_state.c.28.o
+                0x0000000000000250                ipod_get_playback_state
  .text.ipod_get_album
-                0x000000000000023c        0xc src/ipod_state.c.28.o
-                0x000000000000023c                ipod_get_album
+                0x0000000000000264        0xc src/ipod_state.c.28.o
+                0x0000000000000264                ipod_get_album
  .text.ipod_get_artist
-                0x0000000000000248        0xc src/ipod_state.c.28.o
-                0x0000000000000248                ipod_get_artist
+                0x0000000000000270        0xc src/ipod_state.c.28.o
+                0x0000000000000270                ipod_get_artist
  .text.ipod_get_title
-                0x0000000000000254        0xc src/ipod_state.c.28.o
-                0x0000000000000254                ipod_get_title
+                0x000000000000027c        0xc src/ipod_state.c.28.o
+                0x000000000000027c                ipod_get_title
  .text.call_callback
-                0x0000000000000260       0x1c src/ipod_state.c.28.o
-                0x0000000000000260                call_callback
+                0x0000000000000288       0x1c src/ipod_state.c.28.o
+                0x0000000000000288                call_callback
  .text.ipod_received_handler
-                0x000000000000027c       0xe0 src/ipod_state.c.28.o
-                0x000000000000027c                ipod_received_handler
+                0x00000000000002a4       0xe0 src/ipod_state.c.28.o
+                0x00000000000002a4                ipod_received_handler
  .text.received_message
-                0x000000000000035c        0x2 src/library_menus.c.28.o
-                0x000000000000035c                received_message
- *fill*         0x000000000000035e        0x2 
+                0x0000000000000384        0x2 src/library_menus.c.28.o
+                0x0000000000000384                received_message
+ *fill*         0x0000000000000386        0x2 
  .text.library_menus_window_unload
-                0x0000000000000360       0x1c src/library_menus.c.28.o
-                0x0000000000000360                library_menus_window_unload
+                0x0000000000000388       0x1c src/library_menus.c.28.o
+                0x0000000000000388                library_menus_window_unload
  .text.get_num_rows
-                0x000000000000037c       0x10 src/library_menus.c.28.o
-                0x000000000000037c                get_num_rows
+                0x00000000000003a4       0x10 src/library_menus.c.28.o
+                0x00000000000003a4                get_num_rows
  .text.get_cell_height
-                0x000000000000038c        0x4 src/library_menus.c.28.o
-                0x000000000000038c                get_cell_height
+                0x00000000000003b4        0x4 src/library_menus.c.28.o
+                0x00000000000003b4                get_cell_height
  .text.draw_row
-                0x0000000000000390       0x80 src/library_menus.c.28.o
-                0x0000000000000390                draw_row
+                0x00000000000003b8       0x22 src/library_menus.c.28.o
+                0x00000000000003b8                draw_row
+ *fill*         0x00000000000003da        0x2 
  .text.init_library_menus
-                0x0000000000000410       0x3c src/library_menus.c.28.o
-                0x0000000000000410                init_library_menus
+                0x00000000000003dc       0x3c src/library_menus.c.28.o
+                0x00000000000003dc                init_library_menus
  .text.build_parent_history
-                0x000000000000044c       0x80 src/library_menus.c.28.o
-                0x000000000000044c                build_parent_history
+                0x0000000000000418       0x80 src/library_menus.c.28.o
+                0x0000000000000418                build_parent_history
  .text.send_library_request
-                0x00000000000004cc       0x40 src/library_menus.c.28.o
-                0x00000000000004cc                send_library_request
+                0x0000000000000498       0x40 src/library_menus.c.28.o
+                0x0000000000000498                send_library_request
  .text.selection_changed
-                0x000000000000050c       0x58 src/library_menus.c.28.o
-                0x000000000000050c                selection_changed
+                0x00000000000004d8       0x58 src/library_menus.c.28.o
+                0x00000000000004d8                selection_changed
  .text.play_track
-                0x0000000000000564       0x64 src/library_menus.c.28.o
-                0x0000000000000564                play_track
+                0x0000000000000530       0x64 src/library_menus.c.28.o
+                0x0000000000000530                play_track
  .text.display_library_view
-                0x00000000000005c8      0x150 src/library_menus.c.28.o
-                0x00000000000005c8                display_library_view
+                0x0000000000000594      0x150 src/library_menus.c.28.o
+                0x0000000000000594                display_library_view
  .text.select_click
-                0x0000000000000718       0x50 src/library_menus.c.28.o
-                0x0000000000000718                select_click
+                0x00000000000006e4       0x50 src/library_menus.c.28.o
+                0x00000000000006e4                select_click
  .text.open_composer_list
-                0x0000000000000768        0x6 src/main_menu.c.28.o
-                0x0000000000000768                open_composer_list
+                0x0000000000000734        0x6 src/main_menu.c.28.o
+                0x0000000000000734                open_composer_list
  .text.open_genre_list
-                0x000000000000076e        0x6 src/main_menu.c.28.o
-                0x000000000000076e                open_genre_list
+                0x000000000000073a        0x6 src/main_menu.c.28.o
+                0x000000000000073a                open_genre_list
  .text.open_playlist_list
-                0x0000000000000774        0x6 src/main_menu.c.28.o
-                0x0000000000000774                open_playlist_list
+                0x0000000000000740        0x6 src/main_menu.c.28.o
+                0x0000000000000740                open_playlist_list
  .text.open_album_list
-                0x000000000000077a        0x6 src/main_menu.c.28.o
-                0x000000000000077a                open_album_list
+                0x0000000000000746        0x6 src/main_menu.c.28.o
+                0x0000000000000746                open_album_list
  .text.open_artist_list
-                0x0000000000000780        0x6 src/main_menu.c.28.o
-                0x0000000000000780                open_artist_list
+                0x000000000000074c        0x6 src/main_menu.c.28.o
+                0x000000000000074c                open_artist_list
  .text.open_now_playing
-                0x0000000000000786        0x4 src/main_menu.c.28.o
-                0x0000000000000786                open_now_playing
- *fill*         0x000000000000078a        0x2 
+                0x0000000000000752        0x4 src/main_menu.c.28.o
+                0x0000000000000752                open_now_playing
+ *fill*         0x0000000000000756        0x2 
  .text.main_menu_init
-                0x000000000000078c       0x60 src/main_menu.c.28.o
-                0x000000000000078c                main_menu_init
- .text.do_draw  0x00000000000007ec      0x1e0 src/marquee_text.c.28.o
+                0x0000000000000758       0x60 src/main_menu.c.28.o
+                0x0000000000000758                main_menu_init
+ .text.do_draw  0x00000000000007b8      0x1e0 src/marquee_text.c.28.o
  .text.marquee_text_layer_deinit
-                0x00000000000009cc       0x24 src/marquee_text.c.28.o
-                0x00000000000009cc                marquee_text_layer_deinit
+                0x0000000000000998       0x24 src/marquee_text.c.28.o
+                0x0000000000000998                marquee_text_layer_deinit
  .text.marquee_text_layer_mark_dirty
-                0x00000000000009f0       0x14 src/marquee_text.c.28.o
-                0x00000000000009f0                marquee_text_layer_mark_dirty
+                0x00000000000009bc       0x14 src/marquee_text.c.28.o
+                0x00000000000009bc                marquee_text_layer_mark_dirty
  .text.marquee_text_layer_set_font
-                0x0000000000000a04        0x6 src/marquee_text.c.28.o
-                0x0000000000000a04                marquee_text_layer_set_font
+                0x00000000000009d0        0x6 src/marquee_text.c.28.o
+                0x00000000000009d0                marquee_text_layer_set_font
  .text.marquee_text_layer_set_text
-                0x0000000000000a0a        0x6 src/marquee_text.c.28.o
-                0x0000000000000a0a                marquee_text_layer_set_text
+                0x00000000000009d6        0x6 src/marquee_text.c.28.o
+                0x00000000000009d6                marquee_text_layer_set_text
  .text.marquee_text_layer_init
-                0x0000000000000a10       0xa8 src/marquee_text.c.28.o
-                0x0000000000000a10                marquee_text_layer_init
+                0x00000000000009dc       0xa8 src/marquee_text.c.28.o
+                0x00000000000009dc                marquee_text_layer_init
+ .text.marquee_text_layer_tick
+                0x0000000000000a84       0x30 src/marquee_text.c.28.o
+                0x0000000000000a84                marquee_text_layer_tick
  .text.click_config_provider
-                0x0000000000000ab8       0x44 src/now_playing.c.28.o
-                0x0000000000000ab8                click_config_provider
+                0x0000000000000ab4       0x44 src/now_playing.c.28.o
+                0x0000000000000ab4                click_config_provider
  .text.window_unload
-                0x0000000000000afc       0xa4 src/now_playing.c.28.o
-                0x0000000000000afc                window_unload
+                0x0000000000000af8       0xac src/now_playing.c.28.o
+                0x0000000000000af8                window_unload
  .text.long_clicked_select
-                0x0000000000000ba0       0x6c src/now_playing.c.28.o
-                0x0000000000000ba0                long_clicked_select
+                0x0000000000000ba4       0x6c src/now_playing.c.28.o
+                0x0000000000000ba4                long_clicked_select
  .text.state_callback
-                0x0000000000000c0c       0xa8 src/now_playing.c.28.o
-                0x0000000000000c0c                state_callback
+                0x0000000000000c10       0xa8 src/now_playing.c.28.o
+                0x0000000000000c10                state_callback
  .text.app_in_received
-                0x0000000000000cb4       0x28 src/now_playing.c.28.o
-                0x0000000000000cb4                app_in_received
+                0x0000000000000cb8       0x28 src/now_playing.c.28.o
+                0x0000000000000cb8                app_in_received
  .text.show_now_playing
-                0x0000000000000cdc       0x58 src/now_playing.c.28.o
-                0x0000000000000cdc                show_now_playing
+                0x0000000000000ce0       0x58 src/now_playing.c.28.o
+                0x0000000000000ce0                show_now_playing
  .text.now_playing_tick
-                0x0000000000000d34       0x20 src/now_playing.c.28.o
-                0x0000000000000d34                now_playing_tick
+                0x0000000000000d38       0x20 src/now_playing.c.28.o
+                0x0000000000000d38                now_playing_tick
+ .text.now_playing_animation_tick
+                0x0000000000000d58       0x34 src/now_playing.c.28.o
+                0x0000000000000d58                now_playing_animation_tick
  .text.send_state_change
-                0x0000000000000d54       0x20 src/now_playing.c.28.o
-                0x0000000000000d54                send_state_change
+                0x0000000000000d8c       0x20 src/now_playing.c.28.o
+                0x0000000000000d8c                send_state_change
  .text.clicked_down
-                0x0000000000000d74       0x18 src/now_playing.c.28.o
-                0x0000000000000d74                clicked_down
+                0x0000000000000dac       0x18 src/now_playing.c.28.o
+                0x0000000000000dac                clicked_down
  .text.clicked_select
-                0x0000000000000d8c        0x6 src/now_playing.c.28.o
-                0x0000000000000d8c                clicked_select
- *fill*         0x0000000000000d92        0x2 
- .text.clicked_up
-                0x0000000000000d94       0x18 src/now_playing.c.28.o
-                0x0000000000000d94                clicked_up
- .text.request_now_playing
-                0x0000000000000dac       0x1e src/now_playing.c.28.o
-                0x0000000000000dac                request_now_playing
+                0x0000000000000dc4        0x6 src/now_playing.c.28.o
+                0x0000000000000dc4                clicked_select
  *fill*         0x0000000000000dca        0x2 
+ .text.clicked_up
+                0x0000000000000dcc       0x18 src/now_playing.c.28.o
+                0x0000000000000dcc                clicked_up
+ .text.request_now_playing
+                0x0000000000000de4       0x38 src/now_playing.c.28.o
+                0x0000000000000de4                request_now_playing
  .text.display_no_album
-                0x0000000000000dcc       0x3c src/now_playing.c.28.o
-                0x0000000000000dcc                display_no_album
+                0x0000000000000e1c       0x3c src/now_playing.c.28.o
+                0x0000000000000e1c                display_no_album
  .text.window_load
-                0x0000000000000e08      0x248 src/now_playing.c.28.o
-                0x0000000000000e08                window_load
+                0x0000000000000e58      0x258 src/now_playing.c.28.o
+                0x0000000000000e58                window_load
  .text.update_proc
-                0x0000000000001050       0xc8 src/progress_bar.c.28.o
+                0x00000000000010b0       0xc8 src/progress_bar.c.28.o
  .text.progress_bar_layer_init
-                0x0000000000001118       0x34 src/progress_bar.c.28.o
-                0x0000000000001118                progress_bar_layer_init
+                0x0000000000001178       0x34 src/progress_bar.c.28.o
+                0x0000000000001178                progress_bar_layer_init
  .text.progress_bar_layer_set_range
-                0x000000000000114c        0xa src/progress_bar.c.28.o
-                0x000000000000114c                progress_bar_layer_set_range
+                0x00000000000011ac        0xa src/progress_bar.c.28.o
+                0x00000000000011ac                progress_bar_layer_set_range
  .text.progress_bar_layer_set_value
-                0x0000000000001156        0xc src/progress_bar.c.28.o
-                0x0000000000001156                progress_bar_layer_set_value
- *fill*         0x0000000000001162        0x2 
+                0x00000000000011b6        0xc src/progress_bar.c.28.o
+                0x00000000000011b6                progress_bar_layer_set_value
+ *fill*         0x00000000000011c2        0x2 
  .text.app_event_loop
-                0x0000000000001164        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001164                app_event_loop
- .text.app_log  0x0000000000001170        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001170                app_log
- .text.app_message_open
-                0x000000000000117c        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x000000000000117c                app_message_open
- .text.bitmap_layer_create
-                0x0000000000001188        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001188                bitmap_layer_create
- .text.bitmap_layer_get_layer
-                0x0000000000001194        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001194                bitmap_layer_get_layer
- .text.bitmap_layer_set_bitmap
-                0x00000000000011a0        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000011a0                bitmap_layer_set_bitmap
- .text.dict_find
-                0x00000000000011ac        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000011ac                dict_find
- .text.dict_write_data
-                0x00000000000011b8        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000011b8                dict_write_data
- .text.dict_write_int32
                 0x00000000000011c4        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000011c4                dict_write_int32
- .text.dict_write_int8
-                0x00000000000011d0        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000011d0                dict_write_int8
- .text.dict_write_uint16
+                0x00000000000011c4                app_event_loop
+ .text.app_log  0x00000000000011d0        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x00000000000011d0                app_log
+ .text.app_message_open
                 0x00000000000011dc        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000011dc                dict_write_uint16
- .text.dict_write_uint32
+                0x00000000000011dc                app_message_open
+ .text.app_timer_register
                 0x00000000000011e8        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000011e8                dict_write_uint32
- .text.dict_write_uint8
+                0x00000000000011e8                app_timer_register
+ .text.bitmap_layer_create
                 0x00000000000011f4        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000011f4                dict_write_uint8
- .text.fonts_get_system_font
+                0x00000000000011f4                bitmap_layer_create
+ .text.bitmap_layer_get_layer
                 0x0000000000001200        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001200                fonts_get_system_font
- .text.free     0x000000000000120c        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x000000000000120c                free
- .text.gbitmap_create_with_resource
+                0x0000000000001200                bitmap_layer_get_layer
+ .text.bitmap_layer_set_bitmap
+                0x000000000000120c        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x000000000000120c                bitmap_layer_set_bitmap
+ .text.dict_find
                 0x0000000000001218        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001218                gbitmap_create_with_resource
- .text.gbitmap_destroy
+                0x0000000000001218                dict_find
+ .text.dict_write_data
                 0x0000000000001224        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001224                gbitmap_destroy
- .text.graphics_fill_rect
+                0x0000000000001224                dict_write_data
+ .text.dict_write_int32
                 0x0000000000001230        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001230                graphics_fill_rect
- .text.layer_add_child
+                0x0000000000001230                dict_write_int32
+ .text.dict_write_int8
                 0x000000000000123c        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x000000000000123c                layer_add_child
- .text.layer_create
+                0x000000000000123c                dict_write_int8
+ .text.dict_write_uint16
                 0x0000000000001248        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001248                layer_create
- .text.layer_create_with_data
+                0x0000000000001248                dict_write_uint16
+ .text.dict_write_uint32
                 0x0000000000001254        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001254                layer_create_with_data
- .text.layer_get_bounds
+                0x0000000000001254                dict_write_uint32
+ .text.dict_write_uint8
                 0x0000000000001260        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001260                layer_get_bounds
- .text.layer_get_data
+                0x0000000000001260                dict_write_uint8
+ .text.fonts_get_system_font
                 0x000000000000126c        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x000000000000126c                layer_get_data
- .text.layer_get_frame
-                0x0000000000001278        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001278                layer_get_frame
- .text.layer_mark_dirty
+                0x000000000000126c                fonts_get_system_font
+ .text.free     0x0000000000001278        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x0000000000001278                free
+ .text.gbitmap_create_with_resource
                 0x0000000000001284        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001284                layer_mark_dirty
- .text.layer_set_bounds
+                0x0000000000001284                gbitmap_create_with_resource
+ .text.gbitmap_destroy
                 0x0000000000001290        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001290                layer_set_bounds
- .text.layer_set_frame
+                0x0000000000001290                gbitmap_destroy
+ .text.graphics_fill_rect
                 0x000000000000129c        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x000000000000129c                layer_set_frame
- .text.layer_set_update_proc
+                0x000000000000129c                graphics_fill_rect
+ .text.layer_add_child
                 0x00000000000012a8        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000012a8                layer_set_update_proc
- .text.malloc   0x00000000000012b4        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000012b4                malloc
- .text.memcpy   0x00000000000012c0        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000012c0                memcpy
- .text.memset   0x00000000000012cc        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000012cc                memset
- .text.menu_layer_get_layer
+                0x00000000000012a8                layer_add_child
+ .text.layer_create
+                0x00000000000012b4        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x00000000000012b4                layer_create
+ .text.layer_create_with_data
+                0x00000000000012c0        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x00000000000012c0                layer_create_with_data
+ .text.layer_get_bounds
+                0x00000000000012cc        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x00000000000012cc                layer_get_bounds
+ .text.layer_get_data
                 0x00000000000012d8        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000012d8                menu_layer_get_layer
- .text.menu_layer_set_click_config_onto_window
+                0x00000000000012d8                layer_get_data
+ .text.layer_get_frame
                 0x00000000000012e4        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000012e4                menu_layer_set_click_config_onto_window
- .text.simple_menu_layer_create
+                0x00000000000012e4                layer_get_frame
+ .text.layer_mark_dirty
                 0x00000000000012f0        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000012f0                simple_menu_layer_create
- .text.simple_menu_layer_get_layer
+                0x00000000000012f0                layer_mark_dirty
+ .text.layer_set_bounds
                 0x00000000000012fc        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000012fc                simple_menu_layer_get_layer
- .text.strcmp   0x0000000000001308        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001308                strcmp
- .text.strlen   0x0000000000001314        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001314                strlen
- .text.tick_timer_service_subscribe
-                0x0000000000001320        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001320                tick_timer_service_subscribe
- .text.window_create
-                0x000000000000132c        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x000000000000132c                window_create
- .text.window_get_root_layer
-                0x0000000000001338        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001338                window_get_root_layer
- .text.window_set_window_handlers
+                0x00000000000012fc                layer_set_bounds
+ .text.layer_set_frame
+                0x0000000000001308        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x0000000000001308                layer_set_frame
+ .text.layer_set_update_proc
+                0x0000000000001314        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x0000000000001314                layer_set_update_proc
+ .text.malloc   0x0000000000001320        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x0000000000001320                malloc
+ .text.memcpy   0x000000000000132c        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x000000000000132c                memcpy
+ .text.memset   0x0000000000001338        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x0000000000001338                memset
+ .text.menu_cell_title_draw
                 0x0000000000001344        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001344                window_set_window_handlers
- .text.window_stack_push
+                0x0000000000001344                menu_cell_title_draw
+ .text.menu_layer_get_layer
                 0x0000000000001350        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001350                window_stack_push
- .text.app_message_outbox_begin
+                0x0000000000001350                menu_layer_get_layer
+ .text.menu_layer_set_click_config_onto_window
                 0x000000000000135c        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x000000000000135c                app_message_outbox_begin
- .text.app_message_outbox_send
+                0x000000000000135c                menu_layer_set_click_config_onto_window
+ .text.simple_menu_layer_create
                 0x0000000000001368        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001368                app_message_outbox_send
- .text.app_message_register_inbox_received
+                0x0000000000001368                simple_menu_layer_create
+ .text.simple_menu_layer_get_layer
                 0x0000000000001374        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001374                app_message_register_inbox_received
- .text.window_long_click_subscribe
-                0x0000000000001380        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001380                window_long_click_subscribe
- .text.window_single_click_subscribe
-                0x000000000000138c        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x000000000000138c                window_single_click_subscribe
- .text.graphics_draw_text
+                0x0000000000001374                simple_menu_layer_get_layer
+ .text.strcmp   0x0000000000001380        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x0000000000001380                strcmp
+ .text.strlen   0x000000000000138c        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x000000000000138c                strlen
+ .text.tick_timer_service_subscribe
                 0x0000000000001398        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001398                graphics_draw_text
- .text.graphics_text_layout_get_content_size
+                0x0000000000001398                tick_timer_service_subscribe
+ .text.window_create
                 0x00000000000013a4        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000013a4                graphics_text_layout_get_content_size
- .text.graphics_context_set_fill_color
+                0x00000000000013a4                window_create
+ .text.window_get_root_layer
                 0x00000000000013b0        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000013b0                graphics_context_set_fill_color
- .text.graphics_context_set_text_color
+                0x00000000000013b0                window_get_root_layer
+ .text.window_set_window_handlers
                 0x00000000000013bc        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000013bc                graphics_context_set_text_color
- .text.gbitmap_create_blank
+                0x00000000000013bc                window_set_window_handlers
+ .text.window_stack_push
                 0x00000000000013c8        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000013c8                gbitmap_create_blank
- .text.menu_layer_create
+                0x00000000000013c8                window_stack_push
+ .text.app_message_outbox_begin
                 0x00000000000013d4        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000013d4                menu_layer_create
- .text.action_bar_layer_add_to_window
+                0x00000000000013d4                app_message_outbox_begin
+ .text.app_message_outbox_send
                 0x00000000000013e0        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000013e0                action_bar_layer_add_to_window
- .text.action_bar_layer_create
+                0x00000000000013e0                app_message_outbox_send
+ .text.app_message_register_inbox_received
                 0x00000000000013ec        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000013ec                action_bar_layer_create
- .text.action_bar_layer_remove_from_window
+                0x00000000000013ec                app_message_register_inbox_received
+ .text.window_long_click_subscribe
                 0x00000000000013f8        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x00000000000013f8                action_bar_layer_remove_from_window
- .text.action_bar_layer_set_click_config_provider
+                0x00000000000013f8                window_long_click_subscribe
+ .text.window_single_click_subscribe
                 0x0000000000001404        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001404                action_bar_layer_set_click_config_provider
- .text.action_bar_layer_set_icon
+                0x0000000000001404                window_single_click_subscribe
+ .text.graphics_draw_text
                 0x0000000000001410        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x0000000000001410                action_bar_layer_set_icon
- .text.menu_layer_set_callbacks
+                0x0000000000001410                graphics_draw_text
+ .text.graphics_text_layout_get_content_size
                 0x000000000000141c        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
-                0x000000000000141c                menu_layer_set_callbacks
+                0x000000000000141c                graphics_text_layout_get_content_size
+ .text.graphics_context_set_fill_color
+                0x0000000000001428        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x0000000000001428                graphics_context_set_fill_color
+ .text.graphics_context_set_text_color
+                0x0000000000001434        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x0000000000001434                graphics_context_set_text_color
+ .text.gbitmap_create_blank
+                0x0000000000001440        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x0000000000001440                gbitmap_create_blank
+ .text.menu_layer_create
+                0x000000000000144c        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x000000000000144c                menu_layer_create
+ .text.action_bar_layer_add_to_window
+                0x0000000000001458        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x0000000000001458                action_bar_layer_add_to_window
+ .text.action_bar_layer_create
+                0x0000000000001464        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x0000000000001464                action_bar_layer_create
+ .text.action_bar_layer_destroy
+                0x0000000000001470        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x0000000000001470                action_bar_layer_destroy
+ .text.action_bar_layer_remove_from_window
+                0x000000000000147c        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x000000000000147c                action_bar_layer_remove_from_window
+ .text.action_bar_layer_set_click_config_provider
+                0x0000000000001488        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x0000000000001488                action_bar_layer_set_click_config_provider
+ .text.action_bar_layer_set_icon
+                0x0000000000001494        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x0000000000001494                action_bar_layer_set_icon
+ .text.menu_layer_set_callbacks
+                0x00000000000014a0        0xc /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+                0x00000000000014a0                menu_layer_set_callbacks
  *(.rodata)
- .rodata        0x0000000000001428        0x8 src/library_menus.c.28.o
- .rodata        0x0000000000001430        0x8 src/main_menu.c.28.o
- .rodata        0x0000000000001438       0x2c src/now_playing.c.28.o
+ .rodata        0x00000000000014ac        0x8 src/library_menus.c.28.o
+ .rodata        0x00000000000014b4        0x8 src/main_menu.c.28.o
+ .rodata        0x00000000000014bc       0x2c src/now_playing.c.28.o
  *(.rodata*)
  .rodata.str1.1
-                0x0000000000001464       0x1b src/library_menus.c.28.o
+                0x00000000000014e8       0x1c src/common.c.28.o
  .rodata.str1.1
-                0x000000000000147f       0x36 src/main_menu.c.28.o
+                0x0000000000001504       0x1b src/library_menus.c.28.o
  .rodata.str1.1
-                0x00000000000014b5       0x1a src/marquee_text.c.28.o
+                0x000000000000151f       0x36 src/main_menu.c.28.o
  .rodata.str1.1
-                0x00000000000014cf       0xb8 src/now_playing.c.28.o
+                0x0000000000001555       0x1a src/marquee_text.c.28.o
+ .rodata.str1.1
+                0x000000000000156f       0xc8 src/now_playing.c.28.o
 
-.glue_7         0x0000000000001588        0x0
+.glue_7         0x0000000000001638        0x0
  .glue_7        0x0000000000000000        0x0 linker stubs
 
-.glue_7t        0x0000000000001588        0x0
+.glue_7t        0x0000000000001638        0x0
  .glue_7t       0x0000000000000000        0x0 linker stubs
 
-.vfp11_veneer   0x0000000000001588        0x0
+.vfp11_veneer   0x0000000000001638        0x0
  .vfp11_veneer  0x0000000000000000        0x0 linker stubs
 
-.v4_bx          0x0000000000001588        0x0
+.v4_bx          0x0000000000001638        0x0
  .v4_bx         0x0000000000000000        0x0 linker stubs
 
-.iplt           0x0000000000001588        0x0
+.iplt           0x0000000000001638        0x0
  .iplt          0x0000000000000000        0x0 /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crtbegin.o
 
-.rel.dyn        0x0000000000001588        0x0
+.rel.dyn        0x0000000000001638        0x0
  .rel.iplt      0x0000000000000000        0x0 /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crtbegin.o
  .rel.got       0x0000000000000000        0x0 /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crtbegin.o
 
-.data           0x0000000000001588       0x74
+.data           0x0000000000001638       0x74
  *(.data)
- .data          0x0000000000001588        0x0 /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crti.o
- .data          0x0000000000001588        0x4 /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crtbegin.o
-                0x0000000000001588                __dso_handle
- .data          0x000000000000158c        0x0 src/common.c.28.o
- .data          0x000000000000158c        0x0 src/ipod.c.28.o
- .data          0x000000000000158c        0x0 src/ipod_state.c.28.o
- .data          0x000000000000158c        0x0 src/library_menus.c.28.o
- .data          0x000000000000158c        0x0 src/main_menu.c.28.o
- .data          0x000000000000158c        0x0 src/marquee_text.c.28.o
- .data          0x000000000000158c        0x0 src/now_playing.c.28.o
- .data          0x000000000000158c        0x0 src/progress_bar.c.28.o
- .data          0x000000000000158c        0x0 aplite/appinfo.auto.c.28.o
- .data          0x000000000000158c        0x0 aplite/src/resource_ids.auto.c.28.o
- .data          0x000000000000158c        0x0 src/message_keys.auto.c.28.o
- .data          0x000000000000158c        0x0 /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
- .data          0x000000000000158c        0x0 /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crtend.o
- .data          0x000000000000158c        0x0 /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crtn.o
+ .data          0x0000000000001638        0x0 /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crti.o
+ .data          0x0000000000001638        0x4 /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crtbegin.o
+                0x0000000000001638                __dso_handle
+ .data          0x000000000000163c        0x0 src/common.c.28.o
+ .data          0x000000000000163c        0x0 src/ipod.c.28.o
+ .data          0x000000000000163c        0x0 src/ipod_state.c.28.o
+ .data          0x000000000000163c        0x0 src/library_menus.c.28.o
+ .data          0x000000000000163c        0x0 src/main_menu.c.28.o
+ .data          0x000000000000163c        0x0 src/marquee_text.c.28.o
+ .data          0x000000000000163c        0x0 src/now_playing.c.28.o
+ .data          0x000000000000163c        0x0 src/progress_bar.c.28.o
+ .data          0x000000000000163c        0x0 aplite/appinfo.auto.c.28.o
+ .data          0x000000000000163c        0x0 aplite/src/resource_ids.auto.c.28.o
+ .data          0x000000000000163c        0x0 src/message_keys.auto.c.28.o
+ .data          0x000000000000163c        0x0 /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite/lib/libpebble.a(tmpz2MrsRpebble.o)
+ .data          0x000000000000163c        0x0 /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crtend.o
+ .data          0x000000000000163c        0x0 /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crtn.o
  *(.data.*)
  .data.s_sequence_number
-                0x000000000000158c        0x4 src/common.c.28.o
+                0x000000000000163c        0x4 src/common.c.28.o
  .data.rel.ro.main_menu_items
-                0x0000000000001590       0x60 src/main_menu.c.28.o
-                0x0000000000001590                main_menu_items
+                0x0000000000001640       0x60 src/main_menu.c.28.o
+                0x0000000000001640                main_menu_items
  .data.rel.ro.section
-                0x00000000000015f0        0xc src/main_menu.c.28.o
-                0x00000000000015f0                section
+                0x00000000000016a0        0xc src/main_menu.c.28.o
+                0x00000000000016a0                section
 
-.igot.plt       0x00000000000015fc        0x0
+.igot.plt       0x00000000000016ac        0x0
  .igot.plt      0x0000000000000000        0x0 /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crtbegin.o
 
-.got            0x00000000000015fc       0x60
- .got           0x00000000000015fc       0x60 /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crtbegin.o
+.got            0x00000000000016ac       0x68
+ .got           0x00000000000016ac       0x68 /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crtbegin.o
 
-.got.plt        0x000000000000165c        0xc
- .got.plt       0x000000000000165c        0xc /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crtbegin.o
-                0x000000000000165c                _GLOBAL_OFFSET_TABLE_
+.got.plt        0x0000000000001714        0xc
+ .got.plt       0x0000000000001714        0xc /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crtbegin.o
+                0x0000000000001714                _GLOBAL_OFFSET_TABLE_
 
-.bss            0x0000000000001668      0xc68
+.bss            0x0000000000001720      0xc68
  *(.bss)
  *(.bss.*)
- .bss.s_artist  0x0000000000001668       0x64 src/ipod_state.c.28.o
- .bss.s_title   0x00000000000016cc       0x64 src/ipod_state.c.28.o
- .bss.s_album   0x0000000000001730       0x64 src/ipod_state.c.28.o
- .bss.head      0x0000000000001794        0x4 src/marquee_text.c.28.o
+ .bss.s_artist  0x0000000000001720       0x64 src/ipod_state.c.28.o
+ .bss.s_title   0x0000000000001784       0x64 src/ipod_state.c.28.o
+ .bss.s_album   0x00000000000017e8       0x64 src/ipod_state.c.28.o
+ .bss.head      0x000000000000184c        0x4 src/marquee_text.c.28.o
  .bss.controlling_volume
-                0x0000000000001798        0x1 src/now_playing.c.28.o
-                0x0000000000001798                controlling_volume
- .bss.is_shown  0x0000000000001799        0x1 src/now_playing.c.28.o
-                0x0000000000001799                is_shown
- *fill*         0x000000000000179a        0x2 
- COMMON         0x000000000000179c        0x4 src/ipod.c.28.o
-                0x000000000000179c                window
- COMMON         0x00000000000017a0       0x11 src/ipod_state.c.28.o
-                0x00000000000017a0                s_shuffle_mode
-                0x00000000000017a4                s_current_time
-                0x00000000000017a8                s_repeat_mode
-                0x00000000000017ac                s_duration
-                0x00000000000017b0                s_playback_state
- *fill*         0x00000000000017b1        0x3 
- COMMON         0x00000000000017b4      0x888 src/library_menus.c.28.o
-                0x00000000000017b4                menu_font
-                0x00000000000017b8                menu_stack_pointer
-                0x00000000000017bc                menu_stack
- COMMON         0x000000000000203c        0x4 src/main_menu.c.28.o
-                0x000000000000203c                main_menu_layer
- COMMON         0x0000000000002040      0x290 src/now_playing.c.28.o
-                0x0000000000002040                now_playing_timer
-                0x0000000000002044                action_bar
-                0x0000000000002048                album_art_data
-                0x0000000000002248                artist_layer
-                0x0000000000002264                album_layer
-                0x0000000000002280                icon_volume_down
-                0x0000000000002284                icon_volume_up
-                0x0000000000002288                album_art_layer
-                0x000000000000228c                icon_rewind
-                0x0000000000002290                icon_pause
-                0x0000000000002294                title_layer
-                0x00000000000022b0                album_art_bitmap
-                0x00000000000022b4                icon_fast_forward
-                0x00000000000022b8                icon_play
-                0x00000000000022bc                progress_bar
+                0x0000000000001850        0x1 src/now_playing.c.28.o
+                0x0000000000001850                controlling_volume
+ .bss.is_shown  0x0000000000001851        0x1 src/now_playing.c.28.o
+                0x0000000000001851                is_shown
+ *fill*         0x0000000000001852        0x2 
+ COMMON         0x0000000000001854        0x4 src/ipod.c.28.o
+                0x0000000000001854                window
+ COMMON         0x0000000000001858       0x11 src/ipod_state.c.28.o
+                0x0000000000001858                s_shuffle_mode
+                0x000000000000185c                s_current_time
+                0x0000000000001860                s_repeat_mode
+                0x0000000000001864                s_duration
+                0x0000000000001868                s_playback_state
+ *fill*         0x0000000000001869        0x3 
+ COMMON         0x000000000000186c      0x888 src/library_menus.c.28.o
+                0x000000000000186c                menu_font
+                0x0000000000001870                menu_stack_pointer
+                0x0000000000001874                menu_stack
+ COMMON         0x00000000000020f4        0x4 src/main_menu.c.28.o
+                0x00000000000020f4                main_menu_layer
+ COMMON         0x00000000000020f8      0x290 src/now_playing.c.28.o
+                0x00000000000020f8                now_playing_timer
+                0x00000000000020fc                action_bar
+                0x0000000000002100                album_art_data
+                0x0000000000002300                artist_layer
+                0x000000000000231c                album_layer
+                0x0000000000002338                icon_volume_down
+                0x000000000000233c                icon_volume_up
+                0x0000000000002340                album_art_layer
+                0x0000000000002344                icon_rewind
+                0x0000000000002348                icon_pause
+                0x000000000000234c                title_layer
+                0x0000000000002368                album_art_bitmap
+                0x000000000000236c                icon_fast_forward
+                0x0000000000002370                icon_play
+                0x0000000000002374                progress_bar
 
 DISCARD
  libc.a(*)
@@ -1749,41 +1758,41 @@ OUTPUT(/Users/edwinfinch/Desktop/Lignite Music/Code/peapod-pebble/build/aplite/p
  .comment       0x0000000000000000       0x4f src/message_keys.auto.c.28.o
  .comment       0x0000000000000000       0x4f /usr/local/Cellar/pebble-toolchain/2.0/arm-cs-tools/bin/../lib/gcc/arm-none-eabi/4.7.2/thumb2/crtend.o
 
-.debug_info     0x0000000000000000     0x55eb
- .debug_info    0x0000000000000000      0x49a src/common.c.28.o
- .debug_info    0x000000000000049a      0x461 src/ipod.c.28.o
- .debug_info    0x00000000000008fb      0x95f src/ipod_state.c.28.o
- .debug_info    0x000000000000125a     0x12fc src/library_menus.c.28.o
- .debug_info    0x0000000000002556      0x5e6 src/main_menu.c.28.o
- .debug_info    0x0000000000002b3c      0xa6b src/marquee_text.c.28.o
- .debug_info    0x00000000000035a7     0x1631 src/now_playing.c.28.o
- .debug_info    0x0000000000004bd8      0x5ad src/progress_bar.c.28.o
- .debug_info    0x0000000000005185      0x2e6 aplite/appinfo.auto.c.28.o
- .debug_info    0x000000000000546b       0xed aplite/src/resource_ids.auto.c.28.o
- .debug_info    0x0000000000005558       0x93 src/message_keys.auto.c.28.o
+.debug_info     0x0000000000000000     0x54f2
+ .debug_info    0x0000000000000000      0x515 src/common.c.28.o
+ .debug_info    0x0000000000000515      0x461 src/ipod.c.28.o
+ .debug_info    0x0000000000000976      0x95f src/ipod_state.c.28.o
+ .debug_info    0x00000000000012d5     0x1165 src/library_menus.c.28.o
+ .debug_info    0x000000000000243a      0x5e6 src/main_menu.c.28.o
+ .debug_info    0x0000000000002a20      0xa6b src/marquee_text.c.28.o
+ .debug_info    0x000000000000348b     0x1654 src/now_playing.c.28.o
+ .debug_info    0x0000000000004adf      0x5ad src/progress_bar.c.28.o
+ .debug_info    0x000000000000508c      0x2e6 aplite/appinfo.auto.c.28.o
+ .debug_info    0x0000000000005372       0xed aplite/src/resource_ids.auto.c.28.o
+ .debug_info    0x000000000000545f       0x93 src/message_keys.auto.c.28.o
 
-.debug_abbrev   0x0000000000000000     0x158b
- .debug_abbrev  0x0000000000000000      0x1ca src/common.c.28.o
- .debug_abbrev  0x00000000000001ca      0x1d7 src/ipod.c.28.o
- .debug_abbrev  0x00000000000003a1      0x31f src/ipod_state.c.28.o
- .debug_abbrev  0x00000000000006c0      0x3c8 src/library_menus.c.28.o
- .debug_abbrev  0x0000000000000a88      0x1bb src/main_menu.c.28.o
- .debug_abbrev  0x0000000000000c43      0x276 src/marquee_text.c.28.o
- .debug_abbrev  0x0000000000000eb9      0x393 src/now_playing.c.28.o
- .debug_abbrev  0x000000000000124c      0x22f src/progress_bar.c.28.o
- .debug_abbrev  0x000000000000147b       0x88 aplite/appinfo.auto.c.28.o
- .debug_abbrev  0x0000000000001503       0x44 aplite/src/resource_ids.auto.c.28.o
- .debug_abbrev  0x0000000000001547       0x44 src/message_keys.auto.c.28.o
+.debug_abbrev   0x0000000000000000     0x1579
+ .debug_abbrev  0x0000000000000000      0x1e2 src/common.c.28.o
+ .debug_abbrev  0x00000000000001e2      0x1d7 src/ipod.c.28.o
+ .debug_abbrev  0x00000000000003b9      0x31f src/ipod_state.c.28.o
+ .debug_abbrev  0x00000000000006d8      0x38e src/library_menus.c.28.o
+ .debug_abbrev  0x0000000000000a66      0x1bb src/main_menu.c.28.o
+ .debug_abbrev  0x0000000000000c21      0x276 src/marquee_text.c.28.o
+ .debug_abbrev  0x0000000000000e97      0x3a3 src/now_playing.c.28.o
+ .debug_abbrev  0x000000000000123a      0x22f src/progress_bar.c.28.o
+ .debug_abbrev  0x0000000000001469       0x88 aplite/appinfo.auto.c.28.o
+ .debug_abbrev  0x00000000000014f1       0x44 aplite/src/resource_ids.auto.c.28.o
+ .debug_abbrev  0x0000000000001535       0x44 src/message_keys.auto.c.28.o
 
-.debug_loc      0x0000000000000000     0x167e
- .debug_loc     0x0000000000000000       0x7c src/common.c.28.o
- .debug_loc     0x000000000000007c       0xc2 src/ipod.c.28.o
- .debug_loc     0x000000000000013e      0x23d src/ipod_state.c.28.o
- .debug_loc     0x000000000000037b      0x753 src/library_menus.c.28.o
- .debug_loc     0x0000000000000ace      0x1e4 src/main_menu.c.28.o
- .debug_loc     0x0000000000000cb2      0x2ff src/marquee_text.c.28.o
- .debug_loc     0x0000000000000fb1      0x447 src/now_playing.c.28.o
- .debug_loc     0x00000000000013f8      0x286 src/progress_bar.c.28.o
+.debug_loc      0x0000000000000000     0x165b
+ .debug_loc     0x0000000000000000       0x71 src/common.c.28.o
+ .debug_loc     0x0000000000000071       0xc2 src/ipod.c.28.o
+ .debug_loc     0x0000000000000133      0x23d src/ipod_state.c.28.o
+ .debug_loc     0x0000000000000370      0x73b src/library_menus.c.28.o
+ .debug_loc     0x0000000000000aab      0x1e4 src/main_menu.c.28.o
+ .debug_loc     0x0000000000000c8f      0x2ff src/marquee_text.c.28.o
+ .debug_loc     0x0000000000000f8e      0x447 src/now_playing.c.28.o
+ .debug_loc     0x00000000000013d5      0x286 src/progress_bar.c.28.o
 
 .debug_aranges  0x0000000000000000      0x328
  .debug_aranges
@@ -1819,49 +1828,49 @@ OUTPUT(/Users/edwinfinch/Desktop/Lignite Music/Code/peapod-pebble/build/aplite/p
  .debug_ranges  0x0000000000000250       0xe0 src/now_playing.c.28.o
  .debug_ranges  0x0000000000000330       0x28 src/progress_bar.c.28.o
 
-.debug_line     0x0000000000000000     0x159e
- .debug_line    0x0000000000000000      0x1d4 src/common.c.28.o
- .debug_line    0x00000000000001d4      0x1cc src/ipod.c.28.o
- .debug_line    0x00000000000003a0      0x30b src/ipod_state.c.28.o
- .debug_line    0x00000000000006ab      0x2f5 src/library_menus.c.28.o
- .debug_line    0x00000000000009a0      0x1e1 src/main_menu.c.28.o
- .debug_line    0x0000000000000b81      0x2a6 src/marquee_text.c.28.o
- .debug_line    0x0000000000000e27      0x313 src/now_playing.c.28.o
- .debug_line    0x000000000000113a      0x1aa src/progress_bar.c.28.o
- .debug_line    0x00000000000012e4      0x139 aplite/appinfo.auto.c.28.o
- .debug_line    0x000000000000141d       0xc4 aplite/src/resource_ids.auto.c.28.o
- .debug_line    0x00000000000014e1       0xbd src/message_keys.auto.c.28.o
+.debug_line     0x0000000000000000     0x1599
+ .debug_line    0x0000000000000000      0x1d6 src/common.c.28.o
+ .debug_line    0x00000000000001d6      0x1cc src/ipod.c.28.o
+ .debug_line    0x00000000000003a2      0x30b src/ipod_state.c.28.o
+ .debug_line    0x00000000000006ad      0x2e7 src/library_menus.c.28.o
+ .debug_line    0x0000000000000994      0x1e1 src/main_menu.c.28.o
+ .debug_line    0x0000000000000b75      0x2a6 src/marquee_text.c.28.o
+ .debug_line    0x0000000000000e1b      0x31a src/now_playing.c.28.o
+ .debug_line    0x0000000000001135      0x1aa src/progress_bar.c.28.o
+ .debug_line    0x00000000000012df      0x139 aplite/appinfo.auto.c.28.o
+ .debug_line    0x0000000000001418       0xc4 aplite/src/resource_ids.auto.c.28.o
+ .debug_line    0x00000000000014dc       0xbd src/message_keys.auto.c.28.o
 
-.debug_str      0x0000000000000000     0x1d3a
- .debug_str     0x0000000000000000      0x3d1 src/common.c.28.o
-                                        0x45e (size before relaxing)
- .debug_str     0x00000000000003d1      0x1df src/ipod.c.28.o
+.debug_str      0x0000000000000000     0x1d57
+ .debug_str     0x0000000000000000      0x446 src/common.c.28.o
+                                        0x4d3 (size before relaxing)
+ .debug_str     0x0000000000000446      0x1df src/ipod.c.28.o
                                         0x432 (size before relaxing)
- .debug_str     0x00000000000005b0      0x453 src/ipod_state.c.28.o
+ .debug_str     0x0000000000000625      0x453 src/ipod_state.c.28.o
                                         0x87a (size before relaxing)
- .debug_str     0x0000000000000a03      0x713 src/library_menus.c.28.o
-                                        0xc24 (size before relaxing)
- .debug_str     0x0000000000001116      0x13a src/main_menu.c.28.o
+ .debug_str     0x0000000000000a78      0x611 src/library_menus.c.28.o
+                                        0xb1b (size before relaxing)
+ .debug_str     0x0000000000001089      0x13a src/main_menu.c.28.o
                                         0x3c2 (size before relaxing)
- .debug_str     0x0000000000001250      0x2e9 src/marquee_text.c.28.o
+ .debug_str     0x00000000000011c3      0x400 src/marquee_text.c.28.o
                                         0x5b8 (size before relaxing)
- .debug_str     0x0000000000001539      0x56e src/now_playing.c.28.o
-                                        0xdb9 (size before relaxing)
- .debug_str     0x0000000000001aa7       0x1e src/progress_bar.c.28.o
+ .debug_str     0x00000000000015c3      0x501 src/now_playing.c.28.o
+                                        0xdc1 (size before relaxing)
+ .debug_str     0x0000000000001ac4       0x1e src/progress_bar.c.28.o
                                         0x346 (size before relaxing)
- .debug_str     0x0000000000001ac5      0x15d aplite/appinfo.auto.c.28.o
+ .debug_str     0x0000000000001ae2      0x15d aplite/appinfo.auto.c.28.o
                                         0x264 (size before relaxing)
- .debug_str     0x0000000000001c22       0xcf aplite/src/resource_ids.auto.c.28.o
+ .debug_str     0x0000000000001c3f       0xcf aplite/src/resource_ids.auto.c.28.o
                                         0x1a9 (size before relaxing)
- .debug_str     0x0000000000001cf1       0x49 src/message_keys.auto.c.28.o
+ .debug_str     0x0000000000001d0e       0x49 src/message_keys.auto.c.28.o
                                         0x123 (size before relaxing)
 
-.debug_frame    0x0000000000000000      0x66c
- .debug_frame   0x0000000000000000       0x48 src/common.c.28.o
- .debug_frame   0x0000000000000048       0x70 src/ipod.c.28.o
- .debug_frame   0x00000000000000b8      0x124 src/ipod_state.c.28.o
- .debug_frame   0x00000000000001dc      0x144 src/library_menus.c.28.o
- .debug_frame   0x0000000000000320       0x8c src/main_menu.c.28.o
- .debug_frame   0x00000000000003ac       0xcc src/marquee_text.c.28.o
- .debug_frame   0x0000000000000478      0x180 src/now_playing.c.28.o
- .debug_frame   0x00000000000005f8       0x74 src/progress_bar.c.28.o
+.debug_frame    0x0000000000000000      0x664
+ .debug_frame   0x0000000000000000       0x4c src/common.c.28.o
+ .debug_frame   0x000000000000004c       0x70 src/ipod.c.28.o
+ .debug_frame   0x00000000000000bc      0x124 src/ipod_state.c.28.o
+ .debug_frame   0x00000000000001e0      0x138 src/library_menus.c.28.o
+ .debug_frame   0x0000000000000318       0x8c src/main_menu.c.28.o
+ .debug_frame   0x00000000000003a4       0xcc src/marquee_text.c.28.o
+ .debug_frame   0x0000000000000470      0x180 src/now_playing.c.28.o
+ .debug_frame   0x00000000000005f0       0x74 src/progress_bar.c.28.o

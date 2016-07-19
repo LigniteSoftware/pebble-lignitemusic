@@ -17,4 +17,4 @@ REQUESTED_PLATFORMS = [u'aplite', u'basalt', u'chalk']
 RESOURCES_JSON = [{u'type': u'png', u'name': u'ICON_VOLUME_UP', u'file': u'images/volume_up.png'}, {u'type': u'png', u'name': u'ICON_VOLUME_DOWN', u'file': u'images/volume_down.png'}, {u'type': u'png', u'name': u'ICON_PLAY', u'file': u'images/play.png'}, {u'type': u'png', u'name': u'ICON_PAUSE', u'file': u'images/pause.png'}, {u'type': u'png', u'name': u'ICON_FAST_FORWARD', u'file': u'images/ff.png'}, {u'type': u'png', u'name': u'ICON_REWIND', u'file': u'images/rw.png'}, {u'type': u'png', u'name': u'APP_ICON', u'file': u'images/icon.png'}]
 SUPPORTED_PLATFORMS = ['aplite', 'basalt', 'chalk']
 TARGET_PLATFORMS = ['chalk', 'basalt', 'aplite']
-TIMESTAMP = 1468904975
+TIMESTAMP = 1468906523

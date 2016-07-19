@@ -6,6 +6,8 @@ static uint32_t s_sequence_number = 0xFFFFFFFE;
 iPodMessage *ipod_message_outbox_get() {
     iPodMessage *message = malloc(sizeof(iPodMessage));
 
+    NSLog("Alloced message %p", message);
+
     AppMessageResult result = app_message_outbox_begin(&message->iter);
     message->result = result;
     if(result != APP_MSG_OK) {
@@ -15,7 +17,7 @@ iPodMessage *ipod_message_outbox_get() {
     if(s_sequence_number == 0xFFFFFFFF) {
         s_sequence_number = 1;
     }
-    return APP_MSG_OK;
+    return message;
 }
 
 void reset_sequence_number() {

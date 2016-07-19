@@ -103,7 +103,7 @@ void display_library_view(MPMediaGrouping grouping) {
 
     menu->window = window_create();
 
-    menu->layer = menu_layer_create(GRect(0, 0, 144, 152));
+    menu->layer = menu_layer_create(GRect(0, 0, 144, 168));
 
     menu_layer_set_click_config_onto_window(menu->layer, menu->window);
     menu_layer_set_callbacks(menu->layer, menu, (MenuLayerCallbacks){
@@ -192,14 +192,21 @@ int16_t get_cell_height(struct MenuLayer *menu_layer, MenuIndex *cell_index, voi
 void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context) {
     LibraryMenu *menu = (LibraryMenu*)callback_context;
     int16_t pos = cell_index->row - menu->current_entry_offset;
-    if(pos >= MENU_CACHE_COUNT || pos < 0) return;
+    if(pos >= MENU_CACHE_COUNT || pos < 0) {
+        return;
+    }
+    /*
     //menu_cell_basic_draw(ctx, cell_layer, menu->menu_entries[pos], NULL, NULL);
     graphics_context_set_text_color(ctx, GColorBlack);
     GRect bounds = layer_get_bounds(cell_layer);
     bounds.origin.x += 5;
-    bounds.origin.y -= 4;
+    //bounds.origin.y -= 4;
     bounds.size.w -= 5;
     graphics_draw_text(ctx, menu->menu_entries[pos], menu_font, bounds, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
+    */
+
+    menu_cell_title_draw(ctx, cell_layer, menu->menu_entries[pos]);
+
 }
 
 void selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context) {

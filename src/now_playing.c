@@ -61,7 +61,7 @@ void now_playing_animation_tick() {
         return;
     }
 
-    app_timer_cancel(now_playing_timer);
+    //app_timer_cancel(now_playing_timer);
     now_playing_timer = app_timer_register(33, ipod_app_timer_handler, NULL);
 }
 
@@ -88,17 +88,17 @@ void window_load(Window* window) {
     action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, icon_play);
 
     // Text labels
-    marquee_text_layer_init(&title_layer, GRect(2, 0, 118, 35));
+    marquee_text_layer_init(&title_layer, GRect(2, 0, 112, 35));
     marquee_text_layer_set_font(&title_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
     marquee_text_layer_set_text(&title_layer, "ipod_get_title()");
     layer_add_child(window_layer, title_layer.layer);
 
-    marquee_text_layer_init(&album_layer, GRect(2, 130, 118, 23));
+    marquee_text_layer_init(&album_layer, GRect(2, 130, 112, 23));
     marquee_text_layer_set_font(&album_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
     marquee_text_layer_set_text(&album_layer, "ipod_get_album()");
     layer_add_child(window_layer, album_layer.layer);
 
-    marquee_text_layer_init(&artist_layer, GRect(2, 107, 118, 28));
+    marquee_text_layer_init(&artist_layer, GRect(2, 107, 112, 28));
     marquee_text_layer_set_font(&artist_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24));
     marquee_text_layer_set_text(&artist_layer, "ipod_get_artist()");
     layer_add_child(window_layer, artist_layer.layer);
@@ -136,13 +136,13 @@ void window_load(Window* window) {
 
     request_now_playing();
 
-    return;
     is_shown = true;
     now_playing_animation_tick();
 }
 
 void window_unload(Window* window) {
     action_bar_layer_remove_from_window(action_bar);
+    action_bar_layer_destroy(action_bar);
     marquee_text_layer_deinit(&title_layer);
     marquee_text_layer_deinit(&album_layer);
     marquee_text_layer_deinit(&artist_layer);
@@ -207,7 +207,7 @@ void send_state_change(int8_t state_change) {
 void request_now_playing() {
     iPodMessage *ipodMessage = ipod_message_outbox_get();
     if(!ipodMessage->iter){
-        
+        NSError("Iter is null!!!");
         return;
     }
     dict_write_int8(ipodMessage->iter, IPOD_NOW_PLAYING_KEY, 2);

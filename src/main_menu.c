@@ -47,7 +47,7 @@ const SimpleMenuSection section = {
 SimpleMenuLayer *main_menu_layer;
 
 void main_menu_init(Window* window) {
-    main_menu_layer = simple_menu_layer_create(GRect(0, 0, 144, 152), window, &section, 1, NULL);
+    main_menu_layer = simple_menu_layer_create(GRect(0, 0, 144, 168), window, &section, 1, NULL);
     layer_add_child(window_get_root_layer(window), simple_menu_layer_get_layer(main_menu_layer));
 }
 
