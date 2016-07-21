@@ -5,7 +5,7 @@
 void ipod_received_handler(DictionaryIterator *received, void *context);
 void call_callback(bool track_data);
 
-iPodStateCallback state_callback;
+iPodStateCallback ipod_state_callback;
 
 MPMusicRepeatMode s_repeat_mode;
 MPMusicShuffleMode s_shuffle_mode;
@@ -40,7 +40,7 @@ void ipod_state_tick() {
 }
 
 void ipod_state_set_callback(iPodStateCallback callback) {
-    state_callback = callback;
+    ipod_state_callback = callback;
 }
 
 uint16_t ipod_state_current_time() {
@@ -79,11 +79,15 @@ void ipod_set_shuffle_mode(MPMusicShuffleMode shuffle) {}
 void ipod_set_repeat_mode(MPMusicRepeatMode repeat) {}
 
 void call_callback(bool track_data) {
-    if(!state_callback) return;
-    state_callback(track_data);
+    if(!ipod_state_callback){
+        NSError("State callback doesn't exist! Gutlessly rejecting.");
+        return;
+    }
+    ipod_state_callback(track_data);
 }
 
 void ipod_received_handler(DictionaryIterator *received, void *context) {
+    NSLog("Got ipod message");
     Tuple *tuple = dict_find(received, IPOD_CURRENT_STATE_KEY);
     if(tuple) {
         s_playback_state = tuple->value->data[0];
@@ -98,7 +102,10 @@ void ipod_received_handler(DictionaryIterator *received, void *context) {
     if(tuple) {
         NowPlayingType type = tuple->value->uint8;
         tuple = dict_find(received, IPOD_NOW_PLAYING_KEY);
-        if(!tuple) return;
+        if(!tuple){
+            NSError("Tuple doesn't exist!");
+            return;
+        }
         char* target = NULL;
         switch(type) {
             case NowPlayingAlbum:
@@ -113,10 +120,15 @@ void ipod_received_handler(DictionaryIterator *received, void *context) {
             default:
                 return;
         }
-        if(strcmp(target, tuple->value->cstring) == 0) return;
+        if(strcmp(target, tuple->value->cstring) == 0){
+            //NSWarn("Warning: Target string and cstring are equal. Not copying again.");
+            return;
+        }
         uint8_t len = strlen(tuple->value->cstring);
-        if(len > 99) len = 99;
-        memcpy(target, tuple->value->cstring, len);
+        if(len > 99){
+            len = 99;
+        }
+        strncpy(target, tuple->value->cstring, (size_t)len);
         target[len] = '\0';
         call_callback(true);
         return;

@@ -6,7 +6,7 @@
 #include "progress_bar.h"
 #include "common.h"
 
-Window *window;
+Window *now_playing_window;
 ActionBarLayer *action_bar;
 MarqueeTextLayer title_layer;
 MarqueeTextLayer album_layer;
@@ -32,7 +32,7 @@ void clicked_select(ClickRecognizerRef recognizer, void *context);
 void long_clicked_select(ClickRecognizerRef recognizer, void *context);
 void clicked_down(ClickRecognizerRef recognizer, void *context);
 void request_now_playing();
-void send_state_change(int8_t change);
+void send_state_change(NowPlayingState change);
 
 void app_in_received(DictionaryIterator *received, void *context);
 void state_callback(bool track_data);
@@ -44,12 +44,12 @@ bool is_shown = false;
 AppTimer *now_playing_timer;
 
 void show_now_playing() {
-    window = window_create();
-    window_set_window_handlers(window, (WindowHandlers){
+    now_playing_window = window_create();
+    window_set_window_handlers(now_playing_window, (WindowHandlers){
         .unload = window_unload,
         .load = window_load,
     });
-    window_stack_push(window, true);
+    window_stack_push(now_playing_window, true);
 }
 
 void now_playing_tick() {
@@ -77,7 +77,6 @@ void window_load(Window* window) {
     icon_volume_down = gbitmap_create_with_resource(RESOURCE_ID_ICON_VOLUME_DOWN);
 
     // Action bar
-
     action_bar = action_bar_layer_create();
     action_bar_layer_add_to_window(action_bar, window);
     action_bar_layer_set_click_config_provider(action_bar, click_config_provider);
@@ -90,27 +89,27 @@ void window_load(Window* window) {
     // Text labels
     marquee_text_layer_init(&title_layer, GRect(2, 0, 112, 35));
     marquee_text_layer_set_font(&title_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
-    marquee_text_layer_set_text(&title_layer, "ipod_get_title()");
+    marquee_text_layer_set_text(&title_layer, ipod_get_title());
     layer_add_child(window_layer, title_layer.layer);
 
     marquee_text_layer_init(&album_layer, GRect(2, 130, 112, 23));
     marquee_text_layer_set_font(&album_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-    marquee_text_layer_set_text(&album_layer, "ipod_get_album()");
+    marquee_text_layer_set_text(&album_layer, ipod_get_album());
     layer_add_child(window_layer, album_layer.layer);
 
     marquee_text_layer_init(&artist_layer, GRect(2, 107, 112, 28));
     marquee_text_layer_set_font(&artist_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24));
-    marquee_text_layer_set_text(&artist_layer, "ipod_get_artist()");
+    marquee_text_layer_set_text(&artist_layer, ipod_get_artist());
     layer_add_child(window_layer, artist_layer.layer);
 
     // Progress bar
-    progress_bar_layer_init(&progress_bar, GRect(10, 105, 104, 7));
+    progress_bar_layer_init(&progress_bar, GRect(4, 105, 104, 7));
     layer_add_child(window_layer, progress_bar.layer);
 
     // Album art
     //TODO: make sure this is valid lmao
     //album_art_bitmap = gbitmap_create_with_data(&&album_art_data);
-    album_art_bitmap = gbitmap_create_blank(GSize(40, 40), GBitmapFormat8Bit);
+    album_art_bitmap = gbitmap_create_blank(GSize(60, 60), GBitmapFormat8Bit);
     /*
      * Never forget
      * Also be sure to check gbitmap_create_from_png_data just in case
@@ -131,7 +130,7 @@ void window_load(Window* window) {
     layer_add_child(window_layer, bitmap_layer_get_layer(album_art_layer));
     display_no_album();
 
-    app_message_register_inbox_received(app_in_received);
+    //app_message_register_inbox_received(app_in_received);
     ipod_state_set_callback(state_callback);
 
     request_now_playing();
@@ -169,71 +168,86 @@ void click_config_provider(void* context) {
 
 void clicked_up(ClickRecognizerRef recognizer, void *context) {
     if(!controlling_volume) {
-        send_state_change(-1);
-    } else {
-        send_state_change(64);
+        send_state_change(NowPlayingStateSkipPrevious);
+    }
+    else {
+        send_state_change(NowPlayingStateVolumeUp);
     }
 }
+
 void clicked_select(ClickRecognizerRef recognizer, void *context) {
-    send_state_change(0);
+    send_state_change(NowPlayingStatePlayPause);
 }
+
 void clicked_down(ClickRecognizerRef recognizer, void *context) {
     if(!controlling_volume) {
-        send_state_change(1);
-    } else {
-        send_state_change(-64);
+        send_state_change(NowPlayingStateSkipNext);
+    }
+    else {
+        send_state_change(NowPlayingStateVolumeDown);
     }
 }
+
 void long_clicked_select(ClickRecognizerRef recognizer, void *context) {
     controlling_volume = !controlling_volume;
     if(controlling_volume) {
         action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, icon_volume_up);
         action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, icon_volume_down);
-    } else {
+    }
+    else {
         action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, icon_fast_forward);
         action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, icon_rewind);
     }
 }
 
-void send_state_change(int8_t state_change) {
+void send_state_change(NowPlayingState state_change) {
     iPodMessage *ipodMessage = ipod_message_outbox_get();
     if(!ipodMessage->iter){
         return;
     }
+    NSLog("Sending state change of %d", state_change);
     dict_write_int8(ipodMessage->iter, IPOD_STATE_CHANGE_KEY, state_change);
     app_message_outbox_send();
 }
 
+//TODO: dealloc ipodmessage struct
 void request_now_playing() {
     iPodMessage *ipodMessage = ipod_message_outbox_get();
     if(!ipodMessage->iter){
         NSError("Iter is null!!!");
         return;
     }
+    NSLog("Requesting now playing");
     dict_write_int8(ipodMessage->iter, IPOD_NOW_PLAYING_KEY, 2);
-    app_message_outbox_send();
+    AppMessageResult result = app_message_outbox_send();
+    NSLog("Outbox send result %d", result);
 }
 
 void app_in_received(DictionaryIterator *received, void* context) {
+    NSLog("Got a message in now playing");
     if(!is_shown){
         return;
     }
 
-    /*
     Tuple* tuple = dict_find(received, IPOD_ALBUM_ART_KEY);
-    //todo fix this shit
+    //TODO check this shit
 
     if(tuple) {
+        NSLog("Tuple exist");
         if(tuple->value->data[0] == 255) {
+            NSLog("Tuple value is 255, display_no_album()");
             display_no_album();
-        } else {
+        }
+        else {
+            NSLog("Tuple value isn't 255, sweet. Let's do some shit.");
             size_t offset = tuple->value->data[0] * 104;
             memcpy(album_art_data + offset, tuple->value->data + 1, tuple->length - 1);
-            layer_mark_dirty(&album_art_layer.layer);
-            layer_set_frame((Layer*)&album_art_layer, GRect(30, 35, 64, 64));
+            Layer *albumArtLayer = bitmap_layer_get_layer(album_art_layer);
+            layer_mark_dirty(albumArtLayer);
+            layer_set_frame(albumArtLayer, GRect(30, 35, 64, 64));
         }
     }
-    */
+
     APP_LOG(APP_LOG_LEVEL_INFO, "I got some data but I am gonna do nothing");
 }
 
@@ -241,11 +255,13 @@ void state_callback(bool track_data) {
     if(!is_shown){
         return;
     }
+    NSLog("Got %d", ipod_state_duration());
     if(track_data) {
         marquee_text_layer_set_text(&album_layer, ipod_get_album());
         marquee_text_layer_set_text(&artist_layer, ipod_get_artist());
         marquee_text_layer_set_text(&title_layer, ipod_get_title());
-    } else {
+    }
+    else {
         if(ipod_get_playback_state() == MPMusicPlaybackStatePlaying) {
             action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, icon_pause);
         } else {
@@ -259,7 +275,6 @@ void state_callback(bool track_data) {
 void display_no_album() {
     //TODO: this is where the shit goes that has album art missing
     //resource_load(resource_get_handle(RESOURCE_ID_ALBUM_ART_MISSING), album_art_data, 512);
-    //Todo: don't cast these
-    layer_set_frame((Layer*)album_art_layer, GRect(20, 35, 64, 64));
-    layer_mark_dirty((Layer*)album_art_layer);
+    layer_set_frame(bitmap_layer_get_layer(album_art_layer), GRect(20, 35, 64, 64));
+    layer_mark_dirty(bitmap_layer_get_layer(album_art_layer));
 }

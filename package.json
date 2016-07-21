@@ -7,9 +7,9 @@
   "dependencies": {},
   "pebble": {
     "displayName": "Lignite Music",
-    "uuid": "33825b0b-1eb3-4fad-a450-8e0136f392d8",
+    "uuid": "4e601687-8739-49e0-a280-1a633ee46eef",
     "sdkVersion": "3",
-    "enableMultiJS": true,
+    "enableMultiJS": false,
     "targetPlatforms": [
       "aplite",
       "basalt",

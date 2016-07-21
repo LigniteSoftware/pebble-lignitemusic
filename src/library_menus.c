@@ -124,15 +124,36 @@ void display_library_view(MPMediaGrouping grouping) {
 }
 
 void received_message(DictionaryIterator *received, void* context) {
-    if(menu_stack_pointer == -1) return;
-    /*
+    NSLog("got menu message");
+    if(menu_stack_pointer == -1) {
+        NSError("menu_stack_pointer is -1!");
+        return;
+    }
+
     Tuple* tuple = dict_find(received, IPOD_LIBRARY_RESPONSE_KEY);
     LibraryMenu *menu = &menu_stack[menu_stack_pointer];
     if(tuple) {
         MPMediaGrouping grouping = tuple->value->data[0];
-        if(grouping != menu->grouping) return; // Not what we wanted.
-        uint16_t total_size = *(uint16_t*)tuple->value->data[1];
-        uint16_t offset = *(uint16_t*)tuple->value->data[3];
+        if(grouping != menu->grouping){
+            NSError("grouping != menu->grouping!");
+            return; // Not what we wanted.
+        }
+        /*
+        uint32_t total_size = *(uint32_t*)tuple->value->data[1];
+        uint32_t offset = *(uint32_t*)tuple->value->data[3];
+        */
+        uint32_t total_size = tuple->value->data[1];
+        uint32_t offset = tuple->value->data[3];
+
+        NSLog("Got total size %d, offset %d", (int)total_size, (int)offset);
+
+        /*
+        uint32_t total_size = 10;
+        uint32_t offset = 10;
+
+        uint32_t testVariable = tuple->value->data[1];
+        */
+
         int8_t insert_pos = offset - menu->current_entry_offset;
         menu->total_entry_count = total_size;
         uint8_t skipping = 0;
@@ -170,7 +191,6 @@ void received_message(DictionaryIterator *received, void* context) {
         }
         menu_layer_reload_data(menu->layer);
     }
-    */
 }
 
 // Window callbacks
@@ -200,7 +220,7 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
     graphics_context_set_text_color(ctx, GColorBlack);
     GRect bounds = layer_get_bounds(cell_layer);
     bounds.origin.x += 5;
-    //bounds.origin.y -= 4;
+    bounds.origin.y -= 4;
     bounds.size.w -= 5;
     graphics_draw_text(ctx, menu->menu_entries[pos], menu_font, bounds, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
     */
