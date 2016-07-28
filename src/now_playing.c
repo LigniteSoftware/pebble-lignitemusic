@@ -5,6 +5,7 @@
 #include "ipod.h"
 #include "progress_bar.h"
 #include "common.h"
+#include "gbitmap_manipulator.h"
 
 Window *now_playing_window;
 ActionBarLayer *action_bar;
@@ -225,18 +226,6 @@ void request_now_playing() {
     dict_write_int8(ipodMessage->iter, IPOD_NOW_PLAYING_KEY, 2);
     AppMessageResult result = app_message_outbox_send();
     NSLog("Outbox send result %d", result);
-}
-
-char* get_gbitmapformat_text(GBitmapFormat format){
-	switch (format) {
-		case GBitmapFormat1Bit: return "GBitmapFormat1Bit";
-		case GBitmapFormat8Bit: return "GBitmapFormat8Bit";
-		case GBitmapFormat1BitPalette: return "GBitmapFormat1BitPalette";
-		case GBitmapFormat2BitPalette: return "GBitmapFormat2BitPalette";
-		case GBitmapFormat4BitPalette: return "GBitmapFormat4BitPalette";
-
-		default: return "UNKNOWN FORMAT";
-	}
 }
 
 void create_bitmap(){

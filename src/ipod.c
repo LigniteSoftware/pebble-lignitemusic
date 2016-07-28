@@ -9,15 +9,12 @@
 Window *window;
 
 void ipod_init() {
-    //g_app_context = ctx;
-
     window = window_create();
     window_stack_push(window, true);
 
     main_menu_init(window);
     init_library_menus();
     ipod_state_init();
-
 }
 
 void ipod_app_timer_handler() {
@@ -40,7 +37,7 @@ void failed_outbox(DictionaryIterator *iterator, AppMessageResult reason, void *
 
 void send_test_message(){
     DictionaryIterator *iter;
-	NSLog("first result %d", app_message_outbox_begin(&iter));
+	NSLog("Begin outbox result %d", app_message_outbox_begin(&iter));
 
 	//app_timer_register(1800000, update_weather, NULL);
 
@@ -52,7 +49,7 @@ void send_test_message(){
 	dict_write_uint16(iter, 200, 1);
 	dict_write_end(iter);
 
-	NSLog("result %d", app_message_outbox_send());
+	NSLog("Send result %d", app_message_outbox_send());
 }
 
 int main() {
