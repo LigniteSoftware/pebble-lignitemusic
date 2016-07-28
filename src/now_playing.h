@@ -14,5 +14,6 @@ typedef enum {
 void show_now_playing();
 void now_playing_tick();
 void now_playing_animation_tick();
+void now_playing_process_album_art_tuple(DictionaryIterator *albumArtDict);
 
 #endif

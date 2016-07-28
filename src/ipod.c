@@ -55,16 +55,11 @@ void send_test_message(){
 	NSLog("result %d", app_message_outbox_send());
 }
 
-static void received_handler(DictionaryIterator *iter, void *context) {
-    NSLog("Got shit wake message");
-}
-
 int main() {
-    //NSLog("Opening inbox, %d", app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum()));
-    app_message_open(2048, 2048);
     app_message_register_inbox_dropped(dropped_inbox);
     app_message_register_outbox_failed(failed_outbox);
-    app_message_register_inbox_received(received_handler);
+    app_message_open(2048, 2048);
+    //NSLog("Opening inbox, %d", app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum()));
 
     tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
 

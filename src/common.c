@@ -22,6 +22,16 @@ iPodMessage *ipod_message_outbox_get() {
     return message;
 }
 
+void ipod_message_timer_fire(void *timerContext){
+    iPodMessage *message = (iPodMessage*)timerContext;
+    NSLog("Destroying %p", message);
+    free(message);
+}
+
+void ipod_message_destroy(iPodMessage *message){
+    app_timer_register(IPOD_MESSAGE_DESTROY_TIME, ipod_message_timer_fire, message);
+}
+
 void reset_sequence_number() {
     DictionaryIterator *iter = NULL;
     app_message_outbox_begin(&iter);

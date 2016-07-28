@@ -13,7 +13,7 @@ MarqueeTextLayer album_layer;
 MarqueeTextLayer artist_layer;
 BitmapLayer *album_art_layer;
 GBitmap *album_art_bitmap;
-uint8_t album_art_data[512];
+uint8_t *album_art_data;
 ProgressBarLayer progress_bar;
 
 // Action bar icons
@@ -42,6 +42,7 @@ void display_no_album();
 bool controlling_volume = false;
 bool is_shown = false;
 AppTimer *now_playing_timer;
+int currentAlbumArtLength = 0;
 
 void show_now_playing() {
     now_playing_window = window_create();
@@ -109,7 +110,6 @@ void window_load(Window* window) {
     // Album art
     //TODO: make sure this is valid lmao
     //album_art_bitmap = gbitmap_create_with_data(&&album_art_data);
-    album_art_bitmap = gbitmap_create_blank(GSize(60, 60), GBitmapFormat8Bit);
     /*
      * Never forget
      * Also be sure to check gbitmap_create_from_png_data just in case
@@ -126,7 +126,9 @@ void window_load(Window* window) {
     //memset(album_art_data, 0, 512);
 
     album_art_layer = bitmap_layer_create(GRect(20, 35, 64, 64));
-    bitmap_layer_set_bitmap(album_art_layer, album_art_bitmap);
+    if(album_art_bitmap){
+        bitmap_layer_set_bitmap(album_art_layer, album_art_bitmap);
+    }
     layer_add_child(window_layer, bitmap_layer_get_layer(album_art_layer));
     display_no_album();
 
@@ -206,8 +208,10 @@ void send_state_change(NowPlayingState state_change) {
         return;
     }
     NSLog("Sending state change of %d", state_change);
-    dict_write_int8(ipodMessage->iter, IPOD_STATE_CHANGE_KEY, state_change);
-    app_message_outbox_send();
+    dict_write_int8(ipodMessage->iter, IPOD_CHANGE_STATE_KEY, state_change);
+    NSLog("outbox state send result of %d", app_message_outbox_send());
+
+    ipod_message_destroy(ipodMessage);
 }
 
 //TODO: dealloc ipodmessage struct
@@ -223,32 +227,82 @@ void request_now_playing() {
     NSLog("Outbox send result %d", result);
 }
 
-void app_in_received(DictionaryIterator *received, void* context) {
-    NSLog("Got a message in now playing");
-    if(!is_shown){
-        return;
+char* get_gbitmapformat_text(GBitmapFormat format){
+	switch (format) {
+		case GBitmapFormat1Bit: return "GBitmapFormat1Bit";
+		case GBitmapFormat8Bit: return "GBitmapFormat8Bit";
+		case GBitmapFormat1BitPalette: return "GBitmapFormat1BitPalette";
+		case GBitmapFormat2BitPalette: return "GBitmapFormat2BitPalette";
+		case GBitmapFormat4BitPalette: return "GBitmapFormat4BitPalette";
+
+		default: return "UNKNOWN FORMAT";
+	}
+}
+
+void create_bitmap(){
+    album_art_bitmap = gbitmap_create_from_png_data(album_art_data, currentAlbumArtLength);
+    if(album_art_layer){
+        bitmap_layer_set_bitmap(album_art_layer, album_art_bitmap);
     }
 
-    Tuple* tuple = dict_find(received, IPOD_ALBUM_ART_KEY);
-    //TODO check this shit
+    NSLog("Got bitmap format of %s", get_gbitmapformat_text(gbitmap_get_format(album_art_bitmap)));
+}
 
-    if(tuple) {
-        NSLog("Tuple exist");
-        if(tuple->value->data[0] == 255) {
-            NSLog("Tuple value is 255, display_no_album()");
-            display_no_album();
+void now_playing_process_album_art_tuple(DictionaryIterator *albumArtDict){
+    Tuple *albumArtTuple = dict_find(albumArtDict, IPOD_ALBUM_ART_KEY);
+    if(albumArtTuple) {
+        if(!album_art_data){
+            NSLog("Album art data doesn't exist!");
+            //Send one more request for album art
+            return;
         }
-        else {
-            NSLog("Tuple value isn't 255, sweet. Let's do some shit.");
-            size_t offset = tuple->value->data[0] * 104;
-            memcpy(album_art_data + offset, tuple->value->data + 1, tuple->length - 1);
-            Layer *albumArtLayer = bitmap_layer_get_layer(album_art_layer);
-            layer_mark_dirty(albumArtLayer);
-            layer_set_frame(albumArtLayer, GRect(30, 35, 64, 64));
+
+        Tuple *albumArtIndexTuple = dict_find(albumArtDict, IPOD_ALBUM_ART_INDEX_KEY);
+        if(!albumArtIndexTuple){
+            NSError("Index tuple doesn't exist!");
+            return;
+        }
+        size_t index = albumArtIndexTuple->value->uint16 * 499;
+        memcpy(&album_art_data[index], albumArtTuple->value->data, albumArtTuple->length);
+
+        if(((albumArtIndexTuple->value->uint16 * 499) + albumArtTuple->length) == currentAlbumArtLength){
+            NSLog("Firing timer");
+            app_timer_register(125, create_bitmap, NULL);
         }
     }
+    else{
+        Tuple* albumArtLengthTuple = dict_find(albumArtDict, IPOD_ALBUM_ART_LENGTH_KEY);
+        //TODO check this shit
+        if(albumArtLengthTuple){
+            uint16_t length = albumArtLengthTuple->value->uint16;
 
-    APP_LOG(APP_LOG_LEVEL_INFO, "I got some data but I am gonna do nothing");
+            NSLog("Got size for image %d", length);
+            if(album_art_data){
+                NSLog("Destroying album art data.");
+                free(album_art_data);
+            }
+            if(album_art_bitmap){
+                NSLog("Destroying album art bitmap.");
+                bitmap_layer_set_bitmap(album_art_layer, NULL);
+                gbitmap_destroy(album_art_bitmap);
+                album_art_bitmap = NULL;
+            }
+            album_art_data = malloc(length);
+            if(!album_art_data){
+                NSError("Album art data FAILED to create with a size of %d bytes!", length);
+            }
+            currentAlbumArtLength = length;
+
+            //You're probably not gonna have a PNG that's 1 byte lol, so if it is it's the phone telling you
+            //that there's no fucking album art
+            if(currentAlbumArtLength == 1){
+                display_no_album();
+            }
+            else{
+                NSLog("Ready for image input.");
+            }
+        }
+    }
 }
 
 void state_callback(bool track_data) {
@@ -257,11 +311,13 @@ void state_callback(bool track_data) {
     }
     NSLog("Got %d", ipod_state_duration());
     if(track_data) {
+        NSLog("Updating marquee layers");
         marquee_text_layer_set_text(&album_layer, ipod_get_album());
         marquee_text_layer_set_text(&artist_layer, ipod_get_artist());
         marquee_text_layer_set_text(&title_layer, ipod_get_title());
     }
     else {
+        NSLog("Updating icons");
         if(ipod_get_playback_state() == MPMusicPlaybackStatePlaying) {
             action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, icon_pause);
         } else {
@@ -275,6 +331,7 @@ void state_callback(bool track_data) {
 void display_no_album() {
     //TODO: this is where the shit goes that has album art missing
     //resource_load(resource_get_handle(RESOURCE_ID_ALBUM_ART_MISSING), album_art_data, 512);
+    NSLog("Display no album");
     layer_set_frame(bitmap_layer_get_layer(album_art_layer), GRect(20, 35, 64, 64));
     layer_mark_dirty(bitmap_layer_get_layer(album_art_layer));
 }

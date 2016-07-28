@@ -1,6 +1,8 @@
 #ifndef ipod_common_h
 #define ipod_common_h
 
+#define IPOD_MESSAGE_DESTROY_TIME 500
+
 #include <pebble.h>
 
 #define NSLog(fmt, args...)                                \
@@ -21,9 +23,11 @@
 #define IPOD_PLAY_TRACK_KEY 0xFEF8
 #define IPOD_NOW_PLAYING_RESPONSE_TYPE_KEY 0xFEF7
 #define IPOD_ALBUM_ART_KEY 0xFEF6
-#define IPOD_STATE_CHANGE_KEY 0xFEF5
-#define IPOD_CURRENT_STATE_KEY 0xFEF4
-#define IPOD_SEQUENCE_NUMBER_KEY 0xFEF3
+#define IPOD_ALBUM_ART_LENGTH_KEY 0xFEF5
+#define IPOD_ALBUM_ART_INDEX_KEY 0xFEF4
+#define IPOD_CHANGE_STATE_KEY 0xFEF3
+#define IPOD_CURRENT_STATE_KEY 0xFEF2
+#define IPOD_SEQUENCE_NUMBER_KEY 0xFEF1
 
 typedef enum {
     MPMediaGroupingTitle,
@@ -73,6 +77,7 @@ typedef struct {
 } iPodMessage;
 
 iPodMessage *ipod_message_outbox_get();
+void ipod_message_destroy(iPodMessage *message);
 void reset_sequence_number();
 
 #endif

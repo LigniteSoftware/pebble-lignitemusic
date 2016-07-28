@@ -37,7 +37,7 @@ int16_t get_cell_height(struct MenuLayer *menu_layer, MenuIndex *cell_index, voi
 void library_menus_window_unload(Window* window);
 
 void init_library_menus() {
-    app_message_register_inbox_received(received_message);
+    //app_message_register_inbox_received(received_message);
     menu_stack_pointer = -1;
     menu_font = fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD);
 }

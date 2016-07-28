@@ -1,6 +1,7 @@
 #include <pebble.h>
 #include "ipod_state.h"
 #include "common.h"
+#include "now_playing.h"
 
 void ipod_received_handler(DictionaryIterator *received, void *context);
 void call_callback(bool track_data);
@@ -86,20 +87,87 @@ void call_callback(bool track_data) {
     ipod_state_callback(track_data);
 }
 
-void ipod_received_handler(DictionaryIterator *received, void *context) {
-    NSLog("Got ipod message");
-    Tuple *tuple = dict_find(received, IPOD_CURRENT_STATE_KEY);
-    if(tuple) {
+NowPlayingType currentType;
+
+void process_tuple(Tuple *tuple, DictionaryIterator *iter){
+    uint32_t key = tuple->key;
+    if(key == IPOD_CURRENT_STATE_KEY){
+        NSLog("Is playback info.");
         s_playback_state = tuple->value->data[0];
         s_shuffle_mode = tuple->value->data[1];
         s_repeat_mode = tuple->value->data[2];
         s_duration = (tuple->value->data[3] << 8) | tuple->value->data[4];
         s_current_time = (tuple->value->data[5] << 8) | tuple->value->data[6];
+        NSLog("Updating callback.");
+        call_callback(false);
+    }
+    else if(key == IPOD_NOW_PLAYING_RESPONSE_TYPE_KEY){
+        currentType = tuple->value->uint8;
+    }
+    else if(key == IPOD_NOW_PLAYING_KEY){
+        char* target = NULL;
+        switch(currentType) {
+            case NowPlayingAlbum:
+                target = s_album;
+                break;
+            case NowPlayingArtist:
+                target = s_artist;
+                break;
+            case NowPlayingTitle:
+                target = s_title;
+                break;
+            default:
+                return;
+        }
+        if(strcmp(target, tuple->value->cstring) == 0){
+            //NSWarn("Warning: Target string and cstring are equal. Not copying again.");
+            return;
+        }
+        uint8_t len = strlen(tuple->value->cstring);
+        if(len > 99){
+            len = 99;
+        }
+        strncpy(target, tuple->value->cstring, (size_t)len);
+        target[len] = '\0';
+        call_callback(true);
+    }
+    else{
+        now_playing_process_album_art_tuple(iter);
+    }
+}
+
+void ipod_received_handler(DictionaryIterator *iter, void *context){
+    NSLog("Got message from phone");
+    Tuple *t = dict_read_first(iter);
+    if(t){
+        process_tuple(t, iter);
+    }
+    while(t != NULL){
+        t = dict_read_next(iter);
+        if(t){
+            process_tuple(t, iter);
+        }
+    }
+}
+
+/*
+void ipod_received_handler(DictionaryIterator *received, void *context) {
+    NSLog("Got ipod message");
+    Tuple *tuple = dict_find(received, IPOD_CURRENT_STATE_KEY);
+    if(tuple) {
+        NSLog("Is playback information.");
+        s_playback_state = tuple->value->data[0];
+        s_shuffle_mode = tuple->value->data[1];
+        s_repeat_mode = tuple->value->data[2];
+        s_duration = (tuple->value->data[3] << 8) | tuple->value->data[4];
+        s_current_time = (tuple->value->data[5] << 8) | tuple->value->data[6];
+        NSLog("Callback...");
         call_callback(false);
         return;
     }
     tuple = dict_find(received, IPOD_NOW_PLAYING_RESPONSE_TYPE_KEY);
     if(tuple) {
+        NSLog("Got now playing response");
         NowPlayingType type = tuple->value->uint8;
         tuple = dict_find(received, IPOD_NOW_PLAYING_KEY);
         if(!tuple){
@@ -133,4 +201,8 @@ void ipod_received_handler(DictionaryIterator *received, void *context) {
         call_callback(true);
         return;
     }
+    else{
+        now_playing_process_album_art_tuple(received);
+    }
 }
+*/

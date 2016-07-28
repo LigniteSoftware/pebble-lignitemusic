@@ -34,7 +34,7 @@ void progress_bar_layer_set_value(ProgressBarLayer* bar, int32_t value) {
 }
 
 static void update_proc(Layer* layer, GContext *context) {
-    NSLog("Updating");
+    //NSLog("Updating");
     ProgressBarLayer* bar = ((ProgressBarData*)layer_get_data(layer))->progress_bar;
     GRect bounds = layer_get_bounds(layer);
     graphics_draw_round_rect(context, bounds, 3);
