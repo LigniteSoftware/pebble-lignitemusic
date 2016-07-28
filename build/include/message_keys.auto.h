@@ -6,5 +6,3 @@
 // DO NOT MODIFY - CHANGES WILL BE OVERWRITTEN
 //
 
-extern uint32_t MESSAGE_KEY_boolean_box;
-extern uint32_t MESSAGE_KEY_color_picker;

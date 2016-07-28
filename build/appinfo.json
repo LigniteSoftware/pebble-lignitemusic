@@ -6,19 +6,13 @@
     ], 
     "displayName": "Lignite Music", 
     "name": "Lignite Music", 
-    "messageKeys": {
-        "boolean_box": 10000, 
-        "color_picker": 10001
-    }, 
+    "messageKeys": {}, 
     "companyName": "Edwin Finch", 
     "enableMultiJS": false, 
-    "versionLabel": "0.1", 
+    "versionLabel": "0.2", 
     "capabilities": [], 
     "sdkVersion": "3", 
-    "appKeys": {
-        "boolean_box": 10000, 
-        "color_picker": 10001
-    }, 
+    "appKeys": {}, 
     "longName": "Lignite Music", 
     "shortName": "Lignite Music", 
     "watchapp": {

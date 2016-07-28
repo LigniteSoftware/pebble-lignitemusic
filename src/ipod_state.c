@@ -105,6 +105,13 @@ void process_tuple(Tuple *tuple, DictionaryIterator *iter){
         currentType = tuple->value->uint8;
     }
     else if(key == IPOD_NOW_PLAYING_KEY){
+        Tuple *typeTuple = dict_find(iter, IPOD_NOW_PLAYING_RESPONSE_TYPE_KEY);
+        if(!typeTuple){
+            NSError("Type tuple doesn't exist!");
+            return;
+        }
+        currentType = typeTuple->value->uint8;
+
         char* target = NULL;
         switch(currentType) {
             case NowPlayingAlbum:
