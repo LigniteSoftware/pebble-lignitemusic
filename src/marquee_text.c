@@ -5,7 +5,6 @@
 // There is a bug in the text drawing routines that causes glitches as
 // characters gain a negative position. So we lie about our frame, ensuring
 // That this never comes up. But then we have no good way of clipping them.
-#define BOUND_OFFSET 20
 
 static MarqueeTextLayer* head;
 
@@ -13,20 +12,17 @@ static void do_draw(Layer* layer, GContext* context);
 
 void marquee_text_layer_init(MarqueeTextLayer *marquee, GRect frame) {
     // And now we lie about our frame. See above.
-    frame.origin.x -= BOUND_OFFSET;
-    frame.size.w += BOUND_OFFSET;
 
     marquee->layer = layer_create_with_data(frame, sizeof(MarqueeTextLayerReference));
     MarqueeTextLayerReference *ref = (MarqueeTextLayerReference*)layer_get_data(marquee->layer);
     ref->marqueeLayer = marquee;
 
     GRect bounds = layer_get_bounds(marquee->layer);
-    bounds.origin.x += BOUND_OFFSET;
     layer_set_bounds(marquee->layer, bounds);
     layer_set_update_proc(marquee->layer, do_draw);
-    marquee->background_colour = GColorWhite;
+    marquee->background_colour = GColorClear;
 
-    marquee->text_colour = GColorBlack;
+    marquee->text_colour = GColorWhite;
     marquee->offset = 0;
 	marquee->text_width = -1;
     marquee->countdown = 100;
@@ -107,11 +103,10 @@ static void do_draw(Layer* layer, GContext* context) {
 	}
     graphics_context_set_fill_color(context, marquee->background_colour);
     graphics_context_set_text_color(context, marquee->text_colour);
-    graphics_fill_rect(context, layer_get_bounds(marquee->layer), 0, GCornerNone);
-	if(marquee->text_width < layer_get_frame(marquee->layer).size.w - BOUND_OFFSET) {
+    //graphics_fill_rect(context, layer_get_bounds(marquee->layer), 0, GCornerNone);
+	if(marquee->text_width < layer_get_frame(marquee->layer).size.w) {
         GRect rect = GRectZero;
         rect.size = layer_get_bounds(marquee->layer).size;
-        rect.size.w -= BOUND_OFFSET;
 		graphics_draw_text(context, marquee->text, marquee->font, rect, GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
 		return;
 	}
@@ -126,5 +121,5 @@ static void do_draw(Layer* layer, GContext* context) {
         graphics_draw_text(context, marquee->text, marquee->font, GRect(-marquee->offset + marquee->text_width + 30, 0, marquee->text_width, layer_get_frame(layer).size.h), GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
     }
     // And draw our hack, too:
-    graphics_fill_rect(context, GRect(-BOUND_OFFSET, 0, BOUND_OFFSET, layer_get_frame(layer).size.h), 0, GCornerNone);
+    //graphics_fill_rect(context, GRect(-BOUND_OFFSET, 0, BOUND_OFFSET, layer_get_frame(layer).size.h), 0, GCornerNone);
 }

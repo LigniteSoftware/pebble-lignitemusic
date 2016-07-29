@@ -14,8 +14,7 @@ void progress_bar_layer_init(ProgressBarLayer* bar, GRect frame) {
     bar->min = 0;
     bar->max = 255;
     bar->value = 0;
-    bar->frame_colour = GColorBlack;
-    bar->bar_colour = GColorBlack;
+    bar->bar_colour = GColorRed;
 }
 
 void progress_bar_layer_set_range(ProgressBarLayer* bar, int32_t min, int32_t max) {
@@ -36,14 +35,9 @@ void progress_bar_layer_set_value(ProgressBarLayer* bar, int32_t value) {
 static void update_proc(Layer* layer, GContext *context) {
     //NSLog("Updating");
     ProgressBarLayer* bar = ((ProgressBarData*)layer_get_data(layer))->progress_bar;
-    GRect bounds = layer_get_bounds(layer);
-    graphics_draw_round_rect(context, bounds, 3);
 
+    GRect bounds = layer_get_bounds(layer);
     bounds.size.w = ((bar->value - bar->min) * bounds.size.w) / (bar->max - bar->min);
-    GCornerMask corners = GCornersLeft;
-    if(bounds.size.w >= layer_get_bounds(layer).size.w - 4) {
-        corners |= GCornersRight;
-    }
     graphics_context_set_fill_color(context, bar->bar_colour);
-    graphics_fill_rect(context, bounds, 3, corners);
+    graphics_fill_rect(context, GRect(bounds.origin.x, 166, bounds.size.w, 3), 0, GCornerNone);
 }

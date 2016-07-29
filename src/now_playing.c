@@ -13,6 +13,7 @@ MarqueeTextLayer title_layer;
 MarqueeTextLayer album_layer;
 MarqueeTextLayer artist_layer;
 BitmapLayer *album_art_layer;
+Layer *graphics_layer;
 GBitmap *album_art_bitmap;
 uint8_t *album_art_data;
 ProgressBarLayer progress_bar;
@@ -45,8 +46,12 @@ bool is_shown = false;
 AppTimer *now_playing_timer;
 int currentAlbumArtLength = 0;
 
+GColor backgroundColour;
+
 void show_now_playing() {
+    backgroundColour = GColorBlack;
     now_playing_window = window_create();
+    window_set_background_color(now_playing_window, backgroundColour);
     window_set_window_handlers(now_playing_window, (WindowHandlers){
         .unload = window_unload,
         .load = window_load,
@@ -67,6 +72,13 @@ void now_playing_animation_tick() {
     now_playing_timer = app_timer_register(33, ipod_app_timer_handler, NULL);
 }
 
+void graphics_proc(Layer *layer, GContext *ctx){
+    graphics_context_set_fill_color(ctx, backgroundColour);
+    graphics_fill_rect(ctx, GRect(20, 126, 104, 24), 2, GCornersAll);
+    //graphics_context_set_fill_color(ctx, GColorRed);
+    //graphics_fill_rect(ctx, GRect(22, 126, 100, 24), 0, GCornerNone);
+}
+
 void window_load(Window* window) {
     Layer *window_layer = window_get_root_layer(window);
 
@@ -78,6 +90,37 @@ void window_load(Window* window) {
     icon_volume_up = gbitmap_create_with_resource(RESOURCE_ID_ICON_VOLUME_UP);
     icon_volume_down = gbitmap_create_with_resource(RESOURCE_ID_ICON_VOLUME_DOWN);
 
+    album_art_layer = bitmap_layer_create(GRect(0, 0, 144, 144));
+    if(album_art_bitmap){
+        bitmap_layer_set_bitmap(album_art_layer, album_art_bitmap);
+    }
+    layer_add_child(window_layer, bitmap_layer_get_layer(album_art_layer));
+    display_no_album();
+
+    graphics_layer = layer_create(GRect(0, 0, 144, 168));
+    layer_set_update_proc(graphics_layer, graphics_proc);
+    layer_add_child(window_layer, graphics_layer);
+
+    // Text labels
+    marquee_text_layer_init(&title_layer, GRect(2, 142, 140, 28));
+    marquee_text_layer_set_font(&title_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+    marquee_text_layer_set_text(&title_layer, ipod_get_title());
+    layer_add_child(window_layer, title_layer.layer);
+
+    marquee_text_layer_init(&album_layer, GRect(2, 130, 112, 23));
+    marquee_text_layer_set_font(&album_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+    marquee_text_layer_set_text(&album_layer, ipod_get_album());
+    //layer_add_child(window_layer, album_layer.layer);
+
+    marquee_text_layer_init(&artist_layer, GRect(22, 126, 100, 24));
+    marquee_text_layer_set_font(&artist_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+    marquee_text_layer_set_text(&artist_layer, ipod_get_artist());
+    layer_add_child(window_layer, artist_layer.layer);
+
+    // Progress bar
+    progress_bar_layer_init(&progress_bar, GRect(0, 0, 144, 168));
+    layer_add_child(window_layer, progress_bar.layer);
+
     // Action bar
     action_bar = action_bar_layer_create();
     action_bar_layer_add_to_window(action_bar, window);
@@ -88,50 +131,7 @@ void window_load(Window* window) {
     action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, icon_rewind);
     action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, icon_play);
 
-    // Text labels
-    marquee_text_layer_init(&title_layer, GRect(2, 0, 112, 35));
-    marquee_text_layer_set_font(&title_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
-    marquee_text_layer_set_text(&title_layer, ipod_get_title());
-    layer_add_child(window_layer, title_layer.layer);
-
-    marquee_text_layer_init(&album_layer, GRect(2, 130, 112, 23));
-    marquee_text_layer_set_font(&album_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-    marquee_text_layer_set_text(&album_layer, ipod_get_album());
-    layer_add_child(window_layer, album_layer.layer);
-
-    marquee_text_layer_init(&artist_layer, GRect(2, 107, 112, 28));
-    marquee_text_layer_set_font(&artist_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24));
-    marquee_text_layer_set_text(&artist_layer, ipod_get_artist());
-    layer_add_child(window_layer, artist_layer.layer);
-
-    // Progress bar
-    progress_bar_layer_init(&progress_bar, GRect(4, 105, 104, 7));
-    layer_add_child(window_layer, progress_bar.layer);
-
-    // Album art
-    //TODO: make sure this is valid lmao
-    //album_art_bitmap = gbitmap_create_with_data(&&album_art_data);
-    /*
-     * Never forget
-     * Also be sure to check gbitmap_create_from_png_data just in case
-     *
-    album_art_bitmap = (GBitmap) {
-        .addr = album_art_data,
-        .bounds = GRect(0, 0, 64, 64),
-        .info_flags = 1,
-        .row_size_bytes = 8,
-    };
-    */
-
-    //I didn't comment this out
-    //memset(album_art_data, 0, 512);
-
-    album_art_layer = bitmap_layer_create(GRect(20, 35, 64, 64));
-    if(album_art_bitmap){
-        bitmap_layer_set_bitmap(album_art_layer, album_art_bitmap);
-    }
-    layer_add_child(window_layer, bitmap_layer_get_layer(album_art_layer));
-    display_no_album();
+    layer_set_hidden(action_bar_layer_get_layer(action_bar), true);
 
     //app_message_register_inbox_received(app_in_received);
     ipod_state_set_callback(state_callback);
@@ -229,6 +229,9 @@ void request_now_playing() {
 }
 
 void create_bitmap(){
+    if(album_art_bitmap){
+        return;
+    }
     album_art_bitmap = gbitmap_create_from_png_data(album_art_data, currentAlbumArtLength);
     if(album_art_layer){
         bitmap_layer_set_bitmap(album_art_layer, album_art_bitmap);
@@ -265,7 +268,7 @@ void now_playing_process_album_art_tuple(DictionaryIterator *albumArtDict){
         if(albumArtLengthTuple){
             uint16_t length = albumArtLengthTuple->value->uint16;
 
-            NSLog("Got size for image %d", length);
+            NSLog("Got size for image %d, heap free %d", length, heap_bytes_free());
             if(album_art_data){
                 NSLog("Destroying album art data.");
                 free(album_art_data);
@@ -321,6 +324,6 @@ void display_no_album() {
     //TODO: this is where the shit goes that has album art missing
     //resource_load(resource_get_handle(RESOURCE_ID_ALBUM_ART_MISSING), album_art_data, 512);
     NSLog("Display no album");
-    layer_set_frame(bitmap_layer_get_layer(album_art_layer), GRect(20, 35, 64, 64));
+    layer_set_frame(bitmap_layer_get_layer(album_art_layer), GRect(0, 0, 144, 144));
     layer_mark_dirty(bitmap_layer_get_layer(album_art_layer));
 }

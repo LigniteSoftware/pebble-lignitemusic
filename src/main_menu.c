@@ -16,6 +16,7 @@ SimpleMenuItem main_menu_items[AMOUNT_OF_MAIN_MENU_ITEMS];
 
 MenuLayer *main_menu_layer;
 GBitmap *main_menu_icons[AMOUNT_OF_MAIN_MENU_ITEMS];
+GBitmap *main_menu_icons_inverted[AMOUNT_OF_MAIN_MENU_ITEMS];
 
 uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data) {
     return 1;
@@ -29,23 +30,27 @@ int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t section_
     return 0;
 }
 
-void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data) {
-    //menu_cell_basic_header_draw(ctx, cell_layer, "Some example items");
+MenuIndex highlight_index;
+
+void update_highlight_colours(){
+    menu_layer_set_highlight_colors(main_menu_layer, GColorWhite, (highlight_index.row == 0) ? GColorWhite : GColorBlack);
 }
 
 void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context){
-    menu_layer_set_highlight_colors(main_menu_layer, GColorWhite, (new_index.row == 0) ? GColorWhite : GColorBlack);
-
-    if(new_index.row != 0){
-        replace_gbitmap_color(GColorWhite, GColorBlack, main_menu_items[new_index.row].icon, NULL);
-    }
-    if(new_index.row != old_index.row){
-        replace_gbitmap_color(GColorBlack, GColorWhite, main_menu_items[old_index.row].icon, NULL);
-    }
+    highlight_index = new_index;
+    app_timer_register(125, update_highlight_colours, NULL);
 }
 
 void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
     graphics_context_set_compositing_mode(ctx, GCompOpSet);
+
+    main_menu_items[cell_index->row].icon = main_menu_icons[cell_index->row];
+
+    if(menu_cell_layer_is_highlighted(cell_layer)){
+        if(cell_index->row != 0){
+            main_menu_items[cell_index->row].icon = main_menu_icons_inverted[cell_index->row];
+        }
+    }
 
     if(cell_index->row == 0){
         graphics_context_set_fill_color(ctx, GColorRed);
@@ -78,7 +83,9 @@ void main_menu_init(Window* window) {
 
     for(int i = 0; i < AMOUNT_OF_MAIN_MENU_ITEMS; i++){
         main_menu_items[i].title = titles[i];
-        main_menu_items[i].icon = gbitmap_create_with_resource(resource_ids[i]);
+        main_menu_icons[i] = gbitmap_create_with_resource(resource_ids[i]);
+        main_menu_icons_inverted[i] = gbitmap_create_with_resource(resource_ids[i]);
+        replace_gbitmap_color(GColorWhite, GColorBlack, main_menu_icons_inverted[i], NULL);
         main_menu_items[i].callback = callbacks[i];
     }
 
@@ -89,7 +96,6 @@ void main_menu_init(Window* window) {
         .get_num_sections = menu_get_num_sections_callback,
         .get_num_rows = menu_get_num_rows_callback,
         .get_header_height = menu_get_header_height_callback,
-        .draw_header = menu_draw_header_callback,
         .draw_row = menu_draw_row_callback,
         .select_click = menu_select_callback,
         .selection_changed = menu_selection_changed
