@@ -76,6 +76,7 @@ typedef struct {
     AppMessageResult result;
 } iPodMessage;
 
+void animate_layer(Layer *layer, GRect *start, GRect *finish, int length, int delay);
 iPodMessage *ipod_message_outbox_get();
 void ipod_message_destroy(iPodMessage *message);
 void reset_sequence_number();

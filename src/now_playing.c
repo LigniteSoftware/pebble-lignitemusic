@@ -8,7 +8,7 @@
 #include "gbitmap_manipulator.h"
 
 Window *now_playing_window;
-ActionBarLayer *action_bar;
+ActionBarLayer *control_action_bar;
 MarqueeTextLayer title_layer;
 MarqueeTextLayer album_layer;
 MarqueeTextLayer artist_layer;
@@ -48,6 +48,8 @@ int currentAlbumArtLength = 0;
 
 GColor backgroundColour;
 
+AppTimer *action_bar_timer;
+
 void show_now_playing() {
     backgroundColour = GColorBlack;
     now_playing_window = window_create();
@@ -57,6 +59,10 @@ void show_now_playing() {
         .load = window_load,
     });
     window_stack_push(now_playing_window, true);
+}
+
+bool now_playing_is_playing_music(){
+    return ipod_get_playback_state() == MPMusicPlaybackStatePlaying;
 }
 
 void now_playing_tick() {
@@ -122,16 +128,16 @@ void window_load(Window* window) {
     layer_add_child(window_layer, progress_bar.layer);
 
     // Action bar
-    action_bar = action_bar_layer_create();
-    action_bar_layer_add_to_window(action_bar, window);
-    action_bar_layer_set_click_config_provider(action_bar, click_config_provider);
+    control_action_bar = action_bar_layer_create();
+    action_bar_layer_add_to_window(control_action_bar, window);
+    action_bar_layer_set_click_config_provider(control_action_bar, click_config_provider);
     controlling_volume = false;
     // Set default icon set.
-    action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, icon_fast_forward);
-    action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, icon_rewind);
-    action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, icon_play);
+    action_bar_layer_set_icon(control_action_bar, BUTTON_ID_DOWN, icon_fast_forward);
+    action_bar_layer_set_icon(control_action_bar, BUTTON_ID_UP, icon_rewind);
+    action_bar_layer_set_icon(control_action_bar, BUTTON_ID_SELECT, icon_play);
 
-    layer_set_hidden(action_bar_layer_get_layer(action_bar), true);
+    //layer_set_hidden(action_bar_layer_get_layer(control_action_bar), true);
 
     //app_message_register_inbox_received(app_in_received);
     ipod_state_set_callback(state_callback);
@@ -143,8 +149,8 @@ void window_load(Window* window) {
 }
 
 void window_unload(Window* window) {
-    action_bar_layer_remove_from_window(action_bar);
-    action_bar_layer_destroy(action_bar);
+    action_bar_layer_remove_from_window(control_action_bar);
+    action_bar_layer_destroy(control_action_bar);
     marquee_text_layer_deinit(&title_layer);
     marquee_text_layer_deinit(&album_layer);
     marquee_text_layer_deinit(&artist_layer);
@@ -169,6 +175,39 @@ void click_config_provider(void* context) {
     window_long_click_subscribe(BUTTON_ID_SELECT, 500, long_clicked_select, NULL);
 }
 
+bool now_playing_action_bar_is_showing(){
+    Layer *action_bar_layer = action_bar_layer_get_layer(control_action_bar);
+
+    GRect current_frame = layer_get_frame(action_bar_layer);
+
+    return current_frame.origin.x < 120;
+}
+
+void animate_action_bar(void *action_bar_pointer){
+    ActionBarLayer *action_bar = (ActionBarLayer*)action_bar_pointer;
+
+    Layer *action_bar_layer = action_bar_layer_get_layer(action_bar);
+
+    GRect current_frame = layer_get_frame(action_bar_layer);
+    GRect next_frame;
+
+    next_frame = GRect(current_frame.origin.x + (now_playing_action_bar_is_showing() ? (ACTION_BAR_WIDTH) : (-(ACTION_BAR_WIDTH))), current_frame.origin.y, current_frame.size.w, current_frame.size.h);
+
+    animate_layer(action_bar_layer, &current_frame, &next_frame, 400, 0);
+}
+
+void now_playing_action_bar_handle(bool is_select){
+    if(action_bar_timer){
+        app_timer_cancel(action_bar_timer);
+    }
+    if(!now_playing_action_bar_is_showing()){
+        animate_action_bar(control_action_bar);
+    }
+    if((now_playing_is_playing_music() && !is_select) || (now_playing_action_bar_is_showing() && !now_playing_is_playing_music() && is_select)){
+        action_bar_timer = app_timer_register(2000, animate_action_bar, control_action_bar);
+    }
+}
+
 void clicked_up(ClickRecognizerRef recognizer, void *context) {
     if(!controlling_volume) {
         send_state_change(NowPlayingStateSkipPrevious);
@@ -176,10 +215,13 @@ void clicked_up(ClickRecognizerRef recognizer, void *context) {
     else {
         send_state_change(NowPlayingStateVolumeUp);
     }
+    now_playing_action_bar_handle(false);
 }
 
 void clicked_select(ClickRecognizerRef recognizer, void *context) {
     send_state_change(NowPlayingStatePlayPause);
+
+    now_playing_action_bar_handle(true);
 }
 
 void clicked_down(ClickRecognizerRef recognizer, void *context) {
@@ -189,18 +231,28 @@ void clicked_down(ClickRecognizerRef recognizer, void *context) {
     else {
         send_state_change(NowPlayingStateVolumeDown);
     }
+    now_playing_action_bar_handle(false);
 }
 
 void long_clicked_select(ClickRecognizerRef recognizer, void *context) {
     controlling_volume = !controlling_volume;
     if(controlling_volume) {
-        action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, icon_volume_up);
-        action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, icon_volume_down);
+        action_bar_layer_set_icon(control_action_bar, BUTTON_ID_UP, icon_volume_up);
+        action_bar_layer_set_icon(control_action_bar, BUTTON_ID_DOWN, icon_volume_down);
     }
     else {
-        action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, icon_fast_forward);
-        action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, icon_rewind);
+        action_bar_layer_set_icon(control_action_bar, BUTTON_ID_DOWN, icon_fast_forward);
+        action_bar_layer_set_icon(control_action_bar, BUTTON_ID_UP, icon_rewind);
     }
+
+    static const uint32_t const segments[] = { 50, 0 };
+    VibePattern pattern = {
+        .durations = segments,
+        .num_segments = ARRAY_LENGTH(segments),
+    };
+    vibes_enqueue_custom_pattern(pattern);
+
+    now_playing_action_bar_handle(false);
 }
 
 void send_state_change(NowPlayingState state_change) {
@@ -311,9 +363,9 @@ void state_callback(bool track_data) {
     else {
         NSLog("Updating icons");
         if(ipod_get_playback_state() == MPMusicPlaybackStatePlaying) {
-            action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, icon_pause);
+            action_bar_layer_set_icon(control_action_bar, BUTTON_ID_SELECT, icon_pause);
         } else {
-            action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, icon_play);
+            action_bar_layer_set_icon(control_action_bar, BUTTON_ID_SELECT, icon_play);
         }
         progress_bar_layer_set_range(&progress_bar, 0, ipod_state_duration());
         progress_bar_layer_set_value(&progress_bar, ipod_state_current_time());

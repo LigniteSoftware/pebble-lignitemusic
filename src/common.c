@@ -3,6 +3,26 @@
 
 static uint32_t s_sequence_number = 0xFFFFFFFE;
 
+void on_animation_stopped(Animation *anim, bool finished, void *context){
+    #ifdef PBL_BW
+        property_animation_destroy((PropertyAnimation*) anim);
+    #endif
+}
+
+void animate_layer(Layer *layer, GRect *start, GRect *finish, int length, int delay){
+    PropertyAnimation *anim = property_animation_create_layer_frame(layer, start, finish);
+
+    animation_set_duration(property_animation_get_animation(anim), length);
+    animation_set_delay(property_animation_get_animation(anim), delay);
+
+	AnimationHandlers handlers = {
+    	.stopped = (AnimationStoppedHandler) on_animation_stopped
+    };
+    animation_set_handlers(property_animation_get_animation(anim), handlers, NULL);
+
+    animation_schedule(property_animation_get_animation(anim));
+}
+
 iPodMessage *ipod_message_outbox_get() {
     iPodMessage *message = malloc(sizeof(iPodMessage));
 
