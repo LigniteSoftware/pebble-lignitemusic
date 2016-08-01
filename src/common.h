@@ -1,10 +1,13 @@
-#ifndef ipod_common_h
-#define ipod_common_h
+#pragma once
 
 #define IPOD_MESSAGE_DESTROY_TIME 500
 
-#include <pebble.h>
+#include <lignite_music.h>
 
+/*
+The next three functions are convenience functions to log using APP_LOG,
+but skips the step of adding in the (almost) arbitrary first parameter.
+ */
 #define NSLog(fmt, args...)                                \
   app_log(APP_LOG_LEVEL_INFO, __FILE_NAME__, __LINE__, fmt, ## args);
 
@@ -14,6 +17,9 @@
 #define NSError(fmt, args...)                                \
   app_log(APP_LOG_LEVEL_ERROR, __FILE_NAME__, __LINE__, fmt, ## args);
 
+/**
+ * The keys associated with data incoming and outgoing from and to the phone.
+ */
 #define IPOD_RECONNECT_KEY 0xFEFF
 #define IPOD_REQUEST_LIBRARY_KEY 0xFEFE
 #define IPOD_REQUEST_OFFSET_KEY 0xFEFB
@@ -29,6 +35,9 @@
 #define IPOD_CURRENT_STATE_KEY 0xFEF2
 #define IPOD_SEQUENCE_NUMBER_KEY 0xFEF1
 
+/**
+ * The type of media grouping.
+ */
 typedef enum {
     MPMediaGroupingTitle,
     MPMediaGroupingAlbum,
@@ -40,6 +49,11 @@ typedef enum {
     MPMediaGroupingPodcastTitle,
 } MPMediaGrouping;
 
+/**
+ * The current playback state of the music.
+ * This is the actual state from the phone, not the change of state seen in
+ * the now playing window.
+ */
 typedef enum {
     MPMusicPlaybackStateStopped,
     MPMusicPlaybackStatePlaying,
@@ -49,20 +63,30 @@ typedef enum {
     MPMusicPlaybackStateSeekingBackward
 } MPMusicPlaybackState;
 
+/**
+ * The repeat mode of the music.
+ */
 typedef enum {
-    MPMusicRepeatModeDefault, // the user's preference for repeat mode
+    MPMusicRepeatModeDefault,
     MPMusicRepeatModeNone,
     MPMusicRepeatModeOne,
     MPMusicRepeatModeAll
 } MPMusicRepeatMode;
 
+/**
+ * The shuffle mode of the music.
+ */
 typedef enum {
-    MPMusicShuffleModeDefault, // the user's preference for shuffle mode
+    MPMusicShuffleModeDefault,
     MPMusicShuffleModeOff,
     MPMusicShuffleModeSongs,
     MPMusicShuffleModeAlbums
 } MPMusicShuffleMode;
 
+/**
+ * The different type of now playing data which is associated
+ * with the currently playing music.
+ */
 typedef enum {
     NowPlayingTitle,
     NowPlayingArtist,
@@ -71,14 +95,39 @@ typedef enum {
     NowPlayingNumbers,
 } NowPlayingType;
 
+/**
+ * An iPodMessage is sent to the phone and is a convenience struct
+ * to package in two crucial pieces of data for function returning.
+ */
 typedef struct {
     DictionaryIterator *iter;
     AppMessageResult result;
 } iPodMessage;
 
+/**
+ * Animates a layer from one frame to another with a length and delay in ms.
+ * @param layer  The layer to animate.
+ * @param start  The starting frame pointer.
+ * @param finish The final frame pointer.
+ * @param length The length of the animation in milliseconds.
+ * @param delay  The delay of the animation from calling this function to when it fires,
+ * in milliseconds as well.
+ */
 void animate_layer(Layer *layer, GRect *start, GRect *finish, int length, int delay);
-iPodMessage *ipod_message_outbox_get();
-void ipod_message_destroy(iPodMessage *message);
-void reset_sequence_number();
 
-#endif
+/**
+ * Prepares for an iPodMessage to be sent to the phone.
+ * @return The prepared iPodMessage pointer.
+ */
+iPodMessage *ipod_message_outbox_get();
+
+/**
+ * Destroys a previously created iPodMessage.
+ * @param message The iPodMessage to destroy.
+ */
+void ipod_message_destroy(iPodMessage *message);
+
+/**
+ * Resets the sequence number of the message going through.
+ */
+void reset_sequence_number();

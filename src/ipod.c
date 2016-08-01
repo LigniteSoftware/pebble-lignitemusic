@@ -1,10 +1,4 @@
-#include <pebble.h>
-
-#include "main_menu.h"
-#include "library_menus.h"
-#include "marquee_text.h"
-#include "ipod_state.h"
-#include "now_playing.h"
+#include <lignite_music.h>
 
 Window *window;
 
@@ -12,9 +6,9 @@ void ipod_init() {
     window = window_create();
     window_stack_push(window, true);
 
-    main_menu_init(window);
-    init_library_menus();
-    ipod_state_init();
+    main_menu_create(window);
+    library_menus_create();
+    ipod_state_create();
 }
 
 void ipod_app_timer_handler() {
@@ -58,9 +52,9 @@ int main() {
     app_message_open(2048, 2048);
     //NSLog("Opening inbox, %d", app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum()));
 
-    tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
+    //tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
 
-    send_test_message();
+    //send_test_message();
 
     ipod_init();
     app_event_loop();

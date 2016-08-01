@@ -1,5 +1,4 @@
-#include <pebble.h>
-#include "common.h"
+#include <lignite_music.h>
 
 static uint32_t s_sequence_number = 0xFFFFFFFE;
 
@@ -15,8 +14,8 @@ void animate_layer(Layer *layer, GRect *start, GRect *finish, int length, int de
     animation_set_duration(property_animation_get_animation(anim), length);
     animation_set_delay(property_animation_get_animation(anim), delay);
 
-	AnimationHandlers handlers = {
-    	.stopped = (AnimationStoppedHandler) on_animation_stopped
+    AnimationHandlers handlers = {
+        .stopped = (AnimationStoppedHandler) on_animation_stopped
     };
     animation_set_handlers(property_animation_get_animation(anim), handlers, NULL);
 

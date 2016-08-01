@@ -83,6 +83,11 @@
             "type": "png",
             "name": "ICON_GENRES",
             "file": "images/genres.png"
+        },
+        {
+            "type":"png",
+            "name":"NO_ALBUM_ART",
+            "file":"images/no_album_art.png"
         }
       ]
       }

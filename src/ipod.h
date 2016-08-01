@@ -1,6 +1,8 @@
-#ifndef ipod_ipod_h
-#define ipod_ipod_h
+#pragma once
 
+#include <lignite_music.h>
+
+/**
+ * The iPod app timer handler callback.
+ */
 void ipod_app_timer_handler();
-
-#endif
