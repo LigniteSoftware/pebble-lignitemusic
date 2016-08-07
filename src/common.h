@@ -20,6 +20,24 @@ but skips the step of adding in the (almost) arbitrary first parameter.
 /**
  * The keys associated with data incoming and outgoing from and to the phone.
  */
+typedef enum {
+    MessageKeyReconnect = 0,
+    MessageKeyRequestLibrary,
+    MessageKeyRequestOffset,
+    MessageKeyLibraryResponse,
+    MessageKeyNowPlaying,
+    MessageKeyRequestParent,
+    MessageKeyPlayTrack,
+    MessageKeyNowPlayingResponseType,
+    MessageKeyAlbumArt,
+    MessageKeyAlbumArtLength,
+    MessageKeyAlbumArtIndex,
+    MessageKeyChangeState,
+    MessageKeyCurrentState,
+    MessageKeySequenceNumber
+} MessageKey;
+
+/*
 #define IPOD_RECONNECT_KEY 0xFEFF
 #define IPOD_REQUEST_LIBRARY_KEY 0xFEFE
 #define IPOD_REQUEST_OFFSET_KEY 0xFEFB
@@ -34,6 +52,7 @@ but skips the step of adding in the (almost) arbitrary first parameter.
 #define IPOD_CHANGE_STATE_KEY 0xFEF3
 #define IPOD_CURRENT_STATE_KEY 0xFEF2
 #define IPOD_SEQUENCE_NUMBER_KEY 0xFEF1
+*/
 
 /**
  * The type of media grouping.

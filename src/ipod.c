@@ -26,14 +26,12 @@ void dropped_inbox(AppMessageResult reason, void *context){
 }
 
 void failed_outbox(DictionaryIterator *iterator, AppMessageResult reason, void *context){
-    NSLog("failed outbox, reason %d", reason);
+    NSLog("Failed outbox, reason %d", reason);
 }
 
 void send_test_message(){
     DictionaryIterator *iter;
-	NSLog("Begin outbox result %d", app_message_outbox_begin(&iter));
-
-	//app_timer_register(1800000, update_weather, NULL);
+	NSLog("Begin test message, outbox begin result of %d", app_message_outbox_begin(&iter));
 
 	if (iter == NULL) {
 		APP_LOG(APP_LOG_LEVEL_ERROR, "Iter is NULL, refusing to send message.");
@@ -43,19 +41,20 @@ void send_test_message(){
 	dict_write_uint16(iter, 200, 1);
 	dict_write_end(iter);
 
-	NSLog("Send result %d", app_message_outbox_send());
+	NSLog("Send result of %d", app_message_outbox_send());
 }
 
 int main() {
+    settings_load();
+
     app_message_register_inbox_dropped(dropped_inbox);
     app_message_register_outbox_failed(failed_outbox);
     app_message_open(2048, 2048);
-    //NSLog("Opening inbox, %d", app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum()));
 
-    //tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
-
-    //send_test_message();
+    tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
 
     ipod_init();
     app_event_loop();
+
+    settings_save();
 }

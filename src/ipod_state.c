@@ -26,7 +26,7 @@ void ipod_state_tick() {
                 free(ipodMessage);
                 return;
             }
-            dict_write_int8(ipodMessage->iter, IPOD_NOW_PLAYING_KEY, 2);
+            dict_write_int8(ipodMessage->iter, MessageKeyNowPlaying, 2);
             app_message_outbox_send();
         }
     }
@@ -79,7 +79,7 @@ void now_playing_request() {
         return;
     }
 
-    dict_write_int8(ipodMessage->iter, IPOD_NOW_PLAYING_KEY, 2);
+    dict_write_int8(ipodMessage->iter, MessageKeyNowPlaying, 2);
     app_message_outbox_send();
 
     ipod_message_destroy(ipodMessage);
@@ -103,7 +103,7 @@ void create_bitmap(){
 }
 
 void process_album_art_tuple(DictionaryIterator *albumArtDict){
-    Tuple *albumArtTuple = dict_find(albumArtDict, IPOD_ALBUM_ART_KEY);
+    Tuple *albumArtTuple = dict_find(albumArtDict, MessageKeyAlbumArt);
     if(albumArtTuple) {
         if(!album_art_data){
             NSLog("Album art data doesn't exist!");
@@ -111,7 +111,7 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
             return;
         }
 
-        Tuple *albumArtIndexTuple = dict_find(albumArtDict, IPOD_ALBUM_ART_INDEX_KEY);
+        Tuple *albumArtIndexTuple = dict_find(albumArtDict, MessageKeyAlbumArtIndex);
         if(!albumArtIndexTuple){
             NSError("Index tuple doesn't exist!");
             return;
@@ -124,7 +124,7 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
         }
     }
     else{
-        Tuple* albumArtLengthTuple = dict_find(albumArtDict, IPOD_ALBUM_ART_LENGTH_KEY);
+        Tuple* albumArtLengthTuple = dict_find(albumArtDict, MessageKeyAlbumArtLength);
         //TODO check this shit
         if(albumArtLengthTuple){
             uint16_t length = albumArtLengthTuple->value->uint16;
@@ -160,7 +160,7 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
 
 void process_tuple(Tuple *tuple, DictionaryIterator *iter){
     uint32_t key = tuple->key;
-    if(key == IPOD_CURRENT_STATE_KEY){
+    if(key == MessageKeyCurrentState){
         NSLog("Is playback info.");
         s_playback_state = tuple->value->data[0];
         s_shuffle_mode = tuple->value->data[1];
@@ -170,11 +170,11 @@ void process_tuple(Tuple *tuple, DictionaryIterator *iter){
         NSLog("Updating callback.");
         call_callback(false);
     }
-    else if(key == IPOD_NOW_PLAYING_RESPONSE_TYPE_KEY){
+    else if(key == MessageKeyNowPlayingResponseType){
         current_type = tuple->value->uint8;
     }
-    else if(key == IPOD_NOW_PLAYING_KEY){
-        Tuple *typeTuple = dict_find(iter, IPOD_NOW_PLAYING_RESPONSE_TYPE_KEY);
+    else if(key == MessageKeyNowPlaying){
+        Tuple *typeTuple = dict_find(iter, MessageKeyNowPlayingResponseType);
         if(!typeTuple){
             NSError("Type tuple doesn't exist!");
             return;
@@ -206,6 +206,9 @@ void process_tuple(Tuple *tuple, DictionaryIterator *iter){
         strncpy(target, tuple->value->cstring, (size_t)len);
         target[len] = '\0';
         call_callback(true);
+    }
+    else if(key == MessageKeyLibraryResponse){
+        library_menus_inbox(iter);
     }
     else{
         process_album_art_tuple(iter);

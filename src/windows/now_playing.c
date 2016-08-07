@@ -1,5 +1,7 @@
 #include <lignite_music.h>
 
+void now_playing_action_bar_handle(bool is_select);
+
 Window *now_playing_window;
 
 ActionBarLayer *control_action_bar;
@@ -13,6 +15,8 @@ GBitmap *now_playing_album_art_bitmap, *no_album_art_bitmap;
 AppTimer *now_playing_timer, *action_bar_timer;
 GColor background_colour;
 GFont artist_font;
+
+Settings now_playing_settings;
 
 static bool controlling_volume = false, is_shown = false;
 static GBitmap *icon_pause, *icon_play, *icon_fast_forward, *icon_rewind, *icon_volume_up, *icon_volume_down;
@@ -35,12 +39,13 @@ void now_playing_send_state_change(NowPlayingState state_change) {
         return;
     }
 
-    dict_write_int8(ipodMessage->iter, IPOD_CHANGE_STATE_KEY, state_change);
+    dict_write_int8(ipodMessage->iter, MessageKeyChangeState, state_change);
     app_message_outbox_send();
 
     ipod_message_destroy(ipodMessage);
 }
 
+bool previous_play_status = false;
 void now_playing_state_callback(bool track_data) {
     if(!is_shown){
         return;
@@ -52,10 +57,16 @@ void now_playing_state_callback(bool track_data) {
         marquee_text_layer_set_text(now_playing_title_layer, ipod_get_title());
     }
     else {
+        if(previous_play_status != now_playing_is_playing_music()){
+            now_playing_action_bar_handle(false);
+        }
+
         action_bar_layer_set_icon(control_action_bar, BUTTON_ID_SELECT,
             now_playing_is_playing_music() ? icon_pause : icon_play);
         progress_bar_layer_set_range(now_playing_progress_bar, 0, ipod_state_duration());
         progress_bar_layer_set_value(now_playing_progress_bar, ipod_state_current_time());
+
+        previous_play_status = now_playing_is_playing_music();
     }
 }
 
@@ -67,16 +78,24 @@ void now_playing_set_album_art(GBitmap *album_art){
 
     now_playing_album_art_bitmap = album_art;
     if(now_playing_album_art_layer){
+        NSLog("Setting album art onto layer.");
         bitmap_layer_set_bitmap(now_playing_album_art_layer, now_playing_album_art_bitmap);
     }
 }
 
 void now_playing_tick() {
-    progress_bar_layer_set_value(now_playing_progress_bar, ipod_state_current_time());
+    static uint8_t current_jump = 0;
+    if(now_playing_progress_bar){
+        if(!now_playing_settings.battery_saver || (now_playing_settings.battery_saver && current_jump == 5)){
+            progress_bar_layer_set_value(now_playing_progress_bar, ipod_state_current_time());
+            current_jump = 0;
+        }
+        current_jump++;
+    }
 }
 
 void now_playing_animation_tick() {
-    if(!is_shown) {
+    if(!is_shown || now_playing_settings.battery_saver) {
         return;
     }
 
@@ -90,13 +109,7 @@ void now_playing_graphics_proc(Layer *layer, GContext *ctx){
     graphics_fill_rect(ctx, GRect((144/2)-(artist_text_size.w/2)-padding, 120, artist_text_size.w+(padding*2), 18), 2, GCornersAll);
 }
 
-bool now_playing_action_bar_is_showing(){
-    Layer *action_bar_layer = action_bar_layer_get_layer(control_action_bar);
-
-    GRect current_frame = layer_get_frame(action_bar_layer);
-
-    return current_frame.origin.x < 120;
-}
+bool now_playing_action_bar_is_showing = true;
 
 void animate_action_bar(void *action_bar_pointer){
     ActionBarLayer *action_bar = (ActionBarLayer*)action_bar_pointer;
@@ -106,20 +119,29 @@ void animate_action_bar(void *action_bar_pointer){
     GRect current_frame = layer_get_frame(action_bar_layer);
     GRect next_frame;
 
-    next_frame = GRect(current_frame.origin.x + (now_playing_action_bar_is_showing() ? (ACTION_BAR_WIDTH) : (-(ACTION_BAR_WIDTH))), current_frame.origin.y, current_frame.size.w, current_frame.size.h);
+    next_frame = GRect(current_frame.origin.x + (now_playing_action_bar_is_showing ? (ACTION_BAR_WIDTH) : (-(ACTION_BAR_WIDTH))), current_frame.origin.y, current_frame.size.w, current_frame.size.h);
 
-    animate_layer(action_bar_layer, &current_frame, &next_frame, 400, 0);
+    animate_layer(action_bar_layer, &current_frame, &next_frame, now_playing_settings.battery_saver ? 50 : 400, 0);
+
+    now_playing_action_bar_is_showing = !now_playing_action_bar_is_showing;
 }
 
+bool action_bar_timer_registered = false;
 void now_playing_action_bar_handle(bool is_select){
-    if(action_bar_timer){
+    if(action_bar_timer_registered){
+        NSWarn("Destroying timer.");
         app_timer_cancel(action_bar_timer);
+        action_bar_timer_registered = false;
     }
-    if(!now_playing_action_bar_is_showing()){
+    if(!now_playing_action_bar_is_showing){
+        NSWarn("Animating actionbar.");
         animate_action_bar(control_action_bar);
+        action_bar_timer_registered = false;
     }
-    if((now_playing_is_playing_music() && !is_select) || (now_playing_action_bar_is_showing() && !now_playing_is_playing_music() && is_select)){
+    if(now_playing_is_playing_music() && !is_select){
+        NSWarn("Registering timer.");
         action_bar_timer = app_timer_register(2000, animate_action_bar, control_action_bar);
+        action_bar_timer_registered = true;
     }
 }
 
@@ -181,6 +203,8 @@ void now_playing_click_config_provider(void* context) {
 void now_playing_window_load(Window* window) {
     Layer *window_layer = window_get_root_layer(window);
 
+    now_playing_settings = settings_get_settings();
+
     icon_pause = gbitmap_create_with_resource(RESOURCE_ID_ICON_PAUSE);
     icon_play = gbitmap_create_with_resource(RESOURCE_ID_ICON_PLAY);
     icon_fast_forward = gbitmap_create_with_resource(RESOURCE_ID_ICON_FAST_FORWARD);
@@ -229,13 +253,14 @@ void now_playing_window_load(Window* window) {
     action_bar_layer_set_icon(control_action_bar, BUTTON_ID_UP, icon_rewind);
     action_bar_layer_set_icon(control_action_bar, BUTTON_ID_SELECT, icon_play);
     controlling_volume = false;
+    previous_play_status = now_playing_is_playing_music();
 
     ipod_state_set_callback(now_playing_state_callback);
 
-    now_playing_request();
-
     is_shown = true;
+    now_playing_state_callback(false);
     now_playing_animation_tick();
+    now_playing_action_bar_handle(false);
 }
 
 void now_playing_window_unload(Window* window) {
