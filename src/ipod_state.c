@@ -116,10 +116,10 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
             NSError("Index tuple doesn't exist!");
             return;
         }
-        size_t index = albumArtIndexTuple->value->uint16 * 499;
+        size_t index = albumArtIndexTuple->value->uint16 * MAX_BYTES;
         memcpy(&album_art_data[index], albumArtTuple->value->data, albumArtTuple->length);
 
-        if(((albumArtIndexTuple->value->uint16 * 499) + albumArtTuple->length) == current_album_art_size){
+        if(((albumArtIndexTuple->value->uint16 * MAX_BYTES) + albumArtTuple->length) == current_album_art_size){
             app_timer_register(125, create_bitmap, NULL);
         }
     }

@@ -17,6 +17,10 @@ but skips the step of adding in the (almost) arbitrary first parameter.
 #define NSError(fmt, args...)                                \
   app_log(APP_LOG_LEVEL_ERROR, __FILE_NAME__, __LINE__, fmt, ## args);
 
+//The max amount of bytes that can be received from the phone at once.
+//(always one less than the value on the companion app)
+#define MAX_BYTES 1499
+
 /**
  * The keys associated with data incoming and outgoing from and to the phone.
  */

@@ -25,11 +25,11 @@ void animate_layer(Layer *layer, GRect *start, GRect *finish, int length, int de
 iPodMessage *ipod_message_outbox_get() {
     iPodMessage *message = malloc(sizeof(iPodMessage));
 
-    NSLog("Alloced message %p", message);
+    //NSLog("Alloced message %p", message);
 
     AppMessageResult result = app_message_outbox_begin(&message->iter);
     message->result = result;
-    NSLog("Result %d. Iter null? %s", message->result, message->iter == NULL ? "yeah" : "nah");
+    //NSLog("Result %d. Iter null? %s", message->result, message->iter == NULL ? "yeah" : "nah");
     if(result != APP_MSG_OK) {
         return message;
     }
