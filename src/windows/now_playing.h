@@ -20,6 +20,12 @@ typedef enum {
 void now_playing_show();
 
 /**
+ * Whether or not the now playing window is already on the stack (created).
+ * @return boolean of whether or not the above is true.
+ */
+bool now_playing_is_shown();
+
+/**
  * Ticks the now playing window, refreshing any data that may need
  * refreshing.
  */

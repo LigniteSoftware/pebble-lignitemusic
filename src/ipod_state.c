@@ -85,9 +85,16 @@ void now_playing_request() {
     ipod_message_destroy(ipodMessage);
 }
 
+bool first_call = true;
 void call_callback(bool track_data) {
+    if(first_call && !track_data){
+        if(s_playback_state == MPMusicPlaybackStatePlaying){
+            now_playing_show();
+        }
+        first_call = false;
+    }
     if(!ipod_state_callback){
-        NSError("State callback doesn't exist! Gutlessly rejecting.");
+        //NSError("State callback doesn't exist! Gutlessly rejecting.");
         return;
     }
     ipod_state_callback(track_data);
@@ -100,6 +107,10 @@ void create_bitmap(){
     album_art_bitmap = gbitmap_create_from_png_data(album_art_data, current_album_art_size);
 
     now_playing_set_album_art(album_art_bitmap);
+
+    free(album_art_data);
+
+    NSLog("Bytes free: %d", heap_bytes_free());
 }
 
 void process_album_art_tuple(DictionaryIterator *albumArtDict){
@@ -161,13 +172,11 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
 void process_tuple(Tuple *tuple, DictionaryIterator *iter){
     uint32_t key = tuple->key;
     if(key == MessageKeyCurrentState){
-        NSLog("Is playback info.");
         s_playback_state = tuple->value->data[0];
         s_shuffle_mode = tuple->value->data[1];
         s_repeat_mode = tuple->value->data[2];
         s_duration = (tuple->value->data[3] << 8) | tuple->value->data[4];
         s_current_time = (tuple->value->data[5] << 8) | tuple->value->data[6];
-        NSLog("Updating callback.");
         call_callback(false);
     }
     else if(key == MessageKeyNowPlayingResponseType){
@@ -216,7 +225,6 @@ void process_tuple(Tuple *tuple, DictionaryIterator *iter){
 }
 
 void ipod_received_handler(DictionaryIterator *iter, void *context){
-    NSLog("Got message from phone");
     Tuple *t = dict_read_first(iter);
     if(t){
         process_tuple(t, iter);

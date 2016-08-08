@@ -190,6 +190,7 @@ void library_menus_inbox(DictionaryIterator *received) {
             }
             j += len;
         }
+        NSLog("Reloading data for menu layer %p", menu->layer);
         menu_layer_reload_data(menu->layer);
     }
 }
@@ -229,7 +230,7 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
     if(pos >= MENU_CACHE_COUNT || pos < 0) {
         return;
     }
-
+    //NSLog("Drawing for position %d", pos);
     menu_cell_basic_draw(ctx, cell_layer, menu->menu_entries[pos], NULL, NULL);
 }
 
@@ -237,26 +238,26 @@ void selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIn
     LibraryMenu *menu = (LibraryMenu*)callback_context;
     int16_t pos = new_index.row - menu->current_entry_offset;
     menu->current_selection = new_index.row;
-    NSLog("New selection is %d", menu->current_selection);
+    //NSLog("New selection is %d", menu->current_selection);
     bool down = new_index.row > old_index.row;
 
     if(down) {
-        NSLog("Down");
+        //NSLog("Down");
         if(pos >= menu->last_entry - 4) {
-            NSLog("%d (pos) >= %d (menu->last_entry - 4)", pos, (menu->last_entry - 4));
+            //NSLog("%d (pos) >= %d (menu->last_entry - 4)", pos, (menu->last_entry - 4));
             if(menu->current_entry_offset + menu->last_entry >= menu->total_entry_count-1) {
-                NSLog("%d (menu->current_entry_offset + menu->last_entry) >= %d (menu->total_entry_count)", (menu->current_entry_offset + menu->last_entry), menu->total_entry_count);
+                //NSLog("%d (menu->current_entry_offset + menu->last_entry) >= %d (menu->total_entry_count)", (menu->current_entry_offset + menu->last_entry), menu->total_entry_count);
                 return;
             }
             else{
-                NSLog("%d (menu->current_entry_offset + menu->last_entry) AND %d (menu->total_entry_count)", (menu->current_entry_offset + menu->last_entry), menu->total_entry_count);
+                //NSLog("%d (menu->current_entry_offset + menu->last_entry) AND %d (menu->total_entry_count)", (menu->current_entry_offset + menu->last_entry), menu->total_entry_count);
             }
             send_library_request(menu->grouping, menu->last_entry + menu->current_entry_offset);
         }
     } else {
-        NSLog("Up");
+        //NSLog("Up");
         if(pos < 5 && menu->current_entry_offset > 0) {
-            NSLog("pos < 5 && menu->current_entry_offset > 0");
+            //NSLog("pos < 5 && menu->current_entry_offset > 0");
             send_library_request(menu->grouping, menu->current_entry_offset > 5 ? menu->current_entry_offset - 5 : 0);
         }
     }

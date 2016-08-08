@@ -97,7 +97,7 @@ void main_menu_create(Window* window) {
     menu_layer_set_click_config_onto_window(main_menu_layer, window);
     layer_add_child(window_get_root_layer(window), menu_layer_get_layer(main_menu_layer));
 
-    //app_timer_register(250, now_playing_request, NULL);
+    app_timer_register(250, now_playing_request, NULL);
 }
 
 void open_now_playing(int index, void *context) {

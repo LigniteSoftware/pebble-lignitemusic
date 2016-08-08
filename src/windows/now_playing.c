@@ -7,7 +7,7 @@ Window *now_playing_window;
 ActionBarLayer *control_action_bar;
 BitmapLayer *now_playing_album_art_layer;
 Layer *now_playing_graphics_layer;
-MarqueeTextLayer *now_playing_title_layer, *now_playing_album_layer, *now_playing_artist_layer;
+MarqueeTextLayer *now_playing_title_layer, *now_playing_artist_layer;
 ProgressBarLayer *now_playing_progress_bar;
 
 GBitmap *now_playing_album_art_bitmap, *no_album_art_bitmap;
@@ -52,7 +52,6 @@ void now_playing_state_callback(bool track_data) {
     }
 
     if(track_data) {
-        marquee_text_layer_set_text(now_playing_album_layer, ipod_get_album());
         marquee_text_layer_set_text(now_playing_artist_layer, ipod_get_artist());
         marquee_text_layer_set_text(now_playing_title_layer, ipod_get_title());
     }
@@ -128,14 +127,14 @@ void animate_action_bar(void *action_bar_pointer){
 
 bool action_bar_timer_registered = false;
 void now_playing_action_bar_handle(bool is_select){
+    if(!now_playing_action_bar_is_showing){
+        NSWarn("Animating actionbar to show.");
+        animate_action_bar(control_action_bar);
+        action_bar_timer_registered = false;
+    }
     if(action_bar_timer_registered){
         NSWarn("Destroying timer.");
         app_timer_cancel(action_bar_timer);
-        action_bar_timer_registered = false;
-    }
-    if(!now_playing_action_bar_is_showing){
-        NSWarn("Animating actionbar.");
-        animate_action_bar(control_action_bar);
         action_bar_timer_registered = false;
     }
     if(now_playing_is_playing_music() && !is_select){
@@ -232,11 +231,6 @@ void now_playing_window_load(Window* window) {
     marquee_text_layer_set_text(now_playing_title_layer, ipod_get_title());
     layer_add_child(window_layer, marquee_text_layer_get_layer(now_playing_title_layer));
 
-    now_playing_album_layer = marquee_text_layer_create(GRect(2, 130, 112, 23));
-    marquee_text_layer_set_font(now_playing_album_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-    marquee_text_layer_set_text(now_playing_album_layer, ipod_get_album());
-    //layer_add_child(window_layer, marquee_text_layer_get_layer(now_playing_title_layer));
-
     artist_font = fonts_get_system_font(FONT_KEY_GOTHIC_14);
     now_playing_artist_layer = marquee_text_layer_create(GRect(22, 119, 100, 24));
     marquee_text_layer_set_font(now_playing_artist_layer, artist_font);
@@ -253,6 +247,7 @@ void now_playing_window_load(Window* window) {
     action_bar_layer_set_icon(control_action_bar, BUTTON_ID_UP, icon_rewind);
     action_bar_layer_set_icon(control_action_bar, BUTTON_ID_SELECT, icon_play);
     controlling_volume = false;
+    now_playing_action_bar_is_showing = true;
     previous_play_status = now_playing_is_playing_music();
 
     ipod_state_set_callback(now_playing_state_callback);
@@ -261,17 +256,22 @@ void now_playing_window_load(Window* window) {
     now_playing_state_callback(false);
     now_playing_animation_tick();
     now_playing_action_bar_handle(false);
+
+    NSLog("Bytes free after load: %d", heap_bytes_free());
 }
 
 void now_playing_window_unload(Window* window) {
     action_bar_layer_destroy(control_action_bar);
 
     marquee_text_layer_destroy(now_playing_title_layer);
-    marquee_text_layer_destroy(now_playing_album_layer);
     marquee_text_layer_destroy(now_playing_artist_layer);
 
     progress_bar_layer_destroy(now_playing_progress_bar);
+    now_playing_progress_bar = NULL;
 
+    layer_destroy(now_playing_graphics_layer);
+
+    gbitmap_destroy(no_album_art_bitmap);
     gbitmap_destroy(icon_pause);
     gbitmap_destroy(icon_play);
     gbitmap_destroy(icon_fast_forward);
@@ -279,8 +279,15 @@ void now_playing_window_unload(Window* window) {
     gbitmap_destroy(icon_volume_up);
     gbitmap_destroy(icon_volume_down);
 
+    bitmap_layer_destroy(now_playing_album_art_layer);
+
     ipod_state_set_callback(NULL);
+
+    window_destroy(now_playing_window);
+
     is_shown = false;
+
+    NSLog("Bytes free after unload: %d", heap_bytes_free());
 }
 
 void now_playing_show() {
@@ -294,4 +301,8 @@ void now_playing_show() {
     });
 
     window_stack_push(now_playing_window, true);
+}
+
+bool now_playing_is_shown(){
+    return is_shown;
 }
