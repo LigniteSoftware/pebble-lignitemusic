@@ -1,7 +1,6 @@
 {
     "targetPlatforms": [
-        "basalt", 
-        "chalk"
+        "basalt"
     ], 
     "displayName": "Lignite Music", 
     "name": "Lignite Music", 

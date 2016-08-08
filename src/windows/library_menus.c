@@ -1,21 +1,5 @@
 #include <lignite_music.h>
 
-#define MENU_CACHE_COUNT 25
-#define MENU_ENTRY_LENGTH 21
-#define MENU_STACK_DEPTH 4 // Deepest: genres -> artists -> albums -> songs
-#define MAX_MENU_ENTRIES 725
-
-typedef struct {
-    MenuLayer *layer;
-    Window *window;
-    char menu_entries[MENU_CACHE_COUNT][MENU_ENTRY_LENGTH];
-    uint16_t total_entry_count;
-    uint16_t current_entry_offset;
-    uint16_t last_entry;
-    uint16_t current_selection;
-    MPMediaGrouping grouping;
-} LibraryMenu;
-
 LibraryMenu *menu_stack[MENU_STACK_DEPTH];
 int8_t menu_stack_count;
 
@@ -39,12 +23,9 @@ bool build_parent_history(DictionaryIterator *iter) {
         uint8_t parents[MENU_STACK_DEPTH*3+1];
         parents[0] = menu_stack_count;
         for(uint8_t i = 0; i < menu_stack_count; ++i) {
-            uint16_t current_selection = menu_stack[i]->current_selection;
-            uint16_t second_current_selection = menu_stack[i]->current_selection;
-            NSLog("Current selection is %d for %d", current_selection, i);
             parents[i*3+1] = menu_stack[i]->grouping;
-            parents[i*3+3] = current_selection >> 8;
-            parents[i*3+2] = current_selection & 0xFF;
+            parents[i*3+3] = menu_stack[i]->current_selection >> 8;
+            parents[i*3+2] = menu_stack[i]->current_selection & 0xFF;
         }
         if(dict_write_data(iter, MessageKeyRequestParent, parents, ARRAY_LENGTH(parents)) != DICT_OK) {
             return false;
@@ -84,6 +65,13 @@ bool play_track(uint16_t index) {
     return true;
 }
 
+void clear_library_entry_data(LibraryMenuEntryData *data){
+    data->total_entry_count = 0;
+    data->current_entry_offset = 0;
+    data->last_entry = 0;
+    memset(data->entries, 0, MENU_CACHE_COUNT * MENU_ENTRY_LENGTH);
+}
+
 void library_menus_display_view(MPMediaGrouping grouping) {
     if(menu_stack_count >= MENU_STACK_DEPTH){
         NSError("Depth of menu stack too great at %d! Rejecting.", menu_stack_count);
@@ -101,11 +89,12 @@ void library_menus_display_view(MPMediaGrouping grouping) {
 
     LibraryMenu* menu = menu_stack[menu_stack_count];
     menu->grouping = grouping;
-    menu->total_entry_count = 0;
-    menu->current_entry_offset = 0;
-    menu->last_entry = 0;
     menu->current_selection = 0;
-    memset(menu->menu_entries, 0, MENU_CACHE_COUNT * MENU_ENTRY_LENGTH);
+
+    menu->titles = malloc(sizeof(LibraryMenuEntryData));
+    menu->subtitles = malloc(sizeof(LibraryMenuEntryData));
+    clear_library_entry_data(menu->titles);
+    clear_library_entry_data(menu->subtitles);
 
     menu->window = window_create();
 
@@ -130,6 +119,21 @@ void library_menus_display_view(MPMediaGrouping grouping) {
     send_library_request(grouping, 0);
 }
 
+void log_data(LibraryMenuEntryData *data){
+    NSLog("LibraryMenuEntryData %p:", data);
+    /*
+
+    char entries[MENU_CACHE_COUNT][MENU_ENTRY_LENGTH];
+    uint16_t total_entry_count;
+    uint16_t current_entry_offset;
+    uint16_t last_entry;
+     */
+    NSLog("total_entry_count: %d", data->total_entry_count);
+    NSLog("current_entry_offset: %d", data->current_entry_offset);
+    NSLog("last_entry: %d", data->last_entry);
+    NSLog("third entry: %s", data->entries[2]);
+}
+
 void library_menus_inbox(DictionaryIterator *received) {
     NSLog("Menu message");
     if(menu_stack_count == -1) {
@@ -141,28 +145,35 @@ void library_menus_inbox(DictionaryIterator *received) {
     LibraryMenu *menu = menu_stack[menu_stack_count];
     if(tuple) {
         MPMediaGrouping grouping = tuple->value->data[0];
+        bool is_subtitles = false;
         if(grouping != menu->grouping){
-            NSError("grouping != menu->grouping!");
-            return; // Not what we wanted.
+            is_subtitles = (menu->grouping == MPMediaGroupingAlbum && grouping == MPMediaGroupingAlbumArtist);
+
+            if(!is_subtitles){
+                NSError("grouping != menu->grouping!");
+                return; // Not what we wanted.
+            }
         }
         uint32_t total_size = tuple->value->data[1];
         uint32_t offset = tuple->value->data[3];
 
-        NSLog("Got total size %d, offset %d", (int)total_size, (int)offset);
+        NSLog("Got total size %d, offset %d, is_subtitles %d", (int)total_size, (int)offset, is_subtitles);
 
-        int8_t insert_pos = offset - menu->current_entry_offset;
-        menu->total_entry_count = total_size;
+        LibraryMenuEntryData *entry_data = is_subtitles ? menu->subtitles : menu->titles;
+
+        int8_t insert_pos = offset - entry_data->current_entry_offset;
+        entry_data->total_entry_count = total_size;
         uint8_t skipping = 0;
         if(insert_pos < 0) {
             // Don't go further than 5 back.
             if(insert_pos < -5) {
                 skipping = -5 - insert_pos;
             }
-            memmove(&menu->menu_entries[5], &menu->menu_entries[0], (MENU_CACHE_COUNT - 5) * MENU_ENTRY_LENGTH);
-            menu->last_entry += 5;
-            menu->current_entry_offset = (menu->current_entry_offset < 5) ? 0 : menu->current_entry_offset - 5;
-            if(menu->last_entry >= MENU_CACHE_COUNT){
-                menu->last_entry = MENU_CACHE_COUNT - 1;
+            memmove(&entry_data->entries[5], &entry_data->entries[0], (MENU_CACHE_COUNT - 5) * MENU_ENTRY_LENGTH);
+            entry_data->last_entry += 5;
+            entry_data->current_entry_offset = (entry_data->current_entry_offset < 5) ? 0 : entry_data->current_entry_offset - 5;
+            if(entry_data->last_entry >= MENU_CACHE_COUNT){
+                entry_data->last_entry = MENU_CACHE_COUNT - 1;
             }
             insert_pos = 0;
         }
@@ -172,30 +183,35 @@ void library_menus_inbox(DictionaryIterator *received) {
                 skipping--;
             }
             else {
-                memset(menu->menu_entries[i], 0, MENU_ENTRY_LENGTH);
-                memcpy(menu->menu_entries[i], &tuple->value->data[j], len < MENU_ENTRY_LENGTH - 1 ? len : MENU_ENTRY_LENGTH - 1);
-                if(i > menu->last_entry) {
-                    menu->last_entry = i;
+                memset(entry_data->entries[i], 0, MENU_ENTRY_LENGTH);
+                memcpy(entry_data->entries[i], &tuple->value->data[j], len < MENU_ENTRY_LENGTH - 1 ? len : MENU_ENTRY_LENGTH - 1);
+                if(i > entry_data->last_entry) {
+                    entry_data->last_entry = i;
                 }
                 if(i == MENU_CACHE_COUNT - 1) {
                     // Shift back if we're out of space, unless we're too far ahead already.
-                    if(menu->current_selection - menu->current_entry_offset <= 10){
+                    if(menu->current_selection - entry_data->current_entry_offset <= 10){
                         break;
                     }
-                    memmove(&menu->menu_entries[0], &menu->menu_entries[5], (MENU_CACHE_COUNT - 5) * MENU_ENTRY_LENGTH);
-                    menu->last_entry -= 5;
-                    menu->current_entry_offset += 5;
+                    memmove(&entry_data->entries[0], &entry_data->entries[5], (MENU_CACHE_COUNT - 5) * MENU_ENTRY_LENGTH);
+                    entry_data->last_entry -= 5;
+                    entry_data->current_entry_offset += 5;
                     i -= 5;
                 }
             }
             j += len;
         }
+
+        NSLog("--- Titles ---");
+        log_data(menu->titles);
+        NSLog("--- Subtitles ---");
+        log_data(menu->subtitles);
+
         NSLog("Reloading data for menu layer %p", menu->layer);
         menu_layer_reload_data(menu->layer);
     }
 }
 
-// Window callbacks
 void library_menus_window_unload(Window* window) {
     if(menu_stack_count > -1){
         menu_stack_count--;
@@ -213,52 +229,51 @@ void library_menus_window_unload(Window* window) {
     if(library_menu != NULL){
         menu_layer_destroy(library_menu->layer);
         window_destroy(library_menu->window);
+        free(library_menu->titles);
+        free(library_menu->subtitles);
+
         free(library_menu);
         menu_stack[i] = NULL;
     }
 }
 
-// Menu callbacks
 uint16_t get_num_rows(MenuLayer* layer, uint16_t section_index, void* context) {
-    uint16_t total_count = ((LibraryMenu*)context)->total_entry_count;
+    uint16_t total_count = ((LibraryMenu*)context)->titles->total_entry_count;
     return total_count < MAX_MENU_ENTRIES ? total_count : MAX_MENU_ENTRIES;
 }
 
 void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context) {
     LibraryMenu *menu = (LibraryMenu*)callback_context;
-    int16_t pos = cell_index->row - menu->current_entry_offset;
+    int16_t pos = cell_index->row - menu->titles->current_entry_offset;
     if(pos >= MENU_CACHE_COUNT || pos < 0) {
         return;
     }
     //NSLog("Drawing for position %d", pos);
-    menu_cell_basic_draw(ctx, cell_layer, menu->menu_entries[pos], NULL, NULL);
+    if(strcmp(menu->subtitles->entries[pos], "") == 0){
+        menu_cell_basic_draw(ctx, cell_layer, menu->titles->entries[pos], NULL, NULL);
+    }
+    else{
+        menu_cell_basic_draw(ctx, cell_layer, menu->titles->entries[pos], menu->subtitles->entries[pos], NULL);
+    }
 }
 
 void selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context) {
     LibraryMenu *menu = (LibraryMenu*)callback_context;
-    int16_t pos = new_index.row - menu->current_entry_offset;
+    int16_t pos = new_index.row - menu->titles->current_entry_offset;
     menu->current_selection = new_index.row;
     //NSLog("New selection is %d", menu->current_selection);
     bool down = new_index.row > old_index.row;
 
     if(down) {
-        //NSLog("Down");
-        if(pos >= menu->last_entry - 4) {
-            //NSLog("%d (pos) >= %d (menu->last_entry - 4)", pos, (menu->last_entry - 4));
-            if(menu->current_entry_offset + menu->last_entry >= menu->total_entry_count-1) {
-                //NSLog("%d (menu->current_entry_offset + menu->last_entry) >= %d (menu->total_entry_count)", (menu->current_entry_offset + menu->last_entry), menu->total_entry_count);
+        if(pos >= menu->titles->last_entry - 4) {
+            if(menu->titles->current_entry_offset + menu->titles->last_entry >= menu->titles->total_entry_count-1) {
                 return;
             }
-            else{
-                //NSLog("%d (menu->current_entry_offset + menu->last_entry) AND %d (menu->total_entry_count)", (menu->current_entry_offset + menu->last_entry), menu->total_entry_count);
-            }
-            send_library_request(menu->grouping, menu->last_entry + menu->current_entry_offset);
+            send_library_request(menu->grouping, menu->titles->last_entry + menu->titles->current_entry_offset);
         }
     } else {
-        //NSLog("Up");
-        if(pos < 5 && menu->current_entry_offset > 0) {
-            //NSLog("pos < 5 && menu->current_entry_offset > 0");
-            send_library_request(menu->grouping, menu->current_entry_offset > 5 ? menu->current_entry_offset - 5 : 0);
+        if(pos < 5 && menu->titles->current_entry_offset > 0) {
+            send_library_request(menu->grouping, menu->titles->current_entry_offset > 5 ? menu->titles->current_entry_offset - 5 : 0);
         }
     }
 }
