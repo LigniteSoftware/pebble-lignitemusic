@@ -10,6 +10,9 @@ void message_window_update_proc(Layer *layer, GContext *ctx){
 void message_window_update_frames(MessageWindow *window){
     GSize icon_size = gbitmap_get_bounds(bitmap_layer_get_bitmap(window->icon_layer)).size;
 
+    GSize text_size = graphics_text_layout_get_content_size_with_attributes(window->message[0],
+        GFon, const GRect box, const GTextOverflowMode overflow_mode, const GTextAlignment alignment, GTextAttributes * text_attributes)
+
     Layer *icon_layer_root_layer = bitmap_layer_get_layer(window->icon_layer);
     GRect icon_layer_frame = GRect(0, (168/2)-icon_size.h, 144, icon_size.h);
     layer_set_frame(icon_layer_root_layer, icon_layer_frame);

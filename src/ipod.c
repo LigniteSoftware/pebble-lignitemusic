@@ -25,8 +25,23 @@ void dropped_inbox(AppMessageResult reason, void *context){
     NSLog("Dropped inbox, reason %d", reason);
 }
 
+void auto_destroy_error_window(void *window){
+    MessageWindow *message_window = (MessageWindow*)window;
+    message_window_destroy(message_window);
+}
+
 void failed_outbox(DictionaryIterator *iterator, AppMessageResult reason, void *context){
     NSLog("Failed outbox, reason %d", reason);
+
+    MessageWindow *failed_outbox = message_window_create();
+    static char outbox_buffer[65];
+    snprintf(outbox_buffer, sizeof(outbox_buffer), "Error B-%d. This usually means the app isn't open on your phone.", reason);
+    message_window_set_text(failed_outbox, outbox_buffer);
+    message_window_push_on_window(failed_outbox, window_stack_get_top_window(), true);
+
+    vibes_long_pulse();
+
+    app_timer_register(5000, auto_destroy_error_window, failed_outbox);
 }
 
 void send_test_message(){

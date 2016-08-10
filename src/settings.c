@@ -22,6 +22,8 @@ void settings_set_settings(Settings new_settings){
     }
 }
 
+//Prepares the current settings struct with default settings in case settings
+//don't exist.
 void settings_prepare_defaults(){
     current_settings.battery_saver = false;
     current_settings.pebble_controls = false;

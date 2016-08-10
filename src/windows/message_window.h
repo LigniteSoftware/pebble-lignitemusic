@@ -6,7 +6,7 @@ typedef struct {
     TextLayer *message_layer;
     BitmapLayer *icon_layer;
     GBitmap *icon;
-    char message[1][60];
+    char message[1][65];
     bool destroy_bitmap;
     bool is_pushed;
 } MessageWindow;
