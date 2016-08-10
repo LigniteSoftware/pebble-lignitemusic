@@ -12,14 +12,16 @@ ProgressBarLayer *now_playing_progress_bar;
 
 GBitmap *now_playing_album_art_bitmap, *no_album_art_bitmap;
 
-AppTimer *now_playing_timer, *action_bar_timer;
+AppTimer *now_playing_timer, *action_bar_timer, *invert_controls_timer;
 GColor background_colour;
 GFont artist_font;
 
 Settings now_playing_settings;
 
 static bool controlling_volume = false, is_shown = false;
-static GBitmap *icon_pause, *icon_play, *icon_fast_forward, *icon_rewind, *icon_volume_up, *icon_volume_down;
+static GBitmap *icon_pause, *icon_play, *icon_fast_forward, *icon_rewind, *icon_volume_up, *icon_volume_down, *icon_more;
+
+bool pebble_controls_pushed_select = false;
 
 /*
  * When there is no album art available (either still loading or the phone has said so), call this
@@ -71,8 +73,21 @@ void now_playing_state_callback(bool track_data) {
             now_playing_action_bar_handle(false);
         }
 
-        action_bar_layer_set_icon(control_action_bar, BUTTON_ID_SELECT,
-            now_playing_is_playing_music() ? icon_pause : icon_play);
+        if(now_playing_settings.pebble_controls){
+            if(controlling_volume){
+                action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_SELECT,
+                    now_playing_is_playing_music() ? icon_pause : icon_play, true);
+            }
+            else{
+                action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_SELECT,
+                    now_playing_is_playing_music() ? icon_more : icon_play, true);
+                    pebble_controls_pushed_select = false;
+            }
+        }
+        else{
+        action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_SELECT,
+            now_playing_is_playing_music() ? icon_pause : icon_play, true);
+        }
         progress_bar_layer_set_range(now_playing_progress_bar, 0, ipod_state_duration());
         progress_bar_layer_set_value(now_playing_progress_bar, ipod_state_current_time());
 
@@ -162,11 +177,40 @@ void now_playing_action_bar_handle(bool is_select){
         app_timer_cancel(action_bar_timer);
         action_bar_timer_registered = false;
     }
-    if(now_playing_is_playing_music() && !is_select){
+    if(now_playing_is_playing_music() && (!is_select || now_playing_settings.pebble_controls)){
         NSWarn("Registering timer.");
-        action_bar_timer = app_timer_register(2000, animate_action_bar, control_action_bar);
+        action_bar_timer = app_timer_register(now_playing_settings.pebble_controls ? 3500 : 2000, animate_action_bar, control_action_bar);
         action_bar_timer_registered = true;
     }
+}
+
+void now_playing_invert_button_controls(){
+    controlling_volume = !controlling_volume;
+    if(controlling_volume) {
+        action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_UP, icon_volume_up, true);
+        action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_DOWN, icon_volume_down, true);
+    }
+    else {
+        action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_DOWN, icon_fast_forward, true);
+        action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_UP, icon_rewind, true);
+    }
+    if(now_playing_settings.pebble_controls){
+        if(now_playing_is_playing_music()){
+            action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_SELECT, controlling_volume ? icon_pause : icon_more, true);
+            pebble_controls_pushed_select = false;
+        }
+        invert_controls_timer = NULL;
+    }
+}
+
+void now_playing_reset_invert_controls(){
+    if(!now_playing_settings.pebble_controls){
+        return;
+    }
+    if(invert_controls_timer){
+        app_timer_cancel(invert_controls_timer);
+    }
+    invert_controls_timer = app_timer_register(3000, now_playing_invert_button_controls, NULL);
 }
 
 void now_playing_clicked_up(ClickRecognizerRef recognizer, void *context) {
@@ -175,13 +219,28 @@ void now_playing_clicked_up(ClickRecognizerRef recognizer, void *context) {
     }
     else {
         now_playing_send_state_change(NowPlayingStateVolumeUp);
+        now_playing_reset_invert_controls();
     }
     now_playing_action_bar_handle(false);
 }
 
 void now_playing_clicked_select(ClickRecognizerRef recognizer, void *context) {
-    now_playing_send_state_change(NowPlayingStatePlayPause);
-
+    if(now_playing_settings.pebble_controls){
+        if(!now_playing_is_playing_music()){
+            now_playing_send_state_change(NowPlayingStatePlayPause);
+        }
+        else if(!pebble_controls_pushed_select){
+            now_playing_invert_button_controls();
+            now_playing_reset_invert_controls();
+        }
+        else{
+            now_playing_send_state_change(NowPlayingStatePlayPause);
+        }
+        pebble_controls_pushed_select = true;
+    }
+    else{
+        now_playing_send_state_change(NowPlayingStatePlayPause);
+    }
     now_playing_action_bar_handle(true);
 }
 
@@ -191,20 +250,17 @@ void now_playing_clicked_down(ClickRecognizerRef recognizer, void *context) {
     }
     else {
         now_playing_send_state_change(NowPlayingStateVolumeDown);
+        now_playing_reset_invert_controls();
     }
     now_playing_action_bar_handle(false);
 }
 
 void now_playing_long_clicked_select(ClickRecognizerRef recognizer, void *context) {
-    controlling_volume = !controlling_volume;
-    if(controlling_volume) {
-        action_bar_layer_set_icon(control_action_bar, BUTTON_ID_UP, icon_volume_up);
-        action_bar_layer_set_icon(control_action_bar, BUTTON_ID_DOWN, icon_volume_down);
+    if(now_playing_settings.pebble_controls){
+        return;
     }
-    else {
-        action_bar_layer_set_icon(control_action_bar, BUTTON_ID_DOWN, icon_fast_forward);
-        action_bar_layer_set_icon(control_action_bar, BUTTON_ID_UP, icon_rewind);
-    }
+
+    now_playing_invert_button_controls();
 
     static const uint32_t const segments[] = { 50, 0 };
     VibePattern pattern = {
@@ -240,6 +296,16 @@ void now_playing_new_settings(Settings new_settings){
 
     layer_mark_dirty(now_playing_graphics_layer);
 
+    if(new_settings.pebble_controls){
+        action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_SELECT, now_playing_is_playing_music() ? icon_more : icon_play, true);
+        if(controlling_volume){
+            now_playing_invert_button_controls();
+        }
+    }
+    else{
+        action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_SELECT, now_playing_is_playing_music() ? icon_pause : icon_play, true);
+    }
+
     app_timer_cancel(now_playing_timer);
     now_playing_animation_tick();
 }
@@ -251,14 +317,13 @@ void now_playing_window_load(Window* window) {
 
     icon_pause = gbitmap_create_with_resource(RESOURCE_ID_ICON_PAUSE);
     icon_play = gbitmap_create_with_resource(RESOURCE_ID_ICON_PLAY);
-    icon_fast_forward = gbitmap_create_with_resource(RESOURCE_ID_ICON_FAST_FORWARD);
-    icon_rewind = gbitmap_create_with_resource(RESOURCE_ID_ICON_REWIND);
+    icon_fast_forward = gbitmap_create_with_resource(RESOURCE_ID_ICON_NEXT_SONG);
+    icon_rewind = gbitmap_create_with_resource(RESOURCE_ID_ICON_LAST_SONG);
     icon_volume_up = gbitmap_create_with_resource(RESOURCE_ID_ICON_VOLUME_UP);
     icon_volume_down = gbitmap_create_with_resource(RESOURCE_ID_ICON_VOLUME_DOWN);
+    icon_more = gbitmap_create_with_resource(RESOURCE_ID_ICON_MORE);
 
-    NSLog("Before creation %d", heap_bytes_free());
     no_album_art_bitmap = gbitmap_create_with_resource(RESOURCE_ID_NO_ALBUM_ART);
-    NSLog("After creation %d", heap_bytes_free());
 
     now_playing_album_art_layer = bitmap_layer_create(GRect(0, 0, 144, 144));
     if(now_playing_album_art_bitmap){
@@ -292,9 +357,9 @@ void now_playing_window_load(Window* window) {
     control_action_bar = action_bar_layer_create();
     action_bar_layer_add_to_window(control_action_bar, window);
     action_bar_layer_set_click_config_provider(control_action_bar, now_playing_click_config_provider);
-    action_bar_layer_set_icon(control_action_bar, BUTTON_ID_DOWN, icon_fast_forward);
-    action_bar_layer_set_icon(control_action_bar, BUTTON_ID_UP, icon_rewind);
-    action_bar_layer_set_icon(control_action_bar, BUTTON_ID_SELECT, icon_play);
+    action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_DOWN, icon_fast_forward, false);
+    action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_UP, icon_rewind, false);
+    action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_SELECT, icon_play, false);
     controlling_volume = false;
     now_playing_action_bar_is_showing = true;
     previous_play_status = now_playing_is_playing_music();
@@ -303,18 +368,21 @@ void now_playing_window_load(Window* window) {
 
     is_shown = true;
     now_playing_state_callback(false);
-    now_playing_animation_tick();
     now_playing_action_bar_handle(false);
+
+    now_playing_new_settings(settings_get_settings());
 
     library_menus_pop_all();
 
     settings_service_subscribe(now_playing_new_settings);
-
-    NSLog("Bytes free after load: %d", heap_bytes_free());
 }
 
 void now_playing_window_unload(Window* window) {
     action_bar_layer_destroy(control_action_bar);
+
+    if(invert_controls_timer){
+        app_timer_cancel(invert_controls_timer);
+    }
 
     marquee_text_layer_destroy(now_playing_title_layer);
     marquee_text_layer_destroy(now_playing_artist_layer);
@@ -339,8 +407,6 @@ void now_playing_window_unload(Window* window) {
     window_destroy(now_playing_window);
 
     is_shown = false;
-
-    NSLog("Bytes free after unload: %d", heap_bytes_free());
 }
 
 void now_playing_show() {

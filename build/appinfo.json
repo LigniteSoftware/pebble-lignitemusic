@@ -7,7 +7,7 @@
     "messageKeys": {}, 
     "companyName": "Edwin Finch", 
     "enableMultiJS": false, 
-    "versionLabel": "0.2", 
+    "versionLabel": "0.3", 
     "capabilities": [], 
     "sdkVersion": "3", 
     "appKeys": {}, 
@@ -40,13 +40,13 @@
             }, 
             {
                 "type": "png", 
-                "name": "ICON_FAST_FORWARD", 
-                "file": "images/ff.png"
+                "name": "ICON_NEXT_SONG", 
+                "file": "images/next_song.png"
             }, 
             {
                 "type": "png", 
-                "name": "ICON_REWIND", 
-                "file": "images/rw.png"
+                "name": "ICON_LAST_SONG", 
+                "file": "images/last_song.png"
             }, 
             {
                 "type": "png", 
@@ -87,6 +87,11 @@
                 "type": "png", 
                 "name": "ICON_TITLE", 
                 "file": "images/title.png"
+            }, 
+            {
+                "type": "png", 
+                "name": "ICON_MORE", 
+                "file": "images/more.png"
             }
         ]
     }, 

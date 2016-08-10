@@ -7,12 +7,17 @@
  * The settings struct contains user specific settings about the configuration
  * of the watchapp.
  *
- * @member battery_saver Whether or not battery saving mode is enabled. If so,
+ * @member battery_saver   Whether or not battery saving mode is enabled. If so,
  * text scrolling is disabled and screen update intervals are greatly reduced.
+ * @member artist_label    Whether or not the artist should show on the now
+ * playing screen.
+ * @member pebble_controls If enabled, controls will mimic the default Pebble
+ * music app controls.
  */
 typedef struct {
     bool battery_saver;
     bool artist_label;
+    bool pebble_controls;
 } Settings;
 
 /**
