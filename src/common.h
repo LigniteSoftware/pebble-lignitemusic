@@ -38,7 +38,9 @@ typedef enum {
     MessageKeyAlbumArtIndex,
     MessageKeyChangeState,
     MessageKeyCurrentState,
-    MessageKeySequenceNumber
+    MessageKeySequenceNumber,
+    MessageKeySettingBatterySaver = 100,
+    MessageKeySettingArtistLabel = 101
 } MessageKey;
 
 /*

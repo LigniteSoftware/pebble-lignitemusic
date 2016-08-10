@@ -2,8 +2,13 @@
 
 Settings current_settings;
 
+SettingsCallback current_callback;
+
+void settings_service_subscribe(SettingsCallback settings_callback){
+    current_callback = settings_callback;
+}
+
 Settings settings_get_settings(){
-    current_settings.battery_saver = false;
     return current_settings;
 }
 
@@ -11,6 +16,10 @@ void settings_set_settings(Settings new_settings){
     current_settings = new_settings;
 
     settings_save();
+
+    if(current_callback){
+        current_callback(current_settings);
+    }
 }
 
 int settings_load(){

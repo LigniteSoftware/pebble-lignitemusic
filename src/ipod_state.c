@@ -229,6 +229,24 @@ void process_tuple(Tuple *tuple, DictionaryIterator *iter){
     else if(key == MessageKeyLibraryResponse){
         library_menus_inbox(iter);
     }
+    else if(key == MessageKeySettingBatterySaver){
+        NSLog("Got key %d with value %d", (int)key, tuple->value->uint8);
+
+        Settings current_settings = settings_get_settings();
+        current_settings.battery_saver = tuple->value->uint8;
+        settings_set_settings(current_settings);
+        
+        vibes_double_pulse();
+    }
+    else if(key == MessageKeySettingArtistLabel){
+        NSLog("Got key %d with value %d", (int)key, tuple->value->uint8);
+
+        Settings current_settings = settings_get_settings();
+        current_settings.artist_label = tuple->value->uint8;
+        settings_set_settings(current_settings);
+        
+        vibes_double_pulse();
+    }
     else{
         process_album_art_tuple(iter);
     }

@@ -12,7 +12,19 @@
  */
 typedef struct {
     bool battery_saver;
+    bool artist_label;
 } Settings;
+
+/**
+ * For getting the latest and greatest settings.
+ */
+typedef void (*SettingsCallback)(Settings new_settings);
+
+/**
+ * Registers a settings callback for new settings to come to.
+ * @param settings_callback The settings callback to register.
+ */
+void settings_service_subscribe(SettingsCallback settings_callback);
 
 /**
  * Gets the current settings as set within settings.c.

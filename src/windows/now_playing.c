@@ -114,6 +114,12 @@ void now_playing_animation_tick() {
 
 void now_playing_graphics_proc(Layer *layer, GContext *ctx){
     graphics_context_set_fill_color(ctx, background_colour);
+    graphics_fill_rect(ctx, GRect(0, 144, 144, 40), 0, GCornerNone);
+
+    if(!now_playing_settings.artist_label){
+        return;
+    }
+
     GSize artist_text_size = graphics_text_layout_get_content_size(ipod_get_artist(), artist_font, GRect(22, 119, 100, 24), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter);
     uint8_t padding = 4;
     if(artist_text_size.w > 0){
@@ -125,7 +131,6 @@ void now_playing_graphics_proc(Layer *layer, GContext *ctx){
         }
         graphics_fill_rect(ctx, GRect(x, 120, width, 18), 2, GCornersAll);
     }
-    graphics_fill_rect(ctx, GRect(0, 144, 144, 40), 0, GCornerNone);
 }
 
 bool now_playing_action_bar_is_showing = true;
@@ -219,6 +224,26 @@ void now_playing_click_config_provider(void* context) {
     window_long_click_subscribe(BUTTON_ID_SELECT, 500, now_playing_long_clicked_select, NULL);
 }
 
+void now_playing_new_settings(Settings new_settings){
+    if(!is_shown){
+        return;
+    }
+
+    if(now_playing_settings.battery_saver != new_settings.battery_saver){
+        marquee_text_layer_mark_dirty(now_playing_artist_layer);
+        marquee_text_layer_mark_dirty(now_playing_title_layer);
+    }
+
+    now_playing_settings = new_settings;
+
+    layer_set_hidden(marquee_text_layer_get_layer(now_playing_artist_layer), !now_playing_settings.artist_label);
+
+    layer_mark_dirty(now_playing_graphics_layer);
+
+    app_timer_cancel(now_playing_timer);
+    now_playing_animation_tick();
+}
+
 void now_playing_window_load(Window* window) {
     Layer *window_layer = window_get_root_layer(window);
 
@@ -282,6 +307,8 @@ void now_playing_window_load(Window* window) {
     now_playing_action_bar_handle(false);
 
     library_menus_pop_all();
+
+    settings_service_subscribe(now_playing_new_settings);
 
     NSLog("Bytes free after load: %d", heap_bytes_free());
 }
