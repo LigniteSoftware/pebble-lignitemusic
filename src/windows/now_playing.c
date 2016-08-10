@@ -149,6 +149,7 @@ void now_playing_graphics_proc(Layer *layer, GContext *ctx){
 }
 
 bool now_playing_action_bar_is_showing = true;
+uint16_t action_bar_showing = 0, action_bar_hidden = 0;
 
 void animate_action_bar(void *action_bar_pointer){
     ActionBarLayer *action_bar = (ActionBarLayer*)action_bar_pointer;
@@ -158,7 +159,7 @@ void animate_action_bar(void *action_bar_pointer){
     GRect current_frame = layer_get_frame(action_bar_layer);
     GRect next_frame;
 
-    next_frame = GRect(current_frame.origin.x + (now_playing_action_bar_is_showing ? (ACTION_BAR_WIDTH) : (-(ACTION_BAR_WIDTH))), current_frame.origin.y, current_frame.size.w, current_frame.size.h);
+    next_frame = GRect(now_playing_action_bar_is_showing ? action_bar_hidden : action_bar_showing, current_frame.origin.y, current_frame.size.w, current_frame.size.h);
 
     animate_layer(action_bar_layer, &current_frame, &next_frame, now_playing_settings.battery_saver ? 50 : 400, 0);
 
@@ -362,6 +363,10 @@ void now_playing_window_load(Window* window) {
     action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_SELECT, icon_play, false);
     controlling_volume = false;
     now_playing_action_bar_is_showing = true;
+    GRect current_actionbar_frame = layer_get_frame(action_bar_layer_get_layer(control_action_bar));
+    action_bar_showing = current_actionbar_frame.origin.x;
+    action_bar_hidden = action_bar_showing+ACTION_BAR_WIDTH;
+
     previous_play_status = now_playing_is_playing_music();
 
     ipod_state_set_callback(now_playing_state_callback);
