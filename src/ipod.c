@@ -49,7 +49,9 @@ int main() {
 
     app_message_register_inbox_dropped(dropped_inbox);
     app_message_register_outbox_failed(failed_outbox);
-    app_message_open(2048, 2048);
+    NSLog("Bytes free before %d", heap_bytes_free());
+    app_message_open(1600, 1600);
+    NSLog("Bytes free after %d", heap_bytes_free());
 
     tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
 

@@ -72,14 +72,16 @@ char* ipod_get_title() {
 void ipod_set_shuffle_mode(MPMusicShuffleMode shuffle) {}
 void ipod_set_repeat_mode(MPMusicRepeatMode repeat) {}
 
-void now_playing_request() {
+void now_playing_request(bool force_reload) {
     iPodMessage *ipodMessage = ipod_message_outbox_get();
     if(!ipodMessage->iter){
         NSError("Iter is null!");
         return;
     }
 
-    dict_write_int8(ipodMessage->iter, MessageKeyNowPlaying, 2);
+    //100 will indicate a force reload, any other value that's within int8_t and non-zero will
+    //simply let iOS handle the logic (ie. not sending the same album art twice)
+    dict_write_int8(ipodMessage->iter, MessageKeyNowPlaying, force_reload ? 100 : 25);
     app_message_outbox_send();
 
     ipod_message_destroy(ipodMessage);
@@ -104,11 +106,19 @@ void create_bitmap(){
     if(album_art_bitmap){
         return;
     }
+    NSLog("Creating bitmap with data %p, size %d and heap free %d.", album_art_data, current_album_art_size, heap_bytes_free());
     album_art_bitmap = gbitmap_create_from_png_data(album_art_data, current_album_art_size);
 
-    now_playing_set_album_art(album_art_bitmap);
+    if(album_art_bitmap == NULL){
+        NSLog("doesn't exist!");
+        now_playing_set_album_art(NULL);
+    }
+    else{
+        now_playing_set_album_art(album_art_bitmap);
+    }
 
     free(album_art_data);
+    album_art_data = NULL;
 
     NSLog("Bytes free: %d", heap_bytes_free());
 }

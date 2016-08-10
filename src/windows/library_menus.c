@@ -17,6 +17,15 @@ void library_menus_create() {
     menu_stack_count = -1;
 }
 
+void library_menus_pop_all(){
+    for(uint8_t i = 0; i < MENU_STACK_DEPTH; i++){
+        if(menu_stack[i]){
+            NSLog("Removing %d", i);
+            window_stack_remove(menu_stack[i]->window, false);
+        }
+    }
+}
+
 bool build_parent_history(DictionaryIterator *iter) {
     if(menu_stack_count > 0) {
         // Pack up the parent stuff.
@@ -72,7 +81,40 @@ void clear_library_entry_data(LibraryMenuEntryData *data){
     memset(data->entries, 0, MENU_CACHE_COUNT * MENU_ENTRY_LENGTH);
 }
 
+GBitmap *library_menus_gbitmap_from_media_grouping(MPMediaGrouping grouping){
+    uint32_t resource_id = 0;
+    NSLog("Got grouping %d", grouping);
+    switch(grouping){
+        case MPMediaGroupingTitle:
+            resource_id = RESOURCE_ID_ICON_TITLE;
+            break;
+        case MPMediaGroupingAlbum:
+            resource_id = RESOURCE_ID_ICON_ALBUMS;
+            break;
+        case MPMediaGroupingAlbumArtist:
+        case MPMediaGroupingArtist:
+            resource_id = RESOURCE_ID_ICON_ARTISTS;
+            break;
+        case MPMediaGroupingComposer:
+            resource_id = RESOURCE_ID_ICON_COMPOSERS;
+            break;
+        case MPMediaGroupingPlaylist:
+            resource_id = RESOURCE_ID_ICON_PLAYLISTS;
+            break;
+        case MPMediaGroupingGenre:
+            resource_id = RESOURCE_ID_ICON_GENRES;
+            break;
+        default:
+            resource_id = RESOURCE_ID_ICON_NOW_PLAYING;
+            break;
+    }
+    return gbitmap_create_with_resource(resource_id);
+}
+
 void library_menus_display_view(MPMediaGrouping grouping) {
+
+    NSLog("Bytes free before library load %d", heap_bytes_free());
+
     if(menu_stack_count >= MENU_STACK_DEPTH){
         NSError("Depth of menu stack too great at %d! Rejecting.", menu_stack_count);
         return;
@@ -96,6 +138,10 @@ void library_menus_display_view(MPMediaGrouping grouping) {
     clear_library_entry_data(menu->titles);
     clear_library_entry_data(menu->subtitles);
 
+    menu->icon = library_menus_gbitmap_from_media_grouping(menu->grouping);
+    menu->icon_inverted = library_menus_gbitmap_from_media_grouping(menu->grouping);
+    replace_gbitmap_color(GColorWhite, GColorBlack, menu->icon_inverted, NULL);
+
     menu->window = window_create();
 
     menu->layer = menu_layer_create(GRect(0, 0, 144, 168));
@@ -116,7 +162,51 @@ void library_menus_display_view(MPMediaGrouping grouping) {
     window_set_window_handlers(menu->window, (WindowHandlers) {
         .unload = library_menus_window_unload,
     });
+
+    menu->loading_window = message_window_create();
+    message_window_set_text(menu->loading_window, "Loading...");
+    message_window_set_icon(menu->loading_window, menu->icon, false);
+    message_window_push_on_window(menu->loading_window, menu->window, false);
+
     send_library_request(grouping, 0);
+
+    NSLog("Bytes free after library load %d", heap_bytes_free());
+}
+
+void library_menus_window_unload(Window* window) {
+    if(menu_stack_count > -1){
+        menu_stack_count--;
+    }
+
+    LibraryMenu *library_menu = NULL;
+    uint8_t i = 0;
+    for(i = 0; i < MENU_STACK_DEPTH; i++){
+        if(menu_stack[i]){
+            if(menu_stack[i]->window == window){
+                library_menu = menu_stack[i];
+                break;
+            }
+        }
+    }
+
+    if(library_menu != NULL){
+        menu_layer_destroy(library_menu->layer);
+        window_destroy(library_menu->window);
+
+        if(library_menu->loading_window){
+            message_window_destroy(library_menu->loading_window);
+            library_menu->loading_window = NULL;
+        }
+
+        gbitmap_destroy(library_menu->icon);
+        gbitmap_destroy(library_menu->icon_inverted);
+
+        free(library_menu->titles);
+        free(library_menu->subtitles);
+
+        free(library_menu);
+        menu_stack[i] = NULL;
+    }
 }
 
 void log_data(LibraryMenuEntryData *data){
@@ -132,6 +222,11 @@ void log_data(LibraryMenuEntryData *data){
     NSLog("current_entry_offset: %d", data->current_entry_offset);
     NSLog("last_entry: %d", data->last_entry);
     NSLog("third entry: %s", data->entries[2]);
+}
+
+void library_menus_clean_up(void *void_menu){
+    LibraryMenu *menu = (LibraryMenu*)void_menu;
+    menu->loading_window = NULL;
 }
 
 void library_menus_inbox(DictionaryIterator *received) {
@@ -202,43 +297,23 @@ void library_menus_inbox(DictionaryIterator *received) {
             j += len;
         }
 
-        NSLog("--- Titles ---");
-        log_data(menu->titles);
-        NSLog("--- Subtitles ---");
-        log_data(menu->subtitles);
+        // NSLog("--- Titles ---");
+        // log_data(menu->titles);
+        // NSLog("--- Subtitles ---");
+        // log_data(menu->subtitles);
 
         NSLog("Reloading data for menu layer %p", menu->layer);
         menu_layer_reload_data(menu->layer);
-    }
-}
-
-void library_menus_window_unload(Window* window) {
-    if(menu_stack_count > -1){
-        menu_stack_count--;
-    }
-
-    LibraryMenu *library_menu = NULL;
-    uint8_t i = 0;
-    for(i = 0; i < MENU_STACK_DEPTH; i++){
-        if(menu_stack[i]->window == window){
-            library_menu = menu_stack[i];
-            break;
-        }
-    }
-
-    if(library_menu != NULL){
-        menu_layer_destroy(library_menu->layer);
-        window_destroy(library_menu->window);
-        free(library_menu->titles);
-        free(library_menu->subtitles);
-
-        free(library_menu);
-        menu_stack[i] = NULL;
+        message_window_pop_off_window(menu->loading_window, true, false);
+        app_timer_register(500, library_menus_clean_up, menu);
     }
 }
 
 uint16_t get_num_rows(MenuLayer* layer, uint16_t section_index, void* context) {
     uint16_t total_count = ((LibraryMenu*)context)->titles->total_entry_count;
+    if(total_count == 0){
+        total_count = 1;
+    }
     return total_count < MAX_MENU_ENTRIES ? total_count : MAX_MENU_ENTRIES;
 }
 
@@ -248,12 +323,20 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
     if(pos >= MENU_CACHE_COUNT || pos < 0) {
         return;
     }
+
+    GBitmap *icon_to_draw = menu_cell_layer_is_highlighted(cell_layer) ? menu->icon_inverted : menu->icon;
+
     //NSLog("Drawing for position %d", pos);
-    if(strcmp(menu->subtitles->entries[pos], "") == 0){
-        menu_cell_basic_draw(ctx, cell_layer, menu->titles->entries[pos], NULL, NULL);
+    if(menu->titles->total_entry_count == 0){
+        menu_cell_basic_draw(ctx, cell_layer, "Loading...", NULL, icon_to_draw);
     }
     else{
-        menu_cell_basic_draw(ctx, cell_layer, menu->titles->entries[pos], menu->subtitles->entries[pos], NULL);
+        if(strcmp(menu->subtitles->entries[pos], "") == 0){
+            menu_cell_basic_draw(ctx, cell_layer, menu->titles->entries[pos], NULL, icon_to_draw);
+        }
+        else{
+            menu_cell_basic_draw(ctx, cell_layer, menu->titles->entries[pos], menu->subtitles->entries[pos], icon_to_draw);
+        }
     }
 }
 

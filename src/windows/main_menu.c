@@ -59,6 +59,10 @@ void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *da
     main_menu_items[cell_index->row].callback(cell_index->row, data);
 }
 
+void main_menu_send_now_playing_request(){
+    now_playing_request(true);
+}
+
 void main_menu_create(Window* window) {
     uint32_t resource_ids[AMOUNT_OF_MAIN_MENU_ITEMS] = {
         RESOURCE_ID_ICON_NOW_PLAYING, RESOURCE_ID_ICON_PLAYLISTS,
@@ -97,7 +101,7 @@ void main_menu_create(Window* window) {
     menu_layer_set_click_config_onto_window(main_menu_layer, window);
     layer_add_child(window_get_root_layer(window), menu_layer_get_layer(main_menu_layer));
 
-    app_timer_register(250, now_playing_request, NULL);
+    app_timer_register(250, main_menu_send_now_playing_request, NULL);
 }
 
 void open_now_playing(int index, void *context) {

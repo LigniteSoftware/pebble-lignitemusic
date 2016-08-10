@@ -87,5 +87,7 @@ void ipod_set_repeat_mode(MPMusicRepeatMode repeat);
 
 /**
  * Sends a request to the phone asking for the current now playing data.
+ * @param force_reload Whether or not the phone should ignore logic (ie. sending
+ * album art image twice) and instead just make sure it sends all data required.
  */
-void now_playing_request();
+void now_playing_request(bool force_reload);

@@ -27,10 +27,20 @@ static GBitmap *icon_pause, *icon_play, *icon_fast_forward, *icon_rewind, *icon_
  */
 void display_no_album() {
     bitmap_layer_set_bitmap(now_playing_album_art_layer, no_album_art_bitmap);
+    //bitmap_layer_set_bitmap(now_playing_album_art_layer, NULL);
 }
 
 bool now_playing_is_playing_music(){
     return ipod_get_playback_state() == MPMusicPlaybackStatePlaying;
+}
+
+void now_playing_check_for_no_music(){
+    if(strcmp(ipod_get_title(), "") == 0){
+        marquee_text_layer_set_text(now_playing_title_layer, "Start music on your phone or watch");
+        uint8_t len = (uint8_t)sizeof("No Music");
+        strncpy(ipod_get_artist(), "No Music", (size_t)len);
+        marquee_text_layer_set_text(now_playing_artist_layer, "No Music");
+    }
 }
 
 void now_playing_send_state_change(NowPlayingState state_change) {
@@ -54,6 +64,7 @@ void now_playing_state_callback(bool track_data) {
     if(track_data) {
         marquee_text_layer_set_text(now_playing_artist_layer, ipod_get_artist());
         marquee_text_layer_set_text(now_playing_title_layer, ipod_get_title());
+        now_playing_check_for_no_music();
     }
     else {
         if(previous_play_status != now_playing_is_playing_music()){
@@ -103,9 +114,18 @@ void now_playing_animation_tick() {
 
 void now_playing_graphics_proc(Layer *layer, GContext *ctx){
     graphics_context_set_fill_color(ctx, background_colour);
-    GSize artist_text_size = graphics_text_layout_get_content_size(ipod_get_artist(), artist_font, GRect(0, 120, 144, 18), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter);
+    GSize artist_text_size = graphics_text_layout_get_content_size(ipod_get_artist(), artist_font, GRect(22, 119, 100, 24), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter);
     uint8_t padding = 4;
-    graphics_fill_rect(ctx, GRect((144/2)-(artist_text_size.w/2)-padding, 120, artist_text_size.w+(padding*2), 18), 2, GCornersAll);
+    if(artist_text_size.w > 0){
+        int x = (144/2)-(artist_text_size.w/2)-padding;
+        int width = artist_text_size.w+(padding*2);
+        if(x < 22){
+            x = 22-padding;
+            width = 100+(padding*2);
+        }
+        graphics_fill_rect(ctx, GRect(x, 120, width, 18), 2, GCornersAll);
+    }
+    graphics_fill_rect(ctx, GRect(0, 144, 144, 40), 0, GCornerNone);
 }
 
 bool now_playing_action_bar_is_showing = true;
@@ -211,7 +231,9 @@ void now_playing_window_load(Window* window) {
     icon_volume_up = gbitmap_create_with_resource(RESOURCE_ID_ICON_VOLUME_UP);
     icon_volume_down = gbitmap_create_with_resource(RESOURCE_ID_ICON_VOLUME_DOWN);
 
+    NSLog("Before creation %d", heap_bytes_free());
     no_album_art_bitmap = gbitmap_create_with_resource(RESOURCE_ID_NO_ALBUM_ART);
+    NSLog("After creation %d", heap_bytes_free());
 
     now_playing_album_art_layer = bitmap_layer_create(GRect(0, 0, 144, 144));
     if(now_playing_album_art_bitmap){
@@ -237,6 +259,8 @@ void now_playing_window_load(Window* window) {
     marquee_text_layer_set_text(now_playing_artist_layer, ipod_get_artist());
     layer_add_child(window_layer, marquee_text_layer_get_layer(now_playing_artist_layer));
 
+    now_playing_check_for_no_music();
+
     now_playing_progress_bar = progress_bar_layer_create(GRect(0, 0, 144, 168));
     layer_add_child(window_layer, progress_bar_layer_get_layer(now_playing_progress_bar));
 
@@ -256,6 +280,8 @@ void now_playing_window_load(Window* window) {
     now_playing_state_callback(false);
     now_playing_animation_tick();
     now_playing_action_bar_handle(false);
+
+    library_menus_pop_all();
 
     NSLog("Bytes free after load: %d", heap_bytes_free());
 }
@@ -291,10 +317,13 @@ void now_playing_window_unload(Window* window) {
 }
 
 void now_playing_show() {
+    if(is_shown){
+        return;
+    }
     background_colour = GColorBlack;
 
     now_playing_window = window_create();
-    window_set_background_color(now_playing_window, background_colour);
+    window_set_background_color(now_playing_window, GColorWhite);
     window_set_window_handlers(now_playing_window, (WindowHandlers){
         .unload = now_playing_window_unload,
         .load = now_playing_window_load,

@@ -4,9 +4,9 @@
 
 typedef struct {
     Layer *layer;
-    int32_t min;
-    int32_t max;
-    int32_t value;
+    int16_t min;
+    int16_t max;
+    int16_t value;
     GColor bar_colour;
     GColor background_colour;
     GColor frame_colour;

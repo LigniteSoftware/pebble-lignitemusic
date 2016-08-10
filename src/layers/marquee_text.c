@@ -94,7 +94,7 @@ void marquee_text_layer_tick() {
 	}
 }
 
-void marquee_text_layer_update_proc(Layer* layer, GContext* context) {    
+void marquee_text_layer_update_proc(Layer* layer, GContext* context) {
     MarqueeTextLayerReference *layerReference = (MarqueeTextLayerReference*)layer_get_data(layer);
 
     MarqueeTextLayer *marquee = layerReference->marqueeLayer;
