@@ -103,7 +103,6 @@ void now_playing_set_album_art(GBitmap *album_art){
 
     now_playing_album_art_bitmap = album_art;
     if(now_playing_album_art_layer){
-        NSLog("Setting album art onto layer.");
         bitmap_layer_set_bitmap(now_playing_album_art_layer, now_playing_album_art_bitmap);
     }
 }
@@ -169,17 +168,14 @@ void animate_action_bar(void *action_bar_pointer){
 bool action_bar_timer_registered = false;
 void now_playing_action_bar_handle(bool is_select){
     if(!now_playing_action_bar_is_showing){
-        NSWarn("Animating actionbar to show.");
         animate_action_bar(control_action_bar);
         action_bar_timer_registered = false;
     }
     if(action_bar_timer_registered){
-        NSWarn("Destroying timer.");
         app_timer_cancel(action_bar_timer);
         action_bar_timer_registered = false;
     }
     if(now_playing_is_playing_music() && (!is_select || now_playing_settings.pebble_controls)){
-        NSWarn("Registering timer.");
         action_bar_timer = app_timer_register(now_playing_settings.pebble_controls ? 3500 : 2000, animate_action_bar, control_action_bar);
         action_bar_timer_registered = true;
     }

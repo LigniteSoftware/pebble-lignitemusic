@@ -55,7 +55,7 @@ typedef enum {
     MPMediaGroupingComposer,
     MPMediaGroupingGenre,
     MPMediaGroupingPlaylist,
-    MPMediaGroupingPodcastTitle,
+    MPMediaGroupingPodcastTitle
 } MPMediaGrouping;
 
 /**
@@ -101,7 +101,7 @@ typedef enum {
     NowPlayingArtist,
     NowPlayingAlbum,
     NowPlayingTitleArtist,
-    NowPlayingNumbers,
+    NowPlayingNumbers
 } NowPlayingType;
 
 /**

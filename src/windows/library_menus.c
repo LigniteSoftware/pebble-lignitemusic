@@ -20,7 +20,6 @@ void library_menus_create() {
 void library_menus_pop_all(){
     for(uint8_t i = 0; i < MENU_STACK_DEPTH; i++){
         if(menu_stack[i]){
-            NSLog("Removing %d", i);
             window_stack_remove(menu_stack[i]->window, false);
         }
     }
@@ -59,7 +58,6 @@ bool send_library_request(MPMediaGrouping grouping, uint32_t offset) {
 }
 
 bool play_track(uint16_t index) {
-    NSLog("Will play track at index %d", index);
     LibraryMenu *menu = menu_stack[menu_stack_count];
     iPodMessage *ipodMessage = ipod_message_outbox_get();
     if(ipodMessage->result != APP_MSG_OK){
@@ -83,7 +81,6 @@ void clear_library_entry_data(LibraryMenuEntryData *data){
 
 GBitmap *library_menus_gbitmap_from_media_grouping(MPMediaGrouping grouping){
     uint32_t resource_id = 0;
-    NSLog("Got grouping %d", grouping);
     switch(grouping){
         case MPMediaGroupingTitle:
             resource_id = RESOURCE_ID_ICON_TITLE;
@@ -112,9 +109,6 @@ GBitmap *library_menus_gbitmap_from_media_grouping(MPMediaGrouping grouping){
 }
 
 void library_menus_display_view(MPMediaGrouping grouping) {
-
-    NSLog("Bytes free before library load %d", heap_bytes_free());
-
     if(menu_stack_count >= MENU_STACK_DEPTH){
         NSError("Depth of menu stack too great at %d! Rejecting.", menu_stack_count);
         return;
@@ -169,8 +163,6 @@ void library_menus_display_view(MPMediaGrouping grouping) {
     message_window_push_on_window(menu->loading_window, menu->window, false);
 
     send_library_request(grouping, 0);
-
-    NSLog("Bytes free after library load %d", heap_bytes_free());
 }
 
 void library_menus_window_unload(Window* window) {
@@ -209,28 +201,16 @@ void library_menus_window_unload(Window* window) {
     }
 }
 
-void log_data(LibraryMenuEntryData *data){
-    NSLog("LibraryMenuEntryData %p:", data);
-    /*
-
-    char entries[MENU_CACHE_COUNT][MENU_ENTRY_LENGTH];
-    uint16_t total_entry_count;
-    uint16_t current_entry_offset;
-    uint16_t last_entry;
-     */
-    NSLog("total_entry_count: %d", data->total_entry_count);
-    NSLog("current_entry_offset: %d", data->current_entry_offset);
-    NSLog("last_entry: %d", data->last_entry);
-    NSLog("third entry: %s", data->entries[2]);
-}
-
 void library_menus_clean_up(void *void_menu){
+    if(!void_menu){
+        NSWarn("Caught you little bitch");
+        return;
+    }
     LibraryMenu *menu = (LibraryMenu*)void_menu;
     menu->loading_window = NULL;
 }
 
 void library_menus_inbox(DictionaryIterator *received) {
-    NSLog("Menu message");
     if(menu_stack_count == -1) {
         NSError("menu_stack_count is -1!");
         return;
@@ -242,7 +222,9 @@ void library_menus_inbox(DictionaryIterator *received) {
         MPMediaGrouping grouping = tuple->value->data[0];
         bool is_subtitles = false;
         if(grouping != menu->grouping){
-            is_subtitles = (menu->grouping == MPMediaGroupingAlbum && grouping == MPMediaGroupingAlbumArtist);
+            is_subtitles = (menu->grouping == MPMediaGroupingAlbum && grouping == MPMediaGroupingAlbumArtist) //Artist name for albums
+                                || (menu->grouping == MPMediaGroupingTitle && grouping == MPMediaGroupingPodcastTitle) //Artist name and track duration for tracks
+                                || (menu->grouping == MPMediaGroupingPlaylist && grouping == MPMediaGroupingPodcastTitle); //Playlist song count
 
             if(!is_subtitles){
                 NSError("grouping != menu->grouping!");
@@ -297,12 +279,6 @@ void library_menus_inbox(DictionaryIterator *received) {
             j += len;
         }
 
-        // NSLog("--- Titles ---");
-        // log_data(menu->titles);
-        // NSLog("--- Subtitles ---");
-        // log_data(menu->subtitles);
-
-        NSLog("Reloading data for menu layer %p", menu->layer);
         menu_layer_reload_data(menu->layer);
         message_window_pop_off_window(menu->loading_window, true, false);
         app_timer_register(500, library_menus_clean_up, menu);

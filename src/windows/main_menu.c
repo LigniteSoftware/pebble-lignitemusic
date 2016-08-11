@@ -63,6 +63,10 @@ void main_menu_send_now_playing_request(){
     now_playing_request(true);
 }
 
+void main_menu_destroy_warning(void *warning){
+    message_window_pop_off_window((MessageWindow*)warning, true, false);
+}
+
 void main_menu_create(Window* window) {
     uint32_t resource_ids[AMOUNT_OF_MAIN_MENU_ITEMS] = {
         RESOURCE_ID_ICON_NOW_PLAYING, RESOURCE_ID_ICON_PLAYLISTS,
@@ -102,6 +106,15 @@ void main_menu_create(Window* window) {
     layer_add_child(window_get_root_layer(window), menu_layer_get_layer(main_menu_layer));
 
     app_timer_register(250, main_menu_send_now_playing_request, NULL);
+
+    if(!bluetooth_connection_service_peek()){ //Phone not connected
+        MessageWindow *not_connected_window = message_window_create();
+        message_window_set_text(not_connected_window, "Your phone isn't connected! Lignite Music needs a phone...");
+        message_window_push_on_window(not_connected_window, window, true);
+        app_timer_register(10000, main_menu_destroy_warning, not_connected_window);
+
+        vibes_long_pulse();
+    }
 }
 
 void open_now_playing(int index, void *context) {

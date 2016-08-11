@@ -109,8 +109,9 @@ void create_bitmap(){
     NSLog("Creating bitmap with data %p, size %d and heap free %d.", album_art_data, current_album_art_size, heap_bytes_free());
     album_art_bitmap = gbitmap_create_from_png_data(album_art_data, current_album_art_size);
 
-    if(album_art_bitmap == NULL){
-        NSLog("doesn't exist!");
+    GSize size = gbitmap_get_bounds(album_art_bitmap).size;
+
+    if(album_art_bitmap == NULL || size.w == 0){
         now_playing_set_album_art(NULL);
     }
     else{
@@ -119,22 +120,17 @@ void create_bitmap(){
 
     free(album_art_data);
     album_art_data = NULL;
-
-    NSLog("Bytes free: %d", heap_bytes_free());
 }
 
 void process_album_art_tuple(DictionaryIterator *albumArtDict){
     Tuple *albumArtTuple = dict_find(albumArtDict, MessageKeyAlbumArt);
     if(albumArtTuple) {
         if(!album_art_data){
-            NSLog("Album art data doesn't exist!");
-            //Send one more request for album art
             return;
         }
 
         Tuple *albumArtIndexTuple = dict_find(albumArtDict, MessageKeyAlbumArtIndex);
         if(!albumArtIndexTuple){
-            NSError("Index tuple doesn't exist!");
             return;
         }
         size_t index = albumArtIndexTuple->value->uint16 * MAX_BYTES;

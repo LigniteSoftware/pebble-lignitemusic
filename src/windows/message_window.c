@@ -11,10 +11,13 @@ void message_window_update_frames(MessageWindow *window){
     GSize icon_size = gbitmap_get_bounds(bitmap_layer_get_bitmap(window->icon_layer)).size;
 
     GSize text_size = graphics_text_layout_get_content_size_with_attributes(window->message[0],
-        GFon, const GRect box, const GTextOverflowMode overflow_mode, const GTextAlignment alignment, GTextAttributes * text_attributes)
+        fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD), GRect(0, 0, 144, 168),
+        GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
+
+    uint16_t offset_y = (168-(icon_size.h+text_size.h))/2;
 
     Layer *icon_layer_root_layer = bitmap_layer_get_layer(window->icon_layer);
-    GRect icon_layer_frame = GRect(0, (168/2)-icon_size.h, 144, icon_size.h);
+    GRect icon_layer_frame = GRect(0, offset_y, 144, icon_size.h);
     layer_set_frame(icon_layer_root_layer, icon_layer_frame);
 
     Layer *message_layer_root_layer = text_layer_get_layer(window->message_layer);
@@ -81,6 +84,10 @@ void message_window_push_on_window(MessageWindow *message_window, Window *root_w
 }
 
 void message_window_pop_off_window(MessageWindow *message_window, bool animated, bool auto_destroy){
+    if(!message_window){
+        NSWarn("Message window doesn't exist son");
+        return;
+    }
     if(!message_window->is_pushed){
         return;
     }

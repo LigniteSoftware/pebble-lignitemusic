@@ -43,7 +43,6 @@ iPodMessage *ipod_message_outbox_get() {
 
 void ipod_message_timer_fire(void *timerContext){
     iPodMessage *message = (iPodMessage*)timerContext;
-    NSLog("Destroying %p", message);
     free(message);
 }
 
