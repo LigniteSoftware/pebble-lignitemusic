@@ -121,17 +121,17 @@ void open_now_playing(int index, void *context) {
     now_playing_show();
 }
 void open_artist_list(int index, void *context) {
-    library_menus_display_view(MPMediaGroupingAlbumArtist);
+    library_menus_display_view(MPMediaGroupingAlbumArtist, "", "");
 }
 void open_album_list(int index, void *context) {
-    library_menus_display_view(MPMediaGroupingAlbum);
+    library_menus_display_view(MPMediaGroupingAlbum, "", "");
 }
 void open_playlist_list(int index, void *context) {
-    library_menus_display_view(MPMediaGroupingPlaylist);
+    library_menus_display_view(MPMediaGroupingPlaylist, "", "");
 }
 void open_genre_list(int index, void *context) {
-    library_menus_display_view(MPMediaGroupingGenre);
+    library_menus_display_view(MPMediaGroupingGenre, "", "");
 }
 void open_composer_list(int index, void *context) {
-    library_menus_display_view(MPMediaGroupingComposer);
+    library_menus_display_view(MPMediaGroupingComposer, "", "");
 }

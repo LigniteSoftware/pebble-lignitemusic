@@ -64,7 +64,7 @@ bool play_track(uint16_t index) {
         return false;
     }
     dict_write_uint8(ipodMessage->iter, MessageKeyRequestLibrary, menu->grouping);
-    dict_write_uint16(ipodMessage->iter, MessageKeyPlayTrack, menu->current_selection);
+    dict_write_uint16(ipodMessage->iter, MessageKeyPlayTrack, index);
     build_parent_history(ipodMessage->iter);
     if(app_message_outbox_send() != APP_MSG_OK){
         return false;
@@ -83,8 +83,9 @@ GBitmap *library_menus_gbitmap_from_media_grouping(MPMediaGrouping grouping){
     uint32_t resource_id = 0;
     switch(grouping){
         case MPMediaGroupingTitle:
-            resource_id = RESOURCE_ID_ICON_TITLE;
-            break;
+            return NULL;
+            //resource_id = RESOURCE_ID_ICON_TITLE;
+            //break;
         case MPMediaGroupingAlbum:
             resource_id = RESOURCE_ID_ICON_ALBUMS;
             break;
@@ -108,7 +109,7 @@ GBitmap *library_menus_gbitmap_from_media_grouping(MPMediaGrouping grouping){
     return gbitmap_create_with_resource(resource_id);
 }
 
-void library_menus_display_view(MPMediaGrouping grouping) {
+void library_menus_display_view(MPMediaGrouping grouping, char *title, char *subtitle) {
     if(menu_stack_count >= MENU_STACK_DEPTH){
         NSError("Depth of menu stack too great at %d! Rejecting.", menu_stack_count);
         return;
@@ -126,6 +127,14 @@ void library_menus_display_view(MPMediaGrouping grouping) {
     LibraryMenu* menu = menu_stack[menu_stack_count];
     menu->grouping = grouping;
     menu->current_selection = 0;
+    menu->title_and_subtitle = false;
+    menu->has_autoselected = false;
+
+    if(strcmp(title, "") != 0){ //Title and subtitle exists
+        menu->title_and_subtitle = true;
+        strncpy(menu->title_text[0], title, sizeof(menu->title_text[0]));
+        strncpy(menu->subtitle_text[0], subtitle, sizeof(menu->subtitle_text[0]));
+    }
 
     menu->titles = malloc(sizeof(LibraryMenuEntryData));
     menu->subtitles = malloc(sizeof(LibraryMenuEntryData));
@@ -166,6 +175,7 @@ void library_menus_display_view(MPMediaGrouping grouping) {
 }
 
 void library_menus_window_unload(Window* window) {
+    NSLog("unloading");
     if(menu_stack_count > -1){
         menu_stack_count--;
     }
@@ -199,6 +209,7 @@ void library_menus_window_unload(Window* window) {
         free(library_menu);
         menu_stack[i] = NULL;
     }
+    NSLog("unloaded");
 }
 
 void library_menus_clean_up(void *void_menu){
@@ -282,20 +293,29 @@ void library_menus_inbox(DictionaryIterator *received) {
         menu_layer_reload_data(menu->layer);
         message_window_pop_off_window(menu->loading_window, true, false);
         app_timer_register(500, library_menus_clean_up, menu);
+
+        if(!menu->has_autoselected && menu->title_and_subtitle){
+            menu_layer_set_selected_index(menu->layer, (MenuIndex){.section = 0, .row = 1}, MenuRowAlignNone, false);
+            menu->has_autoselected = true;
+        }
     }
 }
 
 uint16_t get_num_rows(MenuLayer* layer, uint16_t section_index, void* context) {
-    uint16_t total_count = ((LibraryMenu*)context)->titles->total_entry_count;
+    LibraryMenu *menu = (LibraryMenu*)context;
+    uint16_t total_count = menu->titles->total_entry_count;
     if(total_count == 0){
         total_count = 1;
     }
-    return total_count < MAX_MENU_ENTRIES ? total_count : MAX_MENU_ENTRIES;
+    return (total_count < MAX_MENU_ENTRIES ? total_count : MAX_MENU_ENTRIES) + menu->title_and_subtitle;
 }
 
 void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context) {
     LibraryMenu *menu = (LibraryMenu*)callback_context;
     int16_t pos = cell_index->row - menu->titles->current_entry_offset;
+    if(menu->title_and_subtitle && cell_index->row > 0){
+        pos--;
+    }
     if(pos >= MENU_CACHE_COUNT || pos < 0) {
         return;
     }
@@ -307,11 +327,19 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
         menu_cell_basic_draw(ctx, cell_layer, "Loading...", NULL, icon_to_draw);
     }
     else{
-        if(strcmp(menu->subtitles->entries[pos], "") == 0){
-            menu_cell_basic_draw(ctx, cell_layer, menu->titles->entries[pos], NULL, icon_to_draw);
+        if(cell_index->row == 0 && menu->title_and_subtitle){
+            graphics_context_set_fill_color(ctx, GColorRed);
+            graphics_fill_rect(ctx, layer_get_frame(cell_layer), 0, GCornerNone);
+            //graphics_context_set_text_color(ctx, GColorWhite);
+            menu_cell_basic_draw(ctx, cell_layer, menu->title_text[0], menu->subtitle_text[0], NULL);
         }
         else{
-            menu_cell_basic_draw(ctx, cell_layer, menu->titles->entries[pos], menu->subtitles->entries[pos], icon_to_draw);
+            if(strcmp(menu->subtitles->entries[pos], "") == 0){
+                menu_cell_basic_draw(ctx, cell_layer, menu->titles->entries[pos], NULL, icon_to_draw);
+            }
+            else{
+                menu_cell_basic_draw(ctx, cell_layer, menu->titles->entries[pos], menu->subtitles->entries[pos], icon_to_draw);
+            }
         }
     }
 }
@@ -320,7 +348,12 @@ void selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIn
     LibraryMenu *menu = (LibraryMenu*)callback_context;
     int16_t pos = new_index.row - menu->titles->current_entry_offset;
     menu->current_selection = new_index.row;
-    //NSLog("New selection is %d", menu->current_selection);
+
+    if(menu->current_selection == 0 && menu->title_and_subtitle){
+        menu_layer_set_selected_index(menu->layer, (MenuIndex){.section = 0, .row = 1}, MenuRowAlignNone, false);
+        return;
+    }
+
     bool down = new_index.row > old_index.row;
 
     if(down) {
@@ -340,18 +373,23 @@ void selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIn
 void select_click(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
     LibraryMenu *menu = (LibraryMenu*)callback_context;
     if(menu->grouping == MPMediaGroupingTitle) {
-        play_track(cell_index->row);
+        NSLog("Playing track");
+        play_track(cell_index->row-menu->title_and_subtitle);
+        NSLog("Request sent");
         now_playing_show();
+        NSLog("Now playing shown");
     } else {
-        if(menu_stack_count + 1 >= MENU_STACK_DEPTH) return;
+        if(menu_stack_count + 1 >= MENU_STACK_DEPTH){
+            return;
+        }
         if(menu->grouping != MPMediaGroupingAlbum && menu->grouping != MPMediaGroupingPlaylist) {
             if(menu->grouping == MPMediaGroupingGenre) {
-                library_menus_display_view(MPMediaGroupingArtist);
+                library_menus_display_view(MPMediaGroupingArtist, "", "");
             } else {
-                library_menus_display_view(MPMediaGroupingAlbum);
+                library_menus_display_view(MPMediaGroupingAlbum, "", "");
             }
         } else {
-            library_menus_display_view(MPMediaGroupingTitle);
+            library_menus_display_view(MPMediaGroupingTitle, menu->titles->entries[cell_index->row], menu->subtitles->entries[cell_index->row]);
         }
     }
 }

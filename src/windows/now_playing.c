@@ -96,15 +96,22 @@ void now_playing_state_callback(bool track_data) {
 }
 
 void now_playing_set_album_art(GBitmap *album_art){
+    NSLog("Setting album art");
+    now_playing_album_art_bitmap = album_art;
+
+    if(!now_playing_album_art_layer){
+        NSWarn("Album art layer doesn't exist, fool");
+        return;
+    }
     if(album_art == NULL){
         display_no_album();
         return;
     }
 
-    now_playing_album_art_bitmap = album_art;
     if(now_playing_album_art_layer){
         bitmap_layer_set_bitmap(now_playing_album_art_layer, now_playing_album_art_bitmap);
     }
+    NSLog("Set");
 }
 
 void now_playing_tick() {
@@ -402,6 +409,7 @@ void now_playing_window_unload(Window* window) {
     gbitmap_destroy(icon_volume_down);
 
     bitmap_layer_destroy(now_playing_album_art_layer);
+    now_playing_album_art_layer = NULL;
 
     ipod_state_set_callback(NULL);
 
@@ -412,18 +420,22 @@ void now_playing_window_unload(Window* window) {
 
 void now_playing_show() {
     if(is_shown){
+        NSLog("Already shown!");
         return;
     }
     background_colour = GColorBlack;
 
+    NSLog("Creating window");
     now_playing_window = window_create();
     window_set_background_color(now_playing_window, GColorWhite);
     window_set_window_handlers(now_playing_window, (WindowHandlers){
         .unload = now_playing_window_unload,
         .load = now_playing_window_load,
     });
+    NSLog("Created");
 
     window_stack_push(now_playing_window, true);
+    NSLog("Pushed");
 }
 
 bool now_playing_is_shown(){

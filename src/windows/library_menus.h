@@ -3,7 +3,7 @@
 #include <lignite_music.h>
 
 //TODO: change this if there is less memory available.
-#define MENU_CACHE_COUNT 35
+#define MENU_CACHE_COUNT 30
 #define MENU_ENTRY_LENGTH 21
 #define MENU_STACK_DEPTH 4 // Deepest: genres -> artists -> albums -> songs
 #define MAX_MENU_ENTRIES 725
@@ -18,6 +18,10 @@ typedef struct {
 typedef struct {
     Window *window;
     MenuLayer *layer;
+    bool title_and_subtitle;
+    bool has_autoselected;
+    char title_text[1][MENU_ENTRY_LENGTH];
+    char subtitle_text[1][MENU_ENTRY_LENGTH];
     GBitmap *icon;
     GBitmap *icon_inverted;
     MPMediaGrouping grouping;
@@ -40,8 +44,12 @@ void library_menus_pop_all();
 /**
  * Displays a library view for a certain media grouping.
  * @param grouping The grouping to show data for.
+ * @param title    If there is a title, having a string greater than 0 characters will
+ * display this in a custom header
+ * @param subtitle If there is a subtitle, having a string greater than 0 characters
+ * will display this in a custom header
  */
-void library_menus_display_view(MPMediaGrouping grouping);
+void library_menus_display_view(MPMediaGrouping grouping, char *title, char *subtitle);
 
 /**
  * The inbox for the library menu. It handles any incoming library details.

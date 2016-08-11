@@ -252,6 +252,7 @@ void process_tuple(Tuple *tuple, DictionaryIterator *iter){
 }
 
 void ipod_received_handler(DictionaryIterator *iter, void *context){
+    NSLog("Got message from phone");
     Tuple *t = dict_read_first(iter);
     if(t){
         process_tuple(t, iter);
@@ -262,6 +263,7 @@ void ipod_received_handler(DictionaryIterator *iter, void *context){
             process_tuple(t, iter);
         }
     }
+    NSLog("Done");
 }
 
 void ipod_state_create() {
