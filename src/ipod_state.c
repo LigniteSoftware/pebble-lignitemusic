@@ -2,8 +2,8 @@
 
 iPodStateCallback ipod_state_callback;
 
-GBitmap *album_art_bitmap;
-static uint8_t *album_art_data;
+GBitmap *now_playing_album_art_bitmap, *header_icon_album_art_bitmap;
+static uint8_t *now_playing_album_art_data, *header_icon_album_art_data;
 static int current_album_art_size = 0;
 
 MPMusicRepeatMode s_repeat_mode;
@@ -102,6 +102,7 @@ void call_callback(bool track_data) {
     ipod_state_callback(track_data);
 }
 
+/*
 void create_bitmap(){
     if(album_art_bitmap){
         return;
@@ -121,8 +122,9 @@ void create_bitmap(){
     free(album_art_data);
     album_art_data = NULL;
 }
+*/
 
-void process_album_art_tuple(DictionaryIterator *albumArtDict){
+void process_album_art_tuple(DictionaryIterator *albumArtDict, GBitmap *album_art_bitmap, uint8_t *album_art_data, bool now_playing){
     Tuple *albumArtTuple = dict_find(albumArtDict, MessageKeyAlbumArt);
     if(albumArtTuple) {
         if(!album_art_data){
@@ -137,7 +139,33 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
         memcpy(&album_art_data[index], albumArtTuple->value->data, albumArtTuple->length);
 
         if(((albumArtIndexTuple->value->uint16 * MAX_BYTES) + albumArtTuple->length) == current_album_art_size){
-            app_timer_register(125, create_bitmap, NULL);
+            if(album_art_bitmap){
+                return;
+            }
+            NSLog("Creating bitmap with data %p, size %d and heap free %d.", album_art_data, current_album_art_size, heap_bytes_free());
+            album_art_bitmap = gbitmap_create_from_png_data(album_art_data, current_album_art_size);
+
+            GSize size = gbitmap_get_bounds(album_art_bitmap).size;
+
+            if(album_art_bitmap == NULL || size.w == 0){
+                if(now_playing){
+                    now_playing_set_album_art(NULL);
+                }
+                else{
+                    library_menus_set_header_icon(NULL);
+                }
+            }
+            else{
+                if(now_playing){
+                    now_playing_set_album_art(album_art_bitmap);
+                }
+                else{
+                    library_menus_set_header_icon(album_art_bitmap);
+                }
+            }
+
+            free(album_art_data);
+            album_art_data = NULL;
         }
     }
     else{
@@ -153,7 +181,12 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
             }
             if(album_art_bitmap){
                 NSLog("Destroying album art bitmap.");
-                now_playing_set_album_art(NULL);
+                if(now_playing){
+                    now_playing_set_album_art(NULL);
+                }
+                else{
+                    library_menus_set_header_icon(NULL);
+                }
                 gbitmap_destroy(album_art_bitmap);
                 album_art_bitmap = NULL;
             }
@@ -166,7 +199,12 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
             //You're probably not gonna have a PNG that's 1 byte lol, so if it is it's the phone telling you
             //that there's no fucking album art
             if(current_album_art_size == 1){
-                now_playing_set_album_art(NULL);
+                if(now_playing){
+                    now_playing_set_album_art(NULL);
+                }
+                else{
+                    library_menus_set_header_icon(NULL);
+                }
             }
             else{
                 NSLog("Ready for image input.");
@@ -246,8 +284,11 @@ void process_tuple(Tuple *tuple, DictionaryIterator *iter){
 
         vibes_double_pulse();
     }
+    else if(key == MessageKeyHeaderIcon){
+        process_album_art_tuple(iter, header_icon_album_art_bitmap, header_icon_album_art_data, false);
+    }
     else{
-        process_album_art_tuple(iter);
+        process_album_art_tuple(iter, now_playing_album_art_bitmap, now_playing_album_art_data, true);
     }
 }
 

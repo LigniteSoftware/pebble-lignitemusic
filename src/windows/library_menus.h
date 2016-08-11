@@ -22,6 +22,7 @@ typedef struct {
     bool has_autoselected;
     char title_text[1][MENU_ENTRY_LENGTH];
     char subtitle_text[1][MENU_ENTRY_LENGTH];
+    GBitmap *header_icon;
     GBitmap *icon;
     GBitmap *icon_inverted;
     MPMediaGrouping grouping;
@@ -40,6 +41,12 @@ void library_menus_create();
  * Gets rid of all library menus on the stack.
  */
 void library_menus_pop_all();
+
+/**
+ * Sets the header icon for the LibraryMenu.
+ * @param icon The icon to set.
+ */
+void library_menus_set_header_icon(GBitmap *icon);
 
 /**
  * Displays a library view for a certain media grouping.

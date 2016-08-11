@@ -129,6 +129,7 @@ void library_menus_display_view(MPMediaGrouping grouping, char *title, char *sub
     menu->current_selection = 0;
     menu->title_and_subtitle = false;
     menu->has_autoselected = false;
+    menu->header_icon = NULL;
 
     if(strcmp(title, "") != 0){ //Title and subtitle exists
         menu->title_and_subtitle = true;
@@ -200,6 +201,10 @@ void library_menus_window_unload(Window* window) {
             library_menu->loading_window = NULL;
         }
 
+        if(library_menu->header_icon){
+            gbitmap_destroy(library_menu->header_icon);
+        }
+
         gbitmap_destroy(library_menu->icon);
         gbitmap_destroy(library_menu->icon_inverted);
 
@@ -219,6 +224,17 @@ void library_menus_clean_up(void *void_menu){
     }
     LibraryMenu *menu = (LibraryMenu*)void_menu;
     menu->loading_window = NULL;
+}
+
+void library_menus_set_header_icon(GBitmap *icon){
+    LibraryMenu *menu = menu_stack[menu_stack_count];
+    if(!menu){
+        return;
+    }
+    menu->header_icon = icon;
+    if(icon == NULL){
+        menu->header_icon = gbitmap_create_with_resource(RESOURCE_ID_ICON_ALBUMS);
+    }
 }
 
 void library_menus_inbox(DictionaryIterator *received) {
@@ -331,7 +347,7 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
             graphics_context_set_fill_color(ctx, GColorRed);
             graphics_fill_rect(ctx, layer_get_frame(cell_layer), 0, GCornerNone);
             //graphics_context_set_text_color(ctx, GColorWhite);
-            menu_cell_basic_draw(ctx, cell_layer, menu->title_text[0], menu->subtitle_text[0], NULL);
+            menu_cell_basic_draw(ctx, cell_layer, menu->title_text[0], menu->subtitle_text[0], menu->header_icon);
         }
         else{
             if(strcmp(menu->subtitles->entries[pos], "") == 0){
