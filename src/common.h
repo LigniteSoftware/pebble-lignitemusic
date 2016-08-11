@@ -40,6 +40,8 @@ typedef enum {
     MessageKeyCurrentState,
     MessageKeySequenceNumber,
     MessageKeyHeaderIcon,
+    MessageKeyHeaderIconLength,
+    MessageKeyHeaderIconIndex,
     MessageKeySettingBatterySaver = 100,
     MessageKeySettingArtistLabel = 101,
     MessageKeySettingPebbleStyleControls = 102

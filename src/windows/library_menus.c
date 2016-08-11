@@ -201,10 +201,6 @@ void library_menus_window_unload(Window* window) {
             library_menu->loading_window = NULL;
         }
 
-        if(library_menu->header_icon){
-            gbitmap_destroy(library_menu->header_icon);
-        }
-
         gbitmap_destroy(library_menu->icon);
         gbitmap_destroy(library_menu->icon_inverted);
 
@@ -235,6 +231,7 @@ void library_menus_set_header_icon(GBitmap *icon){
     if(icon == NULL){
         menu->header_icon = gbitmap_create_with_resource(RESOURCE_ID_ICON_ALBUMS);
     }
+    menu_layer_reload_data(menu->layer);
 }
 
 void library_menus_inbox(DictionaryIterator *received) {
