@@ -81,7 +81,9 @@ void now_playing_request(bool force_reload) {
 
     //100 will indicate a force reload, any other value that's within int8_t and non-zero will
     //simply let iOS handle the logic (ie. not sending the same album art twice)
-    dict_write_int8(ipodMessage->iter, MessageKeyNowPlaying, force_reload ? 100 : 25);
+    uint8_t value = force_reload ? 100 : 200;
+    dict_write_int8(ipodMessage->iter, MessageKeyNowPlaying, value);
+    dict_write_int8(ipodMessage->iter, MessageKeyWatchModel, watch_info_get_model());
     app_message_outbox_send();
 
     ipod_message_destroy(ipodMessage);
@@ -108,6 +110,7 @@ void create_bitmap(){
     }
     NSLog("Creating bitmap with data %p, size %d and heap free %d.", album_art_data, now_playing_album_art_size, heap_bytes_free());
     album_art_bitmap = gbitmap_create_from_png_data(album_art_data, now_playing_album_art_size);
+    NSLog("Done. Got %p.", album_art_bitmap);
 
     GSize size = gbitmap_get_bounds(album_art_bitmap).size;
 
@@ -250,7 +253,6 @@ void process_library_menu_album_art_tuple(DictionaryIterator *albumArtDict){
 
 void process_tuple(Tuple *tuple, DictionaryIterator *iter){
     uint32_t key = tuple->key;
-    NSLog("Got key %d", (int)key);
     if(key == MessageKeyCurrentState){
         s_playback_state = tuple->value->data[0];
         s_shuffle_mode = tuple->value->data[1];

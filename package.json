@@ -1,7 +1,7 @@
 {
   "name": "Lignite Music",
   "author": "Edwin Finch",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "keywords": ["pebble-app"],
   "private": true,
   "dependencies": {},
@@ -11,7 +11,7 @@
     "sdkVersion": "3",
     "enableMultiJS": false,
     "targetPlatforms": [
-      "basalt"
+      "basalt", "chalk"
     ],
     "watchapp": {
       "watchface": false

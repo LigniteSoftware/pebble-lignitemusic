@@ -25,6 +25,12 @@ int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t section_
     return 0;
 }
 
+#ifdef PBL_ROUND
+int16_t menu_get_cell_height(MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context){
+    return MENU_CELL_ROUND_FOCUSED_TALL_CELL_HEIGHT;
+}
+#endif
+
 MenuIndex highlight_index;
 
 void update_highlight_colours(){
@@ -34,11 +40,12 @@ void update_highlight_colours(){
     else{
         menu_layer_set_highlight_colors(main_menu_layer, GColorRed, GColorWhite);
     }
+    layer_mark_dirty(menu_layer_get_layer(main_menu_layer));
 }
 
 void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context){
     highlight_index = new_index;
-    app_timer_register(125, update_highlight_colours, NULL);
+    app_timer_register(PBL_IF_ROUND_ELSE(50, 125), update_highlight_colours, NULL);
 }
 
 void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
@@ -91,7 +98,7 @@ void main_menu_create(Window* window) {
         main_menu_items[i].callback = callbacks[i];
     }
 
-    main_menu_layer = menu_layer_create(GRect(0, 0, 144, 168));
+    main_menu_layer = menu_layer_create(WINDOW_FRAME);
     menu_layer_set_normal_colors(main_menu_layer, GColorBlack, GColorWhite);
     menu_layer_set_highlight_colors(main_menu_layer, GColorRed, GColorWhite);
     menu_layer_set_callbacks(main_menu_layer, NULL, (MenuLayerCallbacks){
@@ -100,6 +107,9 @@ void main_menu_create(Window* window) {
         .get_header_height = menu_get_header_height_callback,
         .draw_row = menu_draw_row_callback,
         .select_click = menu_select_callback,
+        #ifdef PBL_ROUND
+        .get_cell_height = menu_get_cell_height,
+        #endif
         .selection_changed = menu_selection_changed
     });
     menu_layer_set_click_config_onto_window(main_menu_layer, window);

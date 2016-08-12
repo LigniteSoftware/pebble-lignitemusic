@@ -21,6 +21,8 @@ Settings now_playing_settings;
 static bool controlling_volume = false, is_shown = false;
 static GBitmap *icon_pause, *icon_play, *icon_fast_forward, *icon_rewind, *icon_volume_up, *icon_volume_down, *icon_more;
 
+GRect artist_frame;
+
 bool pebble_controls_pushed_select = false;
 
 /*
@@ -135,22 +137,28 @@ void now_playing_animation_tick() {
 
 void now_playing_graphics_proc(Layer *layer, GContext *ctx){
     graphics_context_set_fill_color(ctx, background_colour);
-    graphics_fill_rect(ctx, GRect(0, 144, 144, 40), 0, GCornerNone);
+    #ifdef PBL_ROUND
+    GRect title_frame = GRect(0, 135, 180, 45);
+    #else
+    GRect title_frame = GRect(0, 144, 144, 40);
+    #endif
+
+    graphics_fill_rect(ctx, title_frame, 0, GCornerNone);
 
     if(!now_playing_settings.artist_label){
         return;
     }
 
-    GSize artist_text_size = graphics_text_layout_get_content_size(ipod_get_artist(), artist_font, GRect(22, 119, 100, 24), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter);
+    GSize artist_text_size = graphics_text_layout_get_content_size(ipod_get_artist(), artist_font, artist_frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter);
     uint8_t padding = 4;
     if(artist_text_size.w > 0){
-        int x = (144/2)-(artist_text_size.w/2)-padding;
+        int x = (WINDOW_FRAME.size.w/2)-(artist_text_size.w/2)-padding;
         int width = artist_text_size.w+(padding*2);
         if(x < 22){
             x = 22-padding;
-            width = 100+(padding*2);
+            width = (WINDOW_FRAME.size.w-44)+(padding*2);
         }
-        graphics_fill_rect(ctx, GRect(x, 120, width, 18), 2, GCornersAll);
+        graphics_fill_rect(ctx, GRect(x, artist_frame.origin.y+1, width, 18), 2, GCornersAll);
     }
 }
 
@@ -329,7 +337,13 @@ void now_playing_window_load(Window* window) {
 
     no_album_art_bitmap = gbitmap_create_with_resource(RESOURCE_ID_NO_ALBUM_ART);
 
-    now_playing_album_art_layer = bitmap_layer_create(GRect(0, 0, 144, 144));
+    #ifdef PBL_ROUND
+    GRect album_art_frame = GRect(4, 4, WINDOW_FRAME.size.w-8, WINDOW_FRAME.size.h-45-4);
+    #else
+    GRect album_art_frame = GRect(0, 0, WINDOW_FRAME.size.w, WINDOW_FRAME.size.w);
+    #endif
+
+    now_playing_album_art_layer = bitmap_layer_create(album_art_frame);
     if(now_playing_album_art_bitmap){
         bitmap_layer_set_bitmap(now_playing_album_art_layer, now_playing_album_art_bitmap);
     }
@@ -338,24 +352,33 @@ void now_playing_window_load(Window* window) {
     }
     layer_add_child(window_layer, bitmap_layer_get_layer(now_playing_album_art_layer));
 
-    now_playing_graphics_layer = layer_create(GRect(0, 0, 144, 168));
+    #ifdef PBL_ROUND
+    uint8_t title_offset = 30;
+    GRect title_frame = GRect(title_offset, 132, 180-(title_offset*2), 28);
+    artist_frame = GRect(22, 114, 136, 24);
+    #else
+    GRect title_frame = GRect(2, 142, 140, 28);
+    artist_frame = GRect(22, 119, 100, 24);
+    #endif
+
+    now_playing_graphics_layer = layer_create(WINDOW_FRAME);
     layer_set_update_proc(now_playing_graphics_layer, now_playing_graphics_proc);
     layer_add_child(window_layer, now_playing_graphics_layer);
 
-    now_playing_title_layer = marquee_text_layer_create(GRect(2, 142, 140, 28));
+    now_playing_title_layer = marquee_text_layer_create(title_frame);
     marquee_text_layer_set_font(now_playing_title_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
     marquee_text_layer_set_text(now_playing_title_layer, ipod_get_title());
     layer_add_child(window_layer, marquee_text_layer_get_layer(now_playing_title_layer));
 
     artist_font = fonts_get_system_font(FONT_KEY_GOTHIC_14);
-    now_playing_artist_layer = marquee_text_layer_create(GRect(22, 119, 100, 24));
+    now_playing_artist_layer = marquee_text_layer_create(artist_frame);
     marquee_text_layer_set_font(now_playing_artist_layer, artist_font);
     marquee_text_layer_set_text(now_playing_artist_layer, ipod_get_artist());
     layer_add_child(window_layer, marquee_text_layer_get_layer(now_playing_artist_layer));
 
     now_playing_check_for_no_music();
 
-    now_playing_progress_bar = progress_bar_layer_create(GRect(0, 0, 144, 168));
+    now_playing_progress_bar = progress_bar_layer_create(GRect(0, 0, WINDOW_FRAME.size.w, WINDOW_FRAME.size.h));
     layer_add_child(window_layer, progress_bar_layer_get_layer(now_playing_progress_bar));
 
     control_action_bar = action_bar_layer_create();

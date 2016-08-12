@@ -44,11 +44,20 @@ void progress_bar_layer_set_value(ProgressBarLayer* bar, int32_t value) {
     }
 }
 
-static void progress_bar_update_proc(Layer* layer, GContext *context) {
+static void progress_bar_update_proc(Layer* layer, GContext *ctx) {
     ProgressBarLayer* bar = ((ProgressBarData*)layer_get_data(layer))->progress_bar;
 
     GRect bounds = layer_get_bounds(layer);
+    #ifdef PBL_ROUND
+    graphics_context_set_fill_color(ctx, GColorBlack);
+    graphics_fill_radial(ctx, bounds, GOvalScaleModeFitCircle, 5, 0, DEG_TO_TRIGANGLE(360));
+
+    int percentage = (((bar->value)*100)/bar->max);
+    graphics_context_set_fill_color(ctx, bar->bar_colour);
+    graphics_fill_radial(ctx, bounds, GOvalScaleModeFitCircle, 5, 0, DEG_TO_TRIGANGLE(percentage*3.6));
+    #else
     bounds.size.w = ((bar->value - bar->min) * bounds.size.w) / (bar->max - bar->min);
-    graphics_context_set_fill_color(context, bar->bar_colour);
-    graphics_fill_rect(context, GRect(bounds.origin.x, 166, bounds.size.w, 3), 0, GCornerNone);
+    graphics_context_set_fill_color(ctx, bar->bar_colour);
+    graphics_fill_rect(ctx, GRect(bounds.origin.x, 166, bounds.size.w, 3), 0, GCornerNone);
+    #endif
 }

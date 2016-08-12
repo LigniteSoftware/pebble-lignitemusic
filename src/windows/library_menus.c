@@ -17,6 +17,12 @@ void library_menus_create() {
     menu_stack_count = -1;
 }
 
+#ifdef PBL_ROUND
+int16_t library_menu_get_cell_height(MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context){
+    return MENU_CELL_ROUND_FOCUSED_TALL_CELL_HEIGHT;
+}
+#endif
+
 void library_menus_pop_all(){
     for(uint8_t i = 0; i < MENU_STACK_DEPTH; i++){
         if(menu_stack[i]){
@@ -148,15 +154,21 @@ void library_menus_display_view(MPMediaGrouping grouping, char *title, char *sub
 
     menu->window = window_create();
 
-    menu->layer = menu_layer_create(GRect(0, 0, 144, 168));
+    menu->layer = menu_layer_create(WINDOW_FRAME);
 
     menu_layer_set_click_config_onto_window(menu->layer, menu->window);
-    menu_layer_set_callbacks(menu->layer, menu, (MenuLayerCallbacks){
+    MenuLayerCallbacks menu_callbacks = (MenuLayerCallbacks){
         .get_num_rows = get_num_rows,
         .draw_row = draw_row,
         .selection_changed = selection_changed,
-        .select_click = select_click,
-    });
+        .select_click = select_click
+    };
+    #ifdef PBL_ROUND
+    if(grouping != MPMediaGroupingTitle){
+        menu_callbacks.get_cell_height = library_menu_get_cell_height;
+    }
+    #endif
+    menu_layer_set_callbacks(menu->layer, menu, menu_callbacks);
     menu_layer_set_normal_colors(menu->layer, GColorBlack, GColorWhite);
     menu_layer_set_highlight_colors(menu->layer, GColorWhite, GColorBlack);
     layer_add_child(window_get_root_layer(menu->window), menu_layer_get_layer(menu->layer));

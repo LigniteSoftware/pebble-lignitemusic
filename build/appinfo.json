@@ -1,13 +1,14 @@
 {
     "targetPlatforms": [
-        "basalt"
+        "basalt", 
+        "chalk"
     ], 
     "displayName": "Lignite Music", 
     "name": "Lignite Music", 
     "messageKeys": {}, 
     "companyName": "Edwin Finch", 
     "enableMultiJS": false, 
-    "versionLabel": "0.3", 
+    "versionLabel": "0.4", 
     "capabilities": [], 
     "sdkVersion": "3", 
     "appKeys": {}, 

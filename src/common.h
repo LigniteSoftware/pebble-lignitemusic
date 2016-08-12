@@ -2,6 +2,12 @@
 
 #define IPOD_MESSAGE_DESTROY_TIME 500
 
+#ifdef PBL_ROUND
+#define WINDOW_FRAME GRect(0, 0, 180, 180)
+#else
+#define WINDOW_FRAME GRect(0, 0, 144, 168)
+#endif
+
 #include <lignite_music.h>
 
 /*
@@ -42,6 +48,7 @@ typedef enum {
     MessageKeyHeaderIcon,
     MessageKeyHeaderIconLength,
     MessageKeyHeaderIconIndex,
+    MessageKeyWatchModel,
     MessageKeySettingBatterySaver = 100,
     MessageKeySettingArtistLabel = 101,
     MessageKeySettingPebbleStyleControls = 102
