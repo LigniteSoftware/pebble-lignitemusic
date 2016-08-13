@@ -1,5 +1,6 @@
 {
     "targetPlatforms": [
+        "aplite", 
         "basalt", 
         "chalk"
     ], 

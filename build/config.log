@@ -1,4 +1,4 @@
-# project  configured on Fri Aug 12 00:19:44 2016 by
+# project  configured on Sat Aug 13 14:02:16 2016 by
 # waf 1.7.11 (abi 98, python 2070af0 on darwin)
 # using /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/waf configure
 #
@@ -22,6 +22,17 @@ find program=['ar'] paths='' var='AR' -> 'arm-none-eabi-ar'
 ----------------------------------------
 Found Pebble SDK for basalt in:
 /Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/basalt
+----------------------------------------
+Checking for program gcc,cc
+arm-none-eabi-gcc
+find program=['gcc', 'cc'] paths='' var='CC' -> 'arm-none-eabi-gcc'
+----------------------------------------
+Checking for program ar
+arm-none-eabi-ar
+find program=['ar'] paths='' var='AR' -> 'arm-none-eabi-ar'
+----------------------------------------
+Found Pebble SDK for aplite in:
+/Users/edwinfinch/Library/Application Support/Pebble SDK/SDKs/current/sdk-core/pebble/aplite
 ----------------------------------------
 Checking for program gcc,cc
 arm-none-eabi-gcc

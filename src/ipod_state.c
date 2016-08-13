@@ -2,9 +2,9 @@
 
 iPodStateCallback ipod_state_callback;
 
-GBitmap *album_art_bitmap, *library_icon_album_art_bitmap;
-static uint8_t *album_art_data, *library_icon_album_art_data;
-static int now_playing_album_art_size = 0, header_icon_album_art_size = 0;
+GBitmap *album_art_bitmap[IMAGE_PARTS], *library_icon_album_art_bitmap;
+static uint8_t *album_art_data[IMAGE_PARTS], *library_icon_album_art_data;
+static int now_playing_album_art_size[IMAGE_PARTS], header_icon_album_art_size = 0;
 
 MPMusicRepeatMode s_repeat_mode;
 MPMusicShuffleMode s_shuffle_mode;
@@ -84,6 +84,8 @@ void now_playing_request(bool force_reload) {
     uint8_t value = force_reload ? 100 : 200;
     dict_write_int8(ipodMessage->iter, MessageKeyNowPlaying, value);
     dict_write_int8(ipodMessage->iter, MessageKeyWatchModel, watch_info_get_model());
+    dict_write_int8(ipodMessage->iter, MessageKeyImageParts, IMAGE_PARTS);
+
     app_message_outbox_send();
 
     ipod_message_destroy(ipodMessage);
@@ -104,31 +106,42 @@ void call_callback(bool track_data) {
     ipod_state_callback(track_data);
 }
 
-void create_bitmap(){
-    if(album_art_bitmap){
+void create_bitmap(uint8_t image_part){
+    if(album_art_bitmap[image_part]){
         return;
     }
-    NSLog("Creating bitmap with data %p, size %d and heap free %d.", album_art_data, now_playing_album_art_size, heap_bytes_free());
-    album_art_bitmap = gbitmap_create_from_png_data(album_art_data, now_playing_album_art_size);
-    NSLog("Done. Got %p.", album_art_bitmap);
 
-    GSize size = gbitmap_get_bounds(album_art_bitmap).size;
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"png_header: %c%c%c", *((char*)(album_art_data[image_part]+1)), *((char*)(album_art_data[image_part]+2)), *((char*)(album_art_data[image_part]+3)));
 
-    if(album_art_bitmap == NULL || size.w == 0){
-        now_playing_set_album_art(NULL);
+    NSLog("Creating bitmap with data %p, size %d and heap free %d.", album_art_data, now_playing_album_art_size[image_part], heap_bytes_free());
+    album_art_bitmap[image_part] = gbitmap_create_from_png_data(album_art_data[image_part], now_playing_album_art_size[image_part]);
+    NSLog("Done. Got %p.", album_art_bitmap[image_part]);
+
+    GSize size = gbitmap_get_bounds(album_art_bitmap[image_part]).size;
+
+    if(album_art_bitmap[image_part] == NULL || size.w == 0){
+        NSError("Nothing");
     }
     else{
-        now_playing_set_album_art(album_art_bitmap);
+        now_playing_set_album_art(image_part, album_art_bitmap[image_part]);
     }
 
-    free(album_art_data);
-    album_art_data = NULL;
+    free(album_art_data[image_part]);
+    album_art_data[image_part] = NULL;
+
+    NSLog("Free %d", heap_bytes_free());
 }
 
 void process_album_art_tuple(DictionaryIterator *albumArtDict){
+    Tuple *albumArtImagePartTuple = dict_find(albumArtDict, MessageKeyImageParts);
+    if(!albumArtImagePartTuple){
+        return;
+    }
+    uint8_t image_part = albumArtImagePartTuple->value->uint8;
+
     Tuple *albumArtTuple = dict_find(albumArtDict, MessageKeyAlbumArt);
     if(albumArtTuple) {
-        if(!album_art_data){
+        if(!album_art_data[image_part]){
             return;
         }
 
@@ -137,39 +150,34 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
             return;
         }
         size_t index = albumArtIndexTuple->value->uint16 * MAX_BYTES;
-        memcpy(&album_art_data[index], albumArtTuple->value->data, albumArtTuple->length);
+        memcpy(&album_art_data[image_part][index], albumArtTuple->value->data, albumArtTuple->length);
 
-        if(((albumArtIndexTuple->value->uint16 * MAX_BYTES) + albumArtTuple->length) == now_playing_album_art_size){
-            app_timer_register(125, create_bitmap, NULL);
+        if(((albumArtIndexTuple->value->uint16 * MAX_BYTES) + albumArtTuple->length) == now_playing_album_art_size[image_part]){
+            create_bitmap(image_part);
         }
     }
     else{
         Tuple* albumArtLengthTuple = dict_find(albumArtDict, MessageKeyAlbumArtLength);
-        //TODO check this shit
         if(albumArtLengthTuple){
             uint16_t length = albumArtLengthTuple->value->uint16;
 
             NSLog("Got size for image %d, heap free %d", length, heap_bytes_free());
-            if(album_art_data){
-                NSLog("Destroying album art data.");
-                free(album_art_data);
+            if(album_art_data[image_part]){
+                free(album_art_data[image_part]);
             }
-            if(album_art_bitmap){
-                NSLog("Destroying album art bitmap.");
-                now_playing_set_album_art(NULL);
-                gbitmap_destroy(album_art_bitmap);
-                album_art_bitmap = NULL;
+            if(album_art_bitmap[image_part]){
+                now_playing_set_album_art(image_part, NULL);
+                gbitmap_destroy(album_art_bitmap[image_part]);
+                album_art_bitmap[image_part] = NULL;
             }
-            album_art_data = malloc(length);
-            if(!album_art_data){
+            album_art_data[image_part] = malloc(length);
+            if(!album_art_data[image_part]){
                 NSError("Album art data FAILED to create with a size of %d bytes!", length);
             }
-            now_playing_album_art_size = length;
+            now_playing_album_art_size[image_part] = length;
 
-            //You're probably not gonna have a PNG that's 1 byte lol, so if it is it's the phone telling you
-            //that there's no fucking album art
-            if(now_playing_album_art_size == 1){
-                now_playing_set_album_art(NULL);
+            if(now_playing_album_art_size[image_part] == 1){ //No album art
+                now_playing_set_album_art(image_part, NULL);
             }
             else{
                 NSLog("Ready for image input.");

@@ -3,7 +3,11 @@
 #include <lignite_music.h>
 
 //TODO: change this if there is less memory available.
+#ifdef PBL_PLATFORM_APLITE
+#define MENU_CACHE_COUNT 20
+#else
 #define MENU_CACHE_COUNT 30
+#endif
 #define MENU_ENTRY_LENGTH 21
 #define MENU_STACK_DEPTH 4 // Deepest: genres -> artists -> albums -> songs
 #define MAX_MENU_ENTRIES 725

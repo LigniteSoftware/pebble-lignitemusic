@@ -8,6 +8,16 @@
 #define WINDOW_FRAME GRect(0, 0, 144, 168)
 #endif
 
+#ifdef PBL_PLATFORM_APLITE
+#define IMAGE_PARTS 3
+#elif PBL_PLATFORM_BASALT
+#define IMAGE_PARTS 2
+#elif PBL_PLATFORM_CHALK
+#define IMAGE_PARTS 3
+#else
+#define IMAGE_PARTS 1
+#endif
+
 #include <lignite_music.h>
 
 /*
@@ -49,6 +59,7 @@ typedef enum {
     MessageKeyHeaderIconLength,
     MessageKeyHeaderIconIndex,
     MessageKeyWatchModel,
+    MessageKeyImageParts,
     MessageKeySettingBatterySaver = 100,
     MessageKeySettingArtistLabel = 101,
     MessageKeySettingPebbleStyleControls = 102

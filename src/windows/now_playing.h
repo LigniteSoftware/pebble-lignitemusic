@@ -38,7 +38,8 @@ void now_playing_animation_tick();
 
 /**
  * Sets the album art of the now playing window.
- * @param album_art The album art to set. If NULL, a generic no-album-art cover
+ * @param image_part The part of the image to be set.
+ * @param album_art  The album art to set. If NULL, a generic no-album-art cover
  * will be displayed automagically.
  */
-void now_playing_set_album_art(GBitmap *album_art);
+void now_playing_set_album_art(uint8_t image_part, GBitmap *album_art);

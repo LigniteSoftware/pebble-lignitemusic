@@ -5,12 +5,12 @@ void now_playing_action_bar_handle(bool is_select);
 Window *now_playing_window;
 
 ActionBarLayer *control_action_bar;
-BitmapLayer *now_playing_album_art_layer;
+BitmapLayer *now_playing_album_art_layer[IMAGE_PARTS];
 Layer *now_playing_graphics_layer;
 MarqueeTextLayer *now_playing_title_layer, *now_playing_artist_layer;
 ProgressBarLayer *now_playing_progress_bar;
 
-GBitmap *now_playing_album_art_bitmap, *no_album_art_bitmap;
+GBitmap *now_playing_album_art_bitmap[IMAGE_PARTS], *no_album_art_bitmap;
 
 AppTimer *now_playing_timer, *action_bar_timer, *invert_controls_timer;
 GColor background_colour;
@@ -30,7 +30,8 @@ bool pebble_controls_pushed_select = false;
  * to display a basic coverart
  */
 void display_no_album() {
-    bitmap_layer_set_bitmap(now_playing_album_art_layer, no_album_art_bitmap);
+    NSLog("Display no album");
+    //bitmap_layer_set_bitmap(now_playing_album_art_layer, no_album_art_bitmap);
     //bitmap_layer_set_bitmap(now_playing_album_art_layer, NULL);
 }
 
@@ -97,11 +98,11 @@ void now_playing_state_callback(bool track_data) {
     }
 }
 
-void now_playing_set_album_art(GBitmap *album_art){
+void now_playing_set_album_art(uint8_t image_part, GBitmap *album_art){
     NSLog("Setting album art");
-    now_playing_album_art_bitmap = album_art;
+    now_playing_album_art_bitmap[image_part] = album_art;
 
-    if(!now_playing_album_art_layer){
+    if(!now_playing_album_art_layer[image_part]){
         NSWarn("Album art layer doesn't exist, fool");
         return;
     }
@@ -110,10 +111,10 @@ void now_playing_set_album_art(GBitmap *album_art){
         return;
     }
 
-    if(now_playing_album_art_layer){
-        bitmap_layer_set_bitmap(now_playing_album_art_layer, now_playing_album_art_bitmap);
+    if(now_playing_album_art_layer[image_part]){
+        bitmap_layer_set_bitmap(now_playing_album_art_layer[image_part], now_playing_album_art_bitmap[image_part]);
     }
-    NSLog("Set");
+    NSLog("Set on %d", image_part);
 }
 
 void now_playing_tick() {
@@ -337,20 +338,18 @@ void now_playing_window_load(Window* window) {
 
     no_album_art_bitmap = gbitmap_create_with_resource(RESOURCE_ID_NO_ALBUM_ART);
 
-    #ifdef PBL_ROUND
-    GRect album_art_frame = GRect(4, 4, WINDOW_FRAME.size.w-8, WINDOW_FRAME.size.h-45-4);
-    #else
-    GRect album_art_frame = GRect(0, 0, WINDOW_FRAME.size.w, WINDOW_FRAME.size.w);
-    #endif
-
-    now_playing_album_art_layer = bitmap_layer_create(album_art_frame);
-    if(now_playing_album_art_bitmap){
-        bitmap_layer_set_bitmap(now_playing_album_art_layer, now_playing_album_art_bitmap);
+    for(uint8_t i = 0; i < IMAGE_PARTS; i++){
+        uint16_t image_width = WINDOW_FRAME.size.w/IMAGE_PARTS;
+        GRect image_frame = GRect(image_width*i, 0, image_width, WINDOW_FRAME.size.h-PBL_IF_ROUND_ELSE(45, 168-144));
+        now_playing_album_art_layer[i] = bitmap_layer_create(image_frame);
+        if(now_playing_album_art_bitmap[i]){
+            bitmap_layer_set_bitmap(now_playing_album_art_layer[i], now_playing_album_art_bitmap[i]);
+        }
+        else{
+            display_no_album();
+        }
+        layer_add_child(window_layer, bitmap_layer_get_layer(now_playing_album_art_layer[i]));
     }
-    else{
-        display_no_album();
-    }
-    layer_add_child(window_layer, bitmap_layer_get_layer(now_playing_album_art_layer));
 
     #ifdef PBL_ROUND
     uint8_t title_offset = 30;
@@ -431,8 +430,10 @@ void now_playing_window_unload(Window* window) {
     gbitmap_destroy(icon_volume_up);
     gbitmap_destroy(icon_volume_down);
 
-    bitmap_layer_destroy(now_playing_album_art_layer);
-    now_playing_album_art_layer = NULL;
+    for(uint8_t i = 0; i < IMAGE_PARTS; i++){
+        bitmap_layer_destroy(now_playing_album_art_layer[i]);
+        now_playing_album_art_layer[i] = NULL;
+    }
 
     ipod_state_set_callback(NULL);
 

@@ -148,9 +148,14 @@ void library_menus_display_view(MPMediaGrouping grouping, char *title, char *sub
     clear_library_entry_data(menu->titles);
     clear_library_entry_data(menu->subtitles);
 
+    #ifdef PBL_PLATFORM_APLITE
+    menu->icon = NULL;
+    menu->icon_inverted = NULL;
+    #else
     menu->icon = library_menus_gbitmap_from_media_grouping(menu->grouping);
     menu->icon_inverted = library_menus_gbitmap_from_media_grouping(menu->grouping);
     replace_gbitmap_color(GColorWhite, GColorBlack, menu->icon_inverted, NULL);
+    #endif
 
     menu->window = window_create();
 
@@ -179,10 +184,14 @@ void library_menus_display_view(MPMediaGrouping grouping, char *title, char *sub
         .unload = library_menus_window_unload,
     });
 
+    #ifndef PBL_PLATFORM_APLITE
     menu->loading_window = message_window_create();
     message_window_set_text(menu->loading_window, "Loading...");
     message_window_set_icon(menu->loading_window, menu->icon, false);
     message_window_push_on_window(menu->loading_window, menu->window, false);
+    #else
+    menu->loading_window = NULL;
+    #endif
 
     send_library_request(grouping, 0);
 }
@@ -213,8 +222,12 @@ void library_menus_window_unload(Window* window) {
             library_menu->loading_window = NULL;
         }
 
-        gbitmap_destroy(library_menu->icon);
-        gbitmap_destroy(library_menu->icon_inverted);
+        if(library_menu->icon){
+            gbitmap_destroy(library_menu->icon);
+        }
+        if(library_menu->icon_inverted){
+            gbitmap_destroy(library_menu->icon_inverted);
+        }
 
         free(library_menu->titles);
         free(library_menu->subtitles);
@@ -316,8 +329,10 @@ void library_menus_inbox(DictionaryIterator *received) {
         }
 
         menu_layer_reload_data(menu->layer);
+        #ifndef PBL_PLATFORM_APLITE
         message_window_pop_off_window(menu->loading_window, true, false);
         app_timer_register(500, library_menus_clean_up, menu);
+        #endif
 
         if(!menu->has_autoselected && menu->title_and_subtitle){
             menu_layer_set_selected_index(menu->layer, (MenuIndex){.section = 0, .row = 1}, MenuRowAlignNone, false);
