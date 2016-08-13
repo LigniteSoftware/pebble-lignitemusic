@@ -3,8 +3,10 @@
 Window *window;
 
 void ipod_create() {
+    NSLog("Before load %d", heap_bytes_free());
     window = window_create();
     window_stack_push(window, true);
+    NSLog("After load %d", heap_bytes_free());
 
     main_menu_create(window);
     library_menus_create();
@@ -58,11 +60,12 @@ void pebble_app_connection_handler(bool connected){
 }
 
 int main() {
+    NSWarn("Before main %d", heap_bytes_free());
     settings_load();
 
     app_message_register_inbox_dropped(dropped_inbox);
     app_message_register_outbox_failed(failed_outbox);
-    app_message_open(1504, 1504);
+    app_message_open(APP_MESSAGE_SIZE, APP_MESSAGE_SIZE);
 
     tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
     connection_service_subscribe((ConnectionHandlers){
@@ -71,6 +74,7 @@ int main() {
     });
 
     ipod_create();
+    NSWarn("After main %d", heap_bytes_free());
     app_event_loop();
 
     settings_save();

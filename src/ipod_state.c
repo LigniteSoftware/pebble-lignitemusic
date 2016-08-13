@@ -73,6 +73,9 @@ void ipod_set_shuffle_mode(MPMusicShuffleMode shuffle) {}
 void ipod_set_repeat_mode(MPMusicRepeatMode repeat) {}
 
 void now_playing_request(bool force_reload) {
+    // NSWarn("Rejecting request");
+    // return;
+
     iPodMessage *ipodMessage = ipod_message_outbox_get();
     if(!ipodMessage->iter){
         NSError("Iter is null!");
@@ -85,6 +88,7 @@ void now_playing_request(bool force_reload) {
     dict_write_int8(ipodMessage->iter, MessageKeyNowPlaying, value);
     dict_write_int8(ipodMessage->iter, MessageKeyWatchModel, watch_info_get_model());
     dict_write_int8(ipodMessage->iter, MessageKeyImageParts, IMAGE_PARTS);
+    dict_write_int16(ipodMessage->iter, MessageKeyAppMessageSize, APP_MESSAGE_SIZE-4);
 
     app_message_outbox_send();
 
@@ -111,9 +115,9 @@ void create_bitmap(uint8_t image_part){
         return;
     }
 
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"png_header: %c%c%c", *((char*)(album_art_data[image_part]+1)), *((char*)(album_art_data[image_part]+2)), *((char*)(album_art_data[image_part]+3)));
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"png_header for %p: %c%c%c", album_art_data[image_part], *((char*)(album_art_data[image_part]+1)), *((char*)(album_art_data[image_part]+2)), *((char*)(album_art_data[image_part]+3)));
 
-    NSLog("Creating bitmap with data %p, size %d and heap free %d.", album_art_data, now_playing_album_art_size[image_part], heap_bytes_free());
+    NSLog("Creating bitmap with data %p, size %d and heap free %d.", album_art_data[image_part], now_playing_album_art_size[image_part], heap_bytes_free());
     album_art_bitmap[image_part] = gbitmap_create_from_png_data(album_art_data[image_part], now_playing_album_art_size[image_part]);
     NSLog("Done. Got %p.", album_art_bitmap[image_part]);
 
@@ -139,9 +143,12 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
     }
     uint8_t image_part = albumArtImagePartTuple->value->uint8;
 
+    NSLog("Got image part %d", image_part);
+
     Tuple *albumArtTuple = dict_find(albumArtDict, MessageKeyAlbumArt);
     if(albumArtTuple) {
         if(!album_art_data[image_part]){
+            NSError("Rejecting");
             return;
         }
 
@@ -150,9 +157,11 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
             return;
         }
         size_t index = albumArtIndexTuple->value->uint16 * MAX_BYTES;
+        NSWarn("Got index %d with current length %d and total %d", albumArtIndexTuple->value->uint16, ((albumArtIndexTuple->value->uint16 * MAX_BYTES) + albumArtTuple->length), now_playing_album_art_size[image_part]);
         memcpy(&album_art_data[image_part][index], albumArtTuple->value->data, albumArtTuple->length);
 
         if(((albumArtIndexTuple->value->uint16 * MAX_BYTES) + albumArtTuple->length) == now_playing_album_art_size[image_part]){
+            NSLog("Creating");
             create_bitmap(image_part);
         }
     }
@@ -161,8 +170,9 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
         if(albumArtLengthTuple){
             uint16_t length = albumArtLengthTuple->value->uint16;
 
-            NSLog("Got size for image %d, heap free %d", length, heap_bytes_free());
+            NSLog("Got size for image %d: %d, heap free %d", image_part, length, heap_bytes_free());
             if(album_art_data[image_part]){
+                NSLog("Freeing album art data for part %d.", image_part);
                 free(album_art_data[image_part]);
             }
             if(album_art_bitmap[image_part]){
@@ -175,6 +185,7 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
                 NSError("Album art data FAILED to create with a size of %d bytes!", length);
             }
             now_playing_album_art_size[image_part] = length;
+            NSLog("Created data %p with length %d", album_art_data[image_part], now_playing_album_art_size[image_part]);
 
             if(now_playing_album_art_size[image_part] == 1){ //No album art
                 now_playing_set_album_art(image_part, NULL);

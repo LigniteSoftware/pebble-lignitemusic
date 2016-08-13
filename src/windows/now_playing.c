@@ -336,7 +336,10 @@ void now_playing_window_load(Window* window) {
     icon_volume_down = gbitmap_create_with_resource(RESOURCE_ID_ICON_VOLUME_DOWN);
     icon_more = gbitmap_create_with_resource(RESOURCE_ID_ICON_MORE);
 
+    #ifndef PBL_PLATFORM_APLITE
     no_album_art_bitmap = gbitmap_create_with_resource(RESOURCE_ID_NO_ALBUM_ART);
+    no_album_art_bitmap = NULL;
+    #endif
 
     for(uint8_t i = 0; i < IMAGE_PARTS; i++){
         uint16_t image_width = WINDOW_FRAME.size.w/IMAGE_PARTS;
@@ -422,7 +425,9 @@ void now_playing_window_unload(Window* window) {
 
     layer_destroy(now_playing_graphics_layer);
 
-    gbitmap_destroy(no_album_art_bitmap);
+    if(no_album_art_bitmap){
+        gbitmap_destroy(no_album_art_bitmap);
+    }
     gbitmap_destroy(icon_pause);
     gbitmap_destroy(icon_play);
     gbitmap_destroy(icon_fast_forward);

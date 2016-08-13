@@ -4,13 +4,18 @@
 
 //TODO: change this if there is less memory available.
 #ifdef PBL_PLATFORM_APLITE
-#define MENU_CACHE_COUNT 20
+#define MENU_CACHE_COUNT 15
 #else
 #define MENU_CACHE_COUNT 30
 #endif
 #define MENU_ENTRY_LENGTH 21
 #define MENU_STACK_DEPTH 4 // Deepest: genres -> artists -> albums -> songs
+
+#ifdef PBL_PLATFORM_APLITE
+#define MAX_MENU_ENTRIES 500
+#else
 #define MAX_MENU_ENTRIES 725
+#endif
 
 typedef struct {
     char entries[MENU_CACHE_COUNT][MENU_ENTRY_LENGTH];

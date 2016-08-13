@@ -2,6 +2,12 @@
 
 #define IPOD_MESSAGE_DESTROY_TIME 500
 
+#ifdef PBL_PLATFORM_APLITE
+#define APP_MESSAGE_SIZE 404
+#else
+#define APP_MESSAGE_SIZE 1504
+#endif
+
 #ifdef PBL_ROUND
 #define WINDOW_FRAME GRect(0, 0, 180, 180)
 #else
@@ -35,7 +41,7 @@ but skips the step of adding in the (almost) arbitrary first parameter.
 
 //The max amount of bytes that can be received from the phone at once.
 //(always one less than the value on the companion app)
-#define MAX_BYTES 1499
+#define MAX_BYTES (APP_MESSAGE_SIZE-5)
 
 /**
  * The keys associated with data incoming and outgoing from and to the phone.
@@ -60,6 +66,7 @@ typedef enum {
     MessageKeyHeaderIconIndex,
     MessageKeyWatchModel,
     MessageKeyImageParts,
+    MessageKeyAppMessageSize,
     MessageKeySettingBatterySaver = 100,
     MessageKeySettingArtistLabel = 101,
     MessageKeySettingPebbleStyleControls = 102
