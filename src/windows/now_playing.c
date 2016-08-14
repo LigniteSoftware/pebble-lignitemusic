@@ -326,6 +326,8 @@ void now_playing_new_settings(Settings new_settings){
 void now_playing_window_load(Window* window) {
     Layer *window_layer = window_get_root_layer(window);
 
+    main_menu_destroy();
+
     now_playing_settings = settings_get_settings();
 
     icon_pause = gbitmap_create_with_resource(RESOURCE_ID_ICON_PAUSE);
@@ -338,6 +340,7 @@ void now_playing_window_load(Window* window) {
 
     #ifndef PBL_PLATFORM_APLITE
     no_album_art_bitmap = gbitmap_create_with_resource(RESOURCE_ID_NO_ALBUM_ART);
+    #else
     no_album_art_bitmap = NULL;
     #endif
 
@@ -445,6 +448,8 @@ void now_playing_window_unload(Window* window) {
     window_destroy(now_playing_window);
 
     is_shown = false;
+
+    main_menu_create(NULL);
 }
 
 void now_playing_show() {
@@ -454,17 +459,14 @@ void now_playing_show() {
     }
     background_colour = GColorBlack;
 
-    NSLog("Creating window");
     now_playing_window = window_create();
     window_set_background_color(now_playing_window, GColorWhite);
     window_set_window_handlers(now_playing_window, (WindowHandlers){
         .unload = now_playing_window_unload,
         .load = now_playing_window_load,
     });
-    NSLog("Created");
 
     window_stack_push(now_playing_window, true);
-    NSLog("Pushed");
 }
 
 bool now_playing_is_shown(){

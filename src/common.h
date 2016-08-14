@@ -27,11 +27,14 @@
 #include <lignite_music.h>
 
 /*
-The next three functions are convenience functions to log using APP_LOG,
+The next four functions are convenience functions to log using APP_LOG,
 but skips the step of adding in the (almost) arbitrary first parameter.
  */
 #define NSLog(fmt, args...)                                \
   app_log(APP_LOG_LEVEL_INFO, __FILE_NAME__, __LINE__, fmt, ## args);
+
+#define NSDebug(fmt, args...)                                \
+  app_log(APP_LOG_LEVEL_DEBUG, __FILE_NAME__, __LINE__, fmt, ## args);
 
 #define NSWarn(fmt, args...)                                \
   app_log(APP_LOG_LEVEL_WARNING, __FILE_NAME__, __LINE__, fmt, ## args);

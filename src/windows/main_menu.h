@@ -16,3 +16,9 @@ typedef void (*MainMenuCallback)();
  * @param window The window to attach the menu onto.
  */
 void main_menu_create(Window* window);
+
+/**
+ * Destroys the main window. To save around 700 bytes, call this when another
+ * window is loaded.
+ */
+void main_menu_destroy();

@@ -7,11 +7,19 @@ void open_playlist_list(int index, void* context);
 void open_composer_list(int index, void* context);
 void open_genre_list(int index, void* context);
 
+uint32_t resource_ids[AMOUNT_OF_MAIN_MENU_ITEMS] = {
+    RESOURCE_ID_ICON_NOW_PLAYING, RESOURCE_ID_ICON_PLAYLISTS,
+    RESOURCE_ID_ICON_ARTISTS, RESOURCE_ID_ICON_ALBUMS,
+    RESOURCE_ID_ICON_COMPOSERS, RESOURCE_ID_ICON_GENRES
+};
+
 SimpleMenuItem main_menu_items[AMOUNT_OF_MAIN_MENU_ITEMS];
 
-MenuLayer *main_menu_layer;
+MenuLayer *main_menu_layer = NULL;
 GBitmap *main_menu_icons[AMOUNT_OF_MAIN_MENU_ITEMS];
 GBitmap *main_menu_icons_inverted[AMOUNT_OF_MAIN_MENU_ITEMS];
+
+Window *main_menu_window;
 
 uint16_t main_menu_get_num_sections(MenuLayer *menu_layer, void *data) {
     return 1;
@@ -75,11 +83,16 @@ void main_menu_destroy_warning(void *warning){
 }
 
 void main_menu_create(Window* window) {
-    uint32_t resource_ids[AMOUNT_OF_MAIN_MENU_ITEMS] = {
-        RESOURCE_ID_ICON_NOW_PLAYING, RESOURCE_ID_ICON_PLAYLISTS,
-        RESOURCE_ID_ICON_ARTISTS, RESOURCE_ID_ICON_ALBUMS,
-        RESOURCE_ID_ICON_COMPOSERS, RESOURCE_ID_ICON_GENRES
-    };
+    if(!main_menu_window && window){
+        main_menu_window = window;
+    }
+    if(main_menu_window && !window){
+        window = main_menu_window;
+    }
+    if(!main_menu_window && !window){
+        NSError("Windows error: both windows are NULL. Rejecting, gutlessly.");
+        return;
+    }
 
     static char *titles[AMOUNT_OF_MAIN_MENU_ITEMS] = {
         "Now Playing", "Playlists", "Artists", "Albums", "Composers", "Genres"
@@ -92,9 +105,13 @@ void main_menu_create(Window* window) {
 
     for(int i = 0; i < AMOUNT_OF_MAIN_MENU_ITEMS; i++){
         main_menu_items[i].title = titles[i];
-        //main_menu_icons[i] = gbitmap_create_with_resource(resource_ids[i]);
-        //main_menu_icons_inverted[i] = gbitmap_create_with_resource(resource_ids[i]);
-        //replace_gbitmap_color(GColorWhite, GColorBlack, main_menu_icons_inverted[i], NULL);
+
+        #ifndef PBL_PLATFORM_APLITE
+        main_menu_icons[i] = gbitmap_create_with_resource(resource_ids[i]);
+        main_menu_icons_inverted[i] = gbitmap_create_with_resource(resource_ids[i]);
+        replace_gbitmap_color(GColorWhite, GColorBlack, main_menu_icons_inverted[i], NULL);
+        #endif
+
         main_menu_items[i].callback = callbacks[i];
     }
 
@@ -125,6 +142,20 @@ void main_menu_create(Window* window) {
 
         vibes_long_pulse();
     }
+
+}
+
+void main_menu_destroy(){
+    NSDebug("Before destroy %d", heap_bytes_free());
+    #ifndef PBL_PLATFORM_APLITE
+    for(int i = 0; i < AMOUNT_OF_MAIN_MENU_ITEMS; i++){
+        gbitmap_destroy(main_menu_icons[i]);
+        gbitmap_destroy(main_menu_icons_inverted[i]);
+    }
+    #endif
+
+    menu_layer_destroy(main_menu_layer);
+    NSDebug("After destroy %d", heap_bytes_free());
 }
 
 void open_now_playing(int index, void *context) {

@@ -28,8 +28,6 @@ void message_window_update_frames(MessageWindow *window){
 MessageWindow *message_window_create(){
     MessageWindow *new_message_window = malloc(sizeof(MessageWindow));
 
-    NSLog("Size is %d and reference %d", sizeof(MessageWindow), sizeof(MessageWindowReference));
-
     new_message_window->root_layer = layer_create_with_data(GRect(WINDOW_FRAME.origin.x,
         -WINDOW_FRAME.size.h, WINDOW_FRAME.size.w, WINDOW_FRAME.size.h), sizeof(MessageWindowReference));
 

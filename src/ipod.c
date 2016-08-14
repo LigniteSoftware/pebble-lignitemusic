@@ -6,9 +6,10 @@ void ipod_create() {
     NSLog("Before load %d", heap_bytes_free());
     window = window_create();
     window_stack_push(window, true);
-    NSLog("After load %d", heap_bytes_free());
 
     main_menu_create(window);
+    NSLog("After load %d", heap_bytes_free());
+
     library_menus_create();
     ipod_state_create();
 }
