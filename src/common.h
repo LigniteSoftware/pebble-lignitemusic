@@ -15,7 +15,7 @@
 #endif
 
 #ifdef PBL_PLATFORM_APLITE
-#define IMAGE_PARTS 3
+#define IMAGE_PARTS 2
 #elif PBL_PLATFORM_BASALT
 #define IMAGE_PARTS 2
 #elif PBL_PLATFORM_CHALK

@@ -143,12 +143,12 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
     }
     uint8_t image_part = albumArtImagePartTuple->value->uint8;
 
-    NSLog("Got image part %d", image_part);
+    //NSLog("Got image part %d", image_part);
 
     Tuple *albumArtTuple = dict_find(albumArtDict, MessageKeyAlbumArt);
     if(albumArtTuple) {
         if(!album_art_data[image_part]){
-            NSError("Rejecting");
+            //NSError("Rejecting");
             return;
         }
 
@@ -157,11 +157,10 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
             return;
         }
         size_t index = albumArtIndexTuple->value->uint16 * MAX_BYTES;
-        NSWarn("Got index %d with current length %d and total %d", albumArtIndexTuple->value->uint16, ((albumArtIndexTuple->value->uint16 * MAX_BYTES) + albumArtTuple->length), now_playing_album_art_size[image_part]);
+        //NSWarn("Got index %d with current length %d and total %d", albumArtIndexTuple->value->uint16, ((albumArtIndexTuple->value->uint16 * MAX_BYTES) + albumArtTuple->length), now_playing_album_art_size[image_part]);
         memcpy(&album_art_data[image_part][index], albumArtTuple->value->data, albumArtTuple->length);
 
         if(((albumArtIndexTuple->value->uint16 * MAX_BYTES) + albumArtTuple->length) == now_playing_album_art_size[image_part]){
-            NSLog("Creating");
             create_bitmap(image_part);
         }
     }
@@ -185,13 +184,12 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
                 NSError("Album art data FAILED to create with a size of %d bytes!", length);
             }
             now_playing_album_art_size[image_part] = length;
-            NSLog("Created data %p with length %d", album_art_data[image_part], now_playing_album_art_size[image_part]);
 
             if(now_playing_album_art_size[image_part] == 1){ //No album art
                 now_playing_set_album_art(image_part, NULL);
             }
             else{
-                NSLog("Ready for image input.");
+                NSDebug("Ready for image input.");
             }
         }
     }

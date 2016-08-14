@@ -21,6 +21,8 @@ GBitmap *main_menu_icons_inverted[AMOUNT_OF_MAIN_MENU_ITEMS];
 
 Window *main_menu_window;
 
+bool already_requested = false;
+
 uint16_t main_menu_get_num_sections(MenuLayer *menu_layer, void *data) {
     return 1;
 }
@@ -78,9 +80,11 @@ void main_menu_send_now_playing_request(){
     now_playing_request(true);
 }
 
+#ifndef PBL_PLATFORM_APLITE
 void main_menu_destroy_warning(void *warning){
     message_window_pop_off_window((MessageWindow*)warning, true, false);
 }
+#endif
 
 void main_menu_create(Window* window) {
     if(!main_menu_window && window){
@@ -132,8 +136,12 @@ void main_menu_create(Window* window) {
     menu_layer_set_click_config_onto_window(main_menu_layer, window);
     layer_add_child(window_get_root_layer(window), menu_layer_get_layer(main_menu_layer));
 
-    app_timer_register(250, main_menu_send_now_playing_request, NULL);
+    if(!already_requested){
+        app_timer_register(250, main_menu_send_now_playing_request, NULL);
+        already_requested = true;
+    }
 
+    #ifndef PBL_PLATFORM_APLITE
     if(!bluetooth_connection_service_peek()){ //Phone not connected
         MessageWindow *not_connected_window = message_window_create();
         message_window_set_text(not_connected_window, "Your phone isn't connected! Lignite Music needs a phone...");
@@ -142,7 +150,7 @@ void main_menu_create(Window* window) {
 
         vibes_long_pulse();
     }
-
+    #endif
 }
 
 void main_menu_destroy(){

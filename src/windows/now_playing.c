@@ -99,7 +99,7 @@ void now_playing_state_callback(bool track_data) {
 }
 
 void now_playing_set_album_art(uint8_t image_part, GBitmap *album_art){
-    NSLog("Setting album art");
+    NSLog("Setting album art for image part %d", image_part);
     now_playing_album_art_bitmap[image_part] = album_art;
 
     if(!now_playing_album_art_layer[image_part]){
@@ -327,6 +327,7 @@ void now_playing_window_load(Window* window) {
     Layer *window_layer = window_get_root_layer(window);
 
     main_menu_destroy();
+    library_menus_pop_all();
 
     now_playing_settings = settings_get_settings();
 
@@ -407,8 +408,6 @@ void now_playing_window_load(Window* window) {
     now_playing_action_bar_handle(false);
 
     now_playing_new_settings(settings_get_settings());
-
-    library_menus_pop_all();
 
     settings_service_subscribe(now_playing_new_settings);
 }

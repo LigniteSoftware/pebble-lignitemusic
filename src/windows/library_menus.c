@@ -189,8 +189,6 @@ void library_menus_display_view(MPMediaGrouping grouping, char *title, char *sub
     message_window_set_text(menu->loading_window, "Loading...");
     message_window_set_icon(menu->loading_window, menu->icon, false);
     message_window_push_on_window(menu->loading_window, menu->window, false);
-    #else
-    menu->loading_window = NULL;
     #endif
 
     send_library_request(grouping, 0);
@@ -217,10 +215,12 @@ void library_menus_window_unload(Window* window) {
         menu_layer_destroy(library_menu->layer);
         window_destroy(library_menu->window);
 
+        #ifndef PBL_PLATFORM_APLITE
         if(library_menu->loading_window){
             message_window_destroy(library_menu->loading_window);
             library_menu->loading_window = NULL;
         }
+        #endif
 
         if(library_menu->icon){
             gbitmap_destroy(library_menu->icon);
@@ -238,6 +238,7 @@ void library_menus_window_unload(Window* window) {
     NSLog("unloaded");
 }
 
+#ifndef PBL_PLATFORM_APLITE
 void library_menus_clean_up(void *void_menu){
     if(!void_menu){
         NSWarn("Caught you little bitch");
@@ -246,6 +247,7 @@ void library_menus_clean_up(void *void_menu){
     LibraryMenu *menu = (LibraryMenu*)void_menu;
     menu->loading_window = NULL;
 }
+#endif
 
 void library_menus_set_header_icon(GBitmap *icon){
     LibraryMenu *menu = menu_stack[menu_stack_count];

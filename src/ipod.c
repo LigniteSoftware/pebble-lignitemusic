@@ -28,13 +28,16 @@ void dropped_inbox(AppMessageResult reason, void *context){
     NSWarn("Dropped inbox, reason %d", reason);
 }
 
+#ifndef PBL_PLATFORM_APLITE
 void auto_destroy_error_window(void *window){
     message_window_pop_off_window((MessageWindow*)window, true, true);
 }
+#endif
 
 void failed_outbox(DictionaryIterator *iterator, AppMessageResult reason, void *context){
     NSWarn("Failed outbox, reason %d", reason);
 
+    #ifndef PBL_PLATFORM_APLITE
     MessageWindow *failed_outbox = message_window_create();
     static char outbox_buffer[65];
     snprintf(outbox_buffer, sizeof(outbox_buffer), "Error %d. Make sure the phone app is open too and try again.", reason);
@@ -44,6 +47,9 @@ void failed_outbox(DictionaryIterator *iterator, AppMessageResult reason, void *
     vibes_long_pulse();
 
     app_timer_register(10000, auto_destroy_error_window, failed_outbox);
+    #else
+    vibes_long_pulse();
+    #endif
 }
 
 void pebblekit_connection_handler(bool connected){

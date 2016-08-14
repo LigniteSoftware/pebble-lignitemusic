@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef PBL_PLATFORM_APLITE
+
 typedef struct {
     Window *root_window;
     Layer *root_layer;
@@ -60,3 +62,5 @@ void message_window_set_text(MessageWindow *window, char *text);
  * destroy the GBitmap when message_window_destroy is called on it.
  */
 void message_window_set_icon(MessageWindow *window, GBitmap *icon, bool auto_destroy);
+
+#endif
