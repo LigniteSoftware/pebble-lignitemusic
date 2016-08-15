@@ -1,12 +1,10 @@
 #pragma once
 
-#ifndef PBL_PLATFORM_APLITE
-
 typedef struct {
     Window *root_window;
     Layer *root_layer;
-    TextLayer *message_layer;
-    BitmapLayer *icon_layer;
+    GRect icon_frame;
+    GRect text_frame;
     GBitmap *icon;
     char message[1][65];
     bool destroy_bitmap;
@@ -42,8 +40,9 @@ void message_window_push_on_window(MessageWindow *message_window, Window *root_w
  * @param message_window The MessageWindow to pop.
  * @param animated       Whether or not the window should animate in its duty.
  * @param auto_destroy   Whether or not to automatically destroy the MessageWindow once popped.
+ * Any value greater than 0 will auto destroy it after X ms.
  */
-void message_window_pop_off_window(MessageWindow *message_window, bool animated, bool auto_destroy);
+void message_window_pop_off_window(MessageWindow *message_window, bool animated, int auto_destroy);
 
 /**
  * Sets the text of the MessageWindow.
@@ -62,5 +61,3 @@ void message_window_set_text(MessageWindow *window, char *text);
  * destroy the GBitmap when message_window_destroy is called on it.
  */
 void message_window_set_icon(MessageWindow *window, GBitmap *icon, bool auto_destroy);
-
-#endif

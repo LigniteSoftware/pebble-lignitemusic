@@ -80,12 +80,6 @@ void main_menu_send_now_playing_request(){
     now_playing_request(true);
 }
 
-#ifndef PBL_PLATFORM_APLITE
-void main_menu_destroy_warning(void *warning){
-    message_window_pop_off_window((MessageWindow*)warning, true, false);
-}
-#endif
-
 void main_menu_create(Window* window) {
     if(!main_menu_window && window){
         main_menu_window = window;
@@ -145,8 +139,7 @@ void main_menu_create(Window* window) {
     if(!bluetooth_connection_service_peek()){ //Phone not connected
         MessageWindow *not_connected_window = message_window_create();
         message_window_set_text(not_connected_window, "Your phone isn't connected! Lignite Music needs a phone...");
-        message_window_push_on_window(not_connected_window, window, true);
-        app_timer_register(10000, main_menu_destroy_warning, not_connected_window);
+        message_window_push_on_window(not_connected_window, window, 10000);
 
         vibes_long_pulse();
     }

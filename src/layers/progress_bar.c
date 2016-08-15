@@ -15,7 +15,7 @@ ProgressBarLayer *progress_bar_layer_create(GRect frame) {
     bar->min = 0;
     bar->max = 255;
     bar->value = 0;
-    bar->bar_colour = GColorRed;
+    bar->bar_colour = PBL_IF_COLOR_ELSE(GColorRed, GColorWhite);
 
     return bar;
 }

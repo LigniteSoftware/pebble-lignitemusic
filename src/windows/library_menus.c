@@ -51,13 +51,16 @@ bool build_parent_history(DictionaryIterator *iter) {
 bool send_library_request(MPMediaGrouping grouping, uint32_t offset) {
     iPodMessage *ipodMessage = ipod_message_outbox_get();
     if(ipodMessage->result != APP_MSG_OK){
+        NSError("Failed to generate iPodMessage, got result: %d", ipodMessage->result);
         return false;
     }
     NSLog("Sending library request with grouping %d and offset %d.", grouping, (int)offset);
     dict_write_uint8(ipodMessage->iter, MessageKeyRequestLibrary, grouping);
     dict_write_uint32(ipodMessage->iter, MessageKeyRequestOffset, offset);
     build_parent_history(ipodMessage->iter);
-    if(app_message_outbox_send() != APP_MSG_OK){
+    AppMessageResult outbox_result = app_message_outbox_send();
+    if(outbox_result != APP_MSG_OK){
+        NSError("Failed to send outbox, got result %d", outbox_result);
         return false;
     }
     return true;
@@ -121,10 +124,20 @@ void library_menus_display_view(MPMediaGrouping grouping, char *title, char *sub
         return;
     }
 
+    if(heap_bytes_free() < 1500){
+        NSWarn("Destroying album art to make room.");
+    }
+
+    NSDebug("Before menu load: %d", heap_bytes_free());
+
     menu_stack_count++;
 
     if(!menu_stack[menu_stack_count]){
         menu_stack[menu_stack_count] = malloc(sizeof(LibraryMenu));
+        if(!menu_stack[menu_stack_count]){
+            NSError("Failed!");
+            return;
+        }
     }
     else{
         NSWarn("Menu stack %p already exists (index %d).", menu_stack[menu_stack_count], menu_stack_count);
@@ -192,10 +205,11 @@ void library_menus_display_view(MPMediaGrouping grouping, char *title, char *sub
     #endif
 
     send_library_request(grouping, 0);
+
+    NSDebug("After menu load: %d", heap_bytes_free());
 }
 
 void library_menus_window_unload(Window* window) {
-    NSLog("unloading");
     if(menu_stack_count > -1){
         menu_stack_count--;
     }
@@ -235,19 +249,7 @@ void library_menus_window_unload(Window* window) {
         free(library_menu);
         menu_stack[i] = NULL;
     }
-    NSLog("unloaded");
 }
-
-#ifndef PBL_PLATFORM_APLITE
-void library_menus_clean_up(void *void_menu){
-    if(!void_menu){
-        NSWarn("Caught you little bitch");
-        return;
-    }
-    LibraryMenu *menu = (LibraryMenu*)void_menu;
-    menu->loading_window = NULL;
-}
-#endif
 
 void library_menus_set_header_icon(GBitmap *icon){
     LibraryMenu *menu = menu_stack[menu_stack_count];
@@ -332,8 +334,7 @@ void library_menus_inbox(DictionaryIterator *received) {
 
         menu_layer_reload_data(menu->layer);
         #ifndef PBL_PLATFORM_APLITE
-        message_window_pop_off_window(menu->loading_window, true, false);
-        app_timer_register(500, library_menus_clean_up, menu);
+        message_window_pop_off_window(menu->loading_window, true, 500);
         #endif
 
         if(!menu->has_autoselected && menu->title_and_subtitle){

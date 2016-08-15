@@ -88,7 +88,7 @@ void now_playing_request(bool force_reload) {
     dict_write_int8(ipodMessage->iter, MessageKeyNowPlaying, value);
     dict_write_int8(ipodMessage->iter, MessageKeyWatchModel, watch_info_get_model());
     dict_write_int8(ipodMessage->iter, MessageKeyImageParts, IMAGE_PARTS);
-    dict_write_int16(ipodMessage->iter, MessageKeyAppMessageSize, APP_MESSAGE_SIZE-4);
+    dict_write_int16(ipodMessage->iter, MessageKeyAppMessageSize, PHONE_MAX_BYTES);
 
     app_message_outbox_send();
 
@@ -110,21 +110,30 @@ void call_callback(bool track_data) {
     ipod_state_callback(track_data);
 }
 
+void destroy_all_album_art(){
+    for(uint8_t i = 0; i < IMAGE_PARTS; i++){
+        if(album_art_bitmap[i]){
+            now_playing_set_album_art(i, NULL);
+            gbitmap_destroy(album_art_bitmap[i]);
+            album_art_bitmap[i] = NULL;
+        }
+    }
+}
+
 void create_bitmap(uint8_t image_part){
     if(album_art_bitmap[image_part]){
         return;
     }
 
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"png_header for %p: %c%c%c", album_art_data[image_part], *((char*)(album_art_data[image_part]+1)), *((char*)(album_art_data[image_part]+2)), *((char*)(album_art_data[image_part]+3)));
+    //APP_LOG(APP_LOG_LEVEL_DEBUG,"png_header for %p: %c%c%c", album_art_data[image_part], *((char*)(album_art_data[image_part]+1)), *((char*)(album_art_data[image_part]+2)), *((char*)(album_art_data[image_part]+3)));
 
     NSLog("Creating bitmap with data %p, size %d and heap free %d.", album_art_data[image_part], now_playing_album_art_size[image_part], heap_bytes_free());
     album_art_bitmap[image_part] = gbitmap_create_from_png_data(album_art_data[image_part], now_playing_album_art_size[image_part]);
-    NSLog("Done. Got %p.", album_art_bitmap[image_part]);
 
     GSize size = gbitmap_get_bounds(album_art_bitmap[image_part]).size;
 
     if(album_art_bitmap[image_part] == NULL || size.w == 0){
-        NSError("Nothing");
+        display_no_album(image_part);
     }
     else{
         now_playing_set_album_art(image_part, album_art_bitmap[image_part]);
@@ -167,6 +176,10 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
     else{
         Tuple* albumArtLengthTuple = dict_find(albumArtDict, MessageKeyAlbumArtLength);
         if(albumArtLengthTuple){
+            if(image_part == 0){
+                destroy_all_album_art();
+            }
+
             uint16_t length = albumArtLengthTuple->value->uint16;
 
             NSLog("Got size for image %d: %d, heap free %d", image_part, length, heap_bytes_free());
@@ -199,7 +212,6 @@ void create_bitmap_for_header(){
     if(library_icon_album_art_bitmap){
         return;
     }
-    NSLog("Creating bitmap with data %p, size %d and heap free %d.", library_icon_album_art_data, header_icon_album_art_size, heap_bytes_free());
     library_icon_album_art_bitmap = gbitmap_create_from_png_data(library_icon_album_art_data, header_icon_album_art_size);
 
     GSize size = gbitmap_get_bounds(library_icon_album_art_bitmap).size;
@@ -239,13 +251,10 @@ void process_library_menu_album_art_tuple(DictionaryIterator *albumArtDict){
         if(albumArtLengthTuple){
             uint16_t length = albumArtLengthTuple->value->uint16;
 
-            NSLog("Got size for image %d, heap free %d", length, heap_bytes_free());
             if(library_icon_album_art_data){
-                NSLog("Destroying album art data.");
                 free(library_icon_album_art_data);
             }
             if(library_icon_album_art_bitmap){
-                NSLog("Destroying album art bitmap.");
                 library_menus_set_header_icon(NULL);
                 gbitmap_destroy(library_icon_album_art_bitmap);
                 library_icon_album_art_bitmap = NULL;
@@ -256,13 +265,8 @@ void process_library_menu_album_art_tuple(DictionaryIterator *albumArtDict){
             }
             header_icon_album_art_size = length;
 
-            //You're probably not gonna have a PNG that's 1 byte lol, so if it is it's the phone telling you
-            //that there's no fucking album art
             if(header_icon_album_art_size == 1){
                 library_menus_set_header_icon(NULL);
-            }
-            else{
-                NSLog("Ready for image input.");
             }
         }
     }

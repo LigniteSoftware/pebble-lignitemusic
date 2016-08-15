@@ -3,10 +3,12 @@
 #define IPOD_MESSAGE_DESTROY_TIME 500
 
 #ifdef PBL_PLATFORM_APLITE
-#define APP_MESSAGE_SIZE 404
+#define APP_MESSAGE_SIZE 510
 #else
 #define APP_MESSAGE_SIZE 1504
 #endif
+
+#define PHONE_MAX_BYTES (APP_MESSAGE_SIZE-10)
 
 #ifdef PBL_ROUND
 #define WINDOW_FRAME GRect(0, 0, 180, 180)
@@ -44,7 +46,7 @@ but skips the step of adding in the (almost) arbitrary first parameter.
 
 //The max amount of bytes that can be received from the phone at once.
 //(always one less than the value on the companion app)
-#define MAX_BYTES (APP_MESSAGE_SIZE-5)
+#define MAX_BYTES (PHONE_MAX_BYTES-1)
 
 /**
  * The keys associated with data incoming and outgoing from and to the phone.

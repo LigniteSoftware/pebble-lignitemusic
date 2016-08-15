@@ -10,6 +10,12 @@
 typedef void(*iPodStateCallback)(bool track_data);
 
 /**
+ * Destroys all album art that's currently loaded (and sets the image layers
+ * data to NULL) to save memory. 
+ */
+void destroy_all_album_art();
+
+/**
  * Creates the iPod state for use.
  */
 void ipod_state_create();

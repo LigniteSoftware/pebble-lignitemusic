@@ -15,6 +15,12 @@ typedef enum {
 } NowPlayingState;
 
 /**
+ * Displays a no album art (sets the layer to NULL) for the image_part.
+ * @param image_part The part to set to no album.
+ */
+void display_no_album(uint8_t image_part);
+
+/**
  * Shows the now playing window. Soon to be deprecated.
  */
 void now_playing_show();

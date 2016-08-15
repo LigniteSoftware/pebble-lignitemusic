@@ -18,7 +18,7 @@ GFont artist_font;
 
 Settings now_playing_settings;
 
-static bool controlling_volume = false, is_shown = false;
+static bool controlling_volume = false, is_shown = false, draw_no_album = false;
 static GBitmap *icon_pause, *icon_play, *icon_fast_forward, *icon_rewind, *icon_volume_up, *icon_volume_down, *icon_more;
 
 GRect artist_frame;
@@ -29,10 +29,16 @@ bool pebble_controls_pushed_select = false;
  * When there is no album art available (either still loading or the phone has said so), call this
  * to display a basic coverart
  */
-void display_no_album() {
-    NSLog("Display no album");
-    //bitmap_layer_set_bitmap(now_playing_album_art_layer, no_album_art_bitmap);
-    //bitmap_layer_set_bitmap(now_playing_album_art_layer, NULL);
+void display_no_album(uint8_t image_part) {
+    for(uint8_t i = 0; i < IMAGE_PARTS; i++){
+        if(now_playing_album_art_layer[i]){
+            bitmap_layer_set_bitmap(now_playing_album_art_layer[i], NULL);
+        }
+    }
+    draw_no_album = true;
+    if(now_playing_graphics_layer){
+        layer_mark_dirty(now_playing_graphics_layer);
+    }
 }
 
 bool now_playing_is_playing_music(){
@@ -99,22 +105,24 @@ void now_playing_state_callback(bool track_data) {
 }
 
 void now_playing_set_album_art(uint8_t image_part, GBitmap *album_art){
-    NSLog("Setting album art for image part %d", image_part);
     now_playing_album_art_bitmap[image_part] = album_art;
 
     if(!now_playing_album_art_layer[image_part]){
-        NSWarn("Album art layer doesn't exist, fool");
         return;
     }
     if(album_art == NULL){
-        display_no_album();
+        display_no_album(image_part);
         return;
     }
 
     if(now_playing_album_art_layer[image_part]){
         bitmap_layer_set_bitmap(now_playing_album_art_layer[image_part], now_playing_album_art_bitmap[image_part]);
     }
-    NSLog("Set on %d", image_part);
+
+    if(draw_no_album && image_part == IMAGE_PARTS-1){
+        draw_no_album = false;
+        layer_mark_dirty(now_playing_graphics_layer);
+    }
 }
 
 void now_playing_tick() {
@@ -137,13 +145,26 @@ void now_playing_animation_tick() {
 }
 
 void now_playing_graphics_proc(Layer *layer, GContext *ctx){
-    graphics_context_set_fill_color(ctx, background_colour);
     #ifdef PBL_ROUND
     GRect title_frame = GRect(0, 135, 180, 45);
     #else
     GRect title_frame = GRect(0, 144, 144, 40);
     #endif
 
+    if(draw_no_album){
+        graphics_context_set_fill_color(ctx, GColorWhite);
+        for(uint8_t i = 0; i < IMAGE_PARTS; i++){
+            graphics_fill_rect(ctx, layer_get_bounds(bitmap_layer_get_layer(now_playing_album_art_layer[i])), 0, GCornerNone);
+        }
+        graphics_context_set_compositing_mode(ctx, GCompOpSet);
+        GSize bitmap_size = gbitmap_get_bounds(no_album_art_bitmap).size;
+        GRect image_frame = layer_get_bounds(bitmap_layer_get_layer(now_playing_album_art_layer[0]));
+        GRect now_playing_frame = GRect((title_frame.size.w/2)-(bitmap_size.w/2),
+            (image_frame.size.h/2)-(bitmap_size.h/2), bitmap_size.w, bitmap_size.h);
+        graphics_draw_bitmap_in_rect(ctx, no_album_art_bitmap, now_playing_frame);
+    }
+
+    graphics_context_set_fill_color(ctx, background_colour);
     graphics_fill_rect(ctx, title_frame, 0, GCornerNone);
 
     if(!now_playing_settings.artist_label){
@@ -339,8 +360,10 @@ void now_playing_window_load(Window* window) {
     icon_volume_down = gbitmap_create_with_resource(RESOURCE_ID_ICON_VOLUME_DOWN);
     icon_more = gbitmap_create_with_resource(RESOURCE_ID_ICON_MORE);
 
-    #ifndef PBL_PLATFORM_APLITE
+    #ifdef PBL_PLATFORM_APLITE
+    NSLog("Before %d", heap_bytes_free());
     no_album_art_bitmap = gbitmap_create_with_resource(RESOURCE_ID_NO_ALBUM_ART);
+    NSLog("After %d", heap_bytes_free());
     #else
     no_album_art_bitmap = NULL;
     #endif
@@ -353,7 +376,7 @@ void now_playing_window_load(Window* window) {
             bitmap_layer_set_bitmap(now_playing_album_art_layer[i], now_playing_album_art_bitmap[i]);
         }
         else{
-            display_no_album();
+            display_no_album(i);
         }
         layer_add_child(window_layer, bitmap_layer_get_layer(now_playing_album_art_layer[i]));
     }
