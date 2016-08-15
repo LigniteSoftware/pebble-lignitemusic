@@ -6,11 +6,15 @@ void message_window_update_proc(Layer *layer, GContext *ctx){
     MessageWindowReference *reference = (MessageWindowReference*)layer_get_data(layer);
     MessageWindow *message_window = reference->window;
 
+    graphics_context_set_fill_color(ctx, GColorBlack);
+    graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
+
     graphics_context_set_compositing_mode(ctx, GCompOpSet);
     graphics_draw_bitmap_in_rect(ctx, message_window->icon, message_window->icon_frame);
 
-    graphics_context_set_fill_color(ctx, GColorBlack);
-    graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
+    graphics_context_set_text_color(ctx, GColorWhite);
+    graphics_draw_text(ctx, message_window->message[0], fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
+        message_window->text_frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
 }
 
 void message_window_update_frames(MessageWindow *window){
@@ -25,7 +29,7 @@ void message_window_update_frames(MessageWindow *window){
 
     uint16_t offset_y = (WINDOW_FRAME.size.h-(icon_size.h+text_size.h))/2;
 
-    GRect icon_frame = GRect(0, offset_y, WINDOW_FRAME.size.w, icon_size.h);
+    GRect icon_frame = GRect((WINDOW_FRAME.size.w/2)-(icon_size.w/2), offset_y, icon_size.w, icon_size.h);
     GRect message_frame = GRect(0, icon_frame.origin.y+icon_frame.size.h, WINDOW_FRAME.size.w, WINDOW_FRAME.size.h);
 
     window->icon_frame = icon_frame;
@@ -36,6 +40,8 @@ void message_window_update_frames(MessageWindow *window){
 
 MessageWindow *message_window_create(){
     MessageWindow *new_message_window = malloc(sizeof(MessageWindow));
+
+    new_message_window->icon = NULL;
 
     new_message_window->root_layer = layer_create_with_data(GRect(WINDOW_FRAME.origin.x,
         -WINDOW_FRAME.size.h, WINDOW_FRAME.size.w, WINDOW_FRAME.size.h), sizeof(MessageWindowReference));

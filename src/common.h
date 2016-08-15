@@ -1,6 +1,6 @@
 #pragma once
 
-#define IPOD_MESSAGE_DESTROY_TIME 500
+#define IPOD_MESSAGE_DESTROY_TIME 750
 
 #ifdef PBL_PLATFORM_APLITE
 #define APP_MESSAGE_SIZE 510
@@ -162,12 +162,6 @@ void animate_layer(Layer *layer, GRect *start, GRect *finish, int length, int de
  * @return The prepared iPodMessage pointer.
  */
 iPodMessage *ipod_message_outbox_get();
-
-/**
- * Destroys a previously created iPodMessage.
- * @param message The iPodMessage to destroy.
- */
-void ipod_message_destroy(iPodMessage *message);
 
 /**
  * Resets the sequence number of the message going through.

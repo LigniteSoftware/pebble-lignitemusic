@@ -91,8 +91,6 @@ void now_playing_request(bool force_reload) {
     dict_write_int16(ipodMessage->iter, MessageKeyAppMessageSize, PHONE_MAX_BYTES);
 
     app_message_outbox_send();
-
-    ipod_message_destroy(ipodMessage);
 }
 
 bool first_call = true;

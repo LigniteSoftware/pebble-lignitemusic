@@ -23,15 +23,15 @@ Window *main_menu_window;
 
 bool already_requested = false;
 
-uint16_t main_menu_get_num_sections(MenuLayer *menu_layer, void *data) {
+uint16_t main_menu_get_num_sections(MenuLayer *menu_layer, void *data){
     return 1;
 }
 
-uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
+uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *data){
     return AMOUNT_OF_MAIN_MENU_ITEMS;
 }
 
-int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
+int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t section_index, void *data){
     return 0;
 }
 
@@ -58,7 +58,7 @@ void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, M
     app_timer_register(PBL_IF_ROUND_ELSE(50, 125), update_highlight_colours, NULL);
 }
 
-void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
+void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data){
     graphics_context_set_compositing_mode(ctx, GCompOpSet);
 
     main_menu_items[cell_index->row].icon = main_menu_icons[cell_index->row];
@@ -72,7 +72,7 @@ void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *c
     menu_cell_basic_draw(ctx, cell_layer, main_menu_items[cell_index->row].title, NULL, main_menu_items[cell_index->row].icon);
 }
 
-void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
+void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data){
     main_menu_items[cell_index->row].callback(cell_index->row, data);
 }
 
@@ -80,7 +80,9 @@ void main_menu_send_now_playing_request(){
     now_playing_request(true);
 }
 
-void main_menu_create(Window* window) {
+void main_menu_create(Window* window){
+    NSDebug("Creating main menu with main_menu_window %p and window %p.", main_menu_window, window);
+
     if(!main_menu_window && window){
         main_menu_window = window;
     }
@@ -144,6 +146,8 @@ void main_menu_create(Window* window) {
         vibes_long_pulse();
     }
     #endif
+
+    NSDebug("Created main menu.");
 }
 
 void main_menu_destroy(){
@@ -159,21 +163,21 @@ void main_menu_destroy(){
     NSDebug("After destroy %d", heap_bytes_free());
 }
 
-void open_now_playing(int index, void *context) {
+void open_now_playing(int index, void *context){
     now_playing_show();
 }
-void open_artist_list(int index, void *context) {
+void open_artist_list(int index, void *context){
     library_menus_display_view(MPMediaGroupingAlbumArtist, "", "");
 }
-void open_album_list(int index, void *context) {
+void open_album_list(int index, void *context){
     library_menus_display_view(MPMediaGroupingAlbum, "", "");
 }
-void open_playlist_list(int index, void *context) {
+void open_playlist_list(int index, void *context){
     library_menus_display_view(MPMediaGroupingPlaylist, "", "");
 }
-void open_genre_list(int index, void *context) {
+void open_genre_list(int index, void *context){
     library_menus_display_view(MPMediaGroupingGenre, "", "");
 }
-void open_composer_list(int index, void *context) {
+void open_composer_list(int index, void *context){
     library_menus_display_view(MPMediaGroupingComposer, "", "");
 }

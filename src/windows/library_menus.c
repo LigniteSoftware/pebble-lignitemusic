@@ -229,13 +229,6 @@ void library_menus_window_unload(Window* window) {
         menu_layer_destroy(library_menu->layer);
         window_destroy(library_menu->window);
 
-        #ifndef PBL_PLATFORM_APLITE
-        if(library_menu->loading_window){
-            message_window_destroy(library_menu->loading_window);
-            library_menu->loading_window = NULL;
-        }
-        #endif
-
         if(library_menu->icon){
             gbitmap_destroy(library_menu->icon);
         }
@@ -416,11 +409,8 @@ void selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIn
 void select_click(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
     LibraryMenu *menu = (LibraryMenu*)callback_context;
     if(menu->grouping == MPMediaGroupingTitle) {
-        NSLog("Playing track");
         play_track(cell_index->row-menu->title_and_subtitle);
-        NSLog("Request sent");
         now_playing_show();
-        NSLog("Now playing shown");
     } else {
         if(menu_stack_count + 1 >= MENU_STACK_DEPTH){
             return;

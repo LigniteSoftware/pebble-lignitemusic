@@ -30,11 +30,10 @@ bool pebble_controls_pushed_select = false;
  * to display a basic coverart
  */
 void display_no_album(uint8_t image_part) {
-    for(uint8_t i = 0; i < IMAGE_PARTS; i++){
-        if(now_playing_album_art_layer[i]){
-            bitmap_layer_set_bitmap(now_playing_album_art_layer[i], NULL);
-        }
+    if(now_playing_album_art_layer[image_part]){
+        bitmap_layer_set_bitmap(now_playing_album_art_layer[image_part], NULL);
     }
+
     draw_no_album = true;
     if(now_playing_graphics_layer){
         layer_mark_dirty(now_playing_graphics_layer);
@@ -62,8 +61,6 @@ void now_playing_send_state_change(NowPlayingState state_change) {
 
     dict_write_int8(ipodMessage->iter, MessageKeyChangeState, state_change);
     app_message_outbox_send();
-
-    ipod_message_destroy(ipodMessage);
 }
 
 bool previous_play_status = false;
@@ -107,6 +104,13 @@ void now_playing_state_callback(bool track_data) {
 void now_playing_set_album_art(uint8_t image_part, GBitmap *album_art){
     now_playing_album_art_bitmap[image_part] = album_art;
 
+    if(draw_no_album && image_part == IMAGE_PARTS-1){
+        draw_no_album = false;
+        if(now_playing_graphics_layer){
+            layer_mark_dirty(now_playing_graphics_layer);
+        }
+    }
+
     if(!now_playing_album_art_layer[image_part]){
         return;
     }
@@ -117,11 +121,6 @@ void now_playing_set_album_art(uint8_t image_part, GBitmap *album_art){
 
     if(now_playing_album_art_layer[image_part]){
         bitmap_layer_set_bitmap(now_playing_album_art_layer[image_part], now_playing_album_art_bitmap[image_part]);
-    }
-
-    if(draw_no_album && image_part == IMAGE_PARTS-1){
-        draw_no_album = false;
-        layer_mark_dirty(now_playing_graphics_layer);
     }
 }
 
@@ -345,11 +344,10 @@ void now_playing_new_settings(Settings new_settings){
 }
 
 void now_playing_window_load(Window* window) {
+    NSDebug("Loading now playing window.");
     Layer *window_layer = window_get_root_layer(window);
 
-    main_menu_destroy();
-    library_menus_pop_all();
-
+    main_menu_destroy();    library_menus_pop_all();
     now_playing_settings = settings_get_settings();
 
     icon_pause = gbitmap_create_with_resource(RESOURCE_ID_ICON_PAUSE);
@@ -360,13 +358,7 @@ void now_playing_window_load(Window* window) {
     icon_volume_down = gbitmap_create_with_resource(RESOURCE_ID_ICON_VOLUME_DOWN);
     icon_more = gbitmap_create_with_resource(RESOURCE_ID_ICON_MORE);
 
-    #ifdef PBL_PLATFORM_APLITE
-    NSLog("Before %d", heap_bytes_free());
     no_album_art_bitmap = gbitmap_create_with_resource(RESOURCE_ID_NO_ALBUM_ART);
-    NSLog("After %d", heap_bytes_free());
-    #else
-    no_album_art_bitmap = NULL;
-    #endif
 
     for(uint8_t i = 0; i < IMAGE_PARTS; i++){
         uint16_t image_width = WINDOW_FRAME.size.w/IMAGE_PARTS;
@@ -433,9 +425,11 @@ void now_playing_window_load(Window* window) {
     now_playing_new_settings(settings_get_settings());
 
     settings_service_subscribe(now_playing_new_settings);
+    NSDebug("Loaded now playing");
 }
 
 void now_playing_window_unload(Window* window) {
+    NSDebug("Unloading now playing window...");
     action_bar_layer_destroy(control_action_bar);
 
     if(invert_controls_timer){
@@ -449,6 +443,7 @@ void now_playing_window_unload(Window* window) {
     now_playing_progress_bar = NULL;
 
     layer_destroy(now_playing_graphics_layer);
+    now_playing_graphics_layer = NULL;
 
     if(no_album_art_bitmap){
         gbitmap_destroy(no_album_art_bitmap);
@@ -472,6 +467,8 @@ void now_playing_window_unload(Window* window) {
     is_shown = false;
 
     main_menu_create(NULL);
+
+    NSDebug("Unloaded now playing window.");
 }
 
 void now_playing_show() {

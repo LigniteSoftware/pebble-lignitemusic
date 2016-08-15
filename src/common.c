@@ -22,8 +22,19 @@ void animate_layer(Layer *layer, GRect *start, GRect *finish, int length, int de
     animation_schedule(property_animation_get_animation(anim));
 }
 
+void ipod_message_timer_fire(void *timerContext){
+    iPodMessage *message = (iPodMessage*)timerContext;
+    free(message);
+}
+
+void ipod_message_destroy(iPodMessage *message){
+    app_timer_register(IPOD_MESSAGE_DESTROY_TIME, ipod_message_timer_fire, message);
+}
+
 iPodMessage *ipod_message_outbox_get() {
     iPodMessage *message = malloc(sizeof(iPodMessage));
+
+    ipod_message_destroy(message);
 
     //NSLog("Alloced message %p", message);
 
@@ -39,15 +50,6 @@ iPodMessage *ipod_message_outbox_get() {
         //NSWarn("Set sequence number to 1.");
     }
     return message;
-}
-
-void ipod_message_timer_fire(void *timerContext){
-    iPodMessage *message = (iPodMessage*)timerContext;
-    free(message);
-}
-
-void ipod_message_destroy(iPodMessage *message){
-    app_timer_register(IPOD_MESSAGE_DESTROY_TIME, ipod_message_timer_fire, message);
 }
 
 void reset_sequence_number() {
