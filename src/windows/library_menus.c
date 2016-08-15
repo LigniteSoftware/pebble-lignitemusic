@@ -366,8 +366,50 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
         if(cell_index->row == 0 && menu->title_and_subtitle){
             graphics_context_set_fill_color(ctx, GColorRed);
             graphics_fill_rect(ctx, layer_get_frame(cell_layer), 0, GCornerNone);
-            //graphics_context_set_text_color(ctx, GColorWhite);
-            menu_cell_basic_draw(ctx, cell_layer, menu->title_text[0], menu->subtitle_text[0], menu->header_icon);
+
+            #ifndef PBL_ROUND
+            uint8_t padding = 5;
+
+            GRect cell_layer_frame  = layer_get_bounds(cell_layer);
+            GSize header_icon_size  = GSize(0, 0);
+            GRect header_icon_frame = GRect(0, 0, 0, 0);
+            if(menu->header_icon){
+                header_icon_size = gbitmap_get_bounds(menu->header_icon).size;
+                header_icon_frame.origin.x = padding;
+                header_icon_frame.size     = header_icon_size;
+            }
+            else{
+                header_icon_size = GSize(36, 36);
+            }
+            header_icon_frame.origin.y = (cell_layer_frame.size.h/2)-(header_icon_size.h/2);
+
+            GRect title_frame = GRect(0, 0, 0, 0);
+            title_frame.origin.x = header_icon_frame.origin.x + header_icon_frame.size.w + padding;
+            title_frame.origin.y = header_icon_frame.origin.y-8; //The -8 is a stupid offset we have to add.
+            title_frame.size.w   = WINDOW_FRAME.size.w-title_frame.origin.x;
+            title_frame.size.h   = 28;
+
+            GSize subtitle_size  = graphics_text_layout_get_content_size(menu->subtitle_text[0],
+                fonts_get_system_font(FONT_KEY_GOTHIC_14), GRect(0, 0, 144, 16),
+                GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter);
+
+            GRect subtitle_frame = GRect(0, 0, 0, 0);
+            subtitle_frame.origin.x = title_frame.origin.x;
+            subtitle_frame.origin.y = (header_icon_frame.origin.y+header_icon_frame.size.h)-subtitle_size.h-2;
+            subtitle_frame.size     = subtitle_size;
+
+            graphics_context_set_text_color(ctx, GColorWhite);
+
+            graphics_draw_bitmap_in_rect(ctx, menu->header_icon, header_icon_frame);
+
+            graphics_draw_text(ctx, menu->title_text[0], fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD), title_frame,
+                GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
+
+            graphics_draw_text(ctx, menu->subtitle_text[0], fonts_get_system_font(FONT_KEY_GOTHIC_14), subtitle_frame,
+                GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
+            #else
+            menu_cell_basic_draw(ctx, cell_layer, menu->title_text[0], menu->subtitle_text[0], NULL);
+            #endif
         }
         else{
             if(strcmp(menu->subtitles->entries[pos], "") == 0){

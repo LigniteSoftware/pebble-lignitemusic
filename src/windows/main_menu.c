@@ -133,7 +133,7 @@ void main_menu_create(Window* window){
     layer_add_child(window_get_root_layer(window), menu_layer_get_layer(main_menu_layer));
 
     if(!already_requested){
-        app_timer_register(250, main_menu_send_now_playing_request, NULL);
+        //app_timer_register(250, main_menu_send_now_playing_request, NULL);
         already_requested = true;
     }
 
