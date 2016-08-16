@@ -60,7 +60,6 @@ bool send_library_request(MPMediaGrouping grouping, uint32_t offset) {
     build_parent_history(ipodMessage->iter);
     AppMessageResult outbox_result = app_message_outbox_send();
     if(outbox_result != APP_MSG_OK){
-        NSError("Failed to send outbox, got result %d", outbox_result);
         return false;
     }
     return true;
@@ -126,6 +125,7 @@ void library_menus_display_view(MPMediaGrouping grouping, char *title, char *sub
 
     if(heap_bytes_free() < 1500){
         NSWarn("Destroying album art to make room.");
+        destroy_all_album_art();
     }
 
     NSDebug("Before menu load: %d", heap_bytes_free());
@@ -389,13 +389,17 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
             title_frame.size.w   = WINDOW_FRAME.size.w-title_frame.origin.x;
             title_frame.size.h   = 28;
 
+            if(strcmp(menu->subtitle_text[0], "") == 0){
+                title_frame.origin.y += 8;
+            }
+
             GSize subtitle_size  = graphics_text_layout_get_content_size(menu->subtitle_text[0],
                 fonts_get_system_font(FONT_KEY_GOTHIC_14), GRect(0, 0, 144, 16),
                 GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter);
 
             GRect subtitle_frame = GRect(0, 0, 0, 0);
             subtitle_frame.origin.x = title_frame.origin.x;
-            subtitle_frame.origin.y = (header_icon_frame.origin.y+header_icon_frame.size.h)-subtitle_size.h-2;
+            subtitle_frame.origin.y = (header_icon_frame.origin.y+header_icon_size.h)-subtitle_size.h-2;
             subtitle_frame.size     = subtitle_size;
 
             graphics_context_set_text_color(ctx, GColorWhite);

@@ -10,7 +10,7 @@ Layer *now_playing_graphics_layer;
 MarqueeTextLayer *now_playing_title_layer, *now_playing_artist_layer;
 ProgressBarLayer *now_playing_progress_bar;
 
-GBitmap *now_playing_album_art_bitmap[IMAGE_PARTS], *no_album_art_bitmap;
+GBitmap *now_playing_album_art_bitmap[IMAGE_PARTS], *no_album_art_bitmap = NULL;
 
 AppTimer *now_playing_timer, *action_bar_timer, *invert_controls_timer;
 GColor background_colour;
@@ -459,8 +459,6 @@ void now_playing_window_unload(Window* window) {
         bitmap_layer_destroy(now_playing_album_art_layer[i]);
         now_playing_album_art_layer[i] = NULL;
     }
-
-    ipod_state_set_callback(NULL);
 
     window_destroy(now_playing_window);
 

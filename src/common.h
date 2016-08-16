@@ -56,19 +56,19 @@ typedef enum {
     MessageKeyRequestLibrary,
     MessageKeyRequestOffset,
     MessageKeyLibraryResponse,
-    MessageKeyNowPlaying,
+    MessageKeyNowPlaying, //4
     MessageKeyRequestParent,
     MessageKeyPlayTrack,
     MessageKeyNowPlayingResponseType,
-    MessageKeyAlbumArt,
+    MessageKeyAlbumArt, //8
     MessageKeyAlbumArtLength,
     MessageKeyAlbumArtIndex,
     MessageKeyChangeState,
-    MessageKeyCurrentState,
+    MessageKeyCurrentState, //12
     MessageKeySequenceNumber,
     MessageKeyHeaderIcon,
     MessageKeyHeaderIconLength,
-    MessageKeyHeaderIconIndex,
+    MessageKeyHeaderIconIndex, //16
     MessageKeyWatchModel,
     MessageKeyImageParts,
     MessageKeyAppMessageSize,

@@ -109,13 +109,17 @@ void call_callback(bool track_data) {
 }
 
 void destroy_all_album_art(){
+    NSLog("Destroying all album art.");
     for(uint8_t i = 0; i < IMAGE_PARTS; i++){
         if(album_art_bitmap[i]){
+            NSLog("Destroying art piece %d.", i);
             now_playing_set_album_art(i, NULL);
             gbitmap_destroy(album_art_bitmap[i]);
             album_art_bitmap[i] = NULL;
+            NSLog("Ruined like Girujan.");
         }
     }
+    NSLog("Finished");
 }
 
 void create_bitmap(uint8_t image_part){
@@ -150,7 +154,7 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
     }
     uint8_t image_part = albumArtImagePartTuple->value->uint8;
 
-    //NSLog("Got image part %d", image_part);
+    NSLog("Got image part %d", image_part);
 
     Tuple *albumArtTuple = dict_find(albumArtDict, MessageKeyAlbumArt);
     if(albumArtTuple) {
@@ -164,7 +168,7 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
             return;
         }
         size_t index = albumArtIndexTuple->value->uint16 * MAX_BYTES;
-        //NSWarn("Got index %d with current length %d and total %d", albumArtIndexTuple->value->uint16, ((albumArtIndexTuple->value->uint16 * MAX_BYTES) + albumArtTuple->length), now_playing_album_art_size[image_part]);
+        NSWarn("Got index %d with current length %d and total %d with heap free %d", albumArtIndexTuple->value->uint16, ((albumArtIndexTuple->value->uint16 * MAX_BYTES) + albumArtTuple->length), now_playing_album_art_size[image_part], heap_bytes_free());
         memcpy(&album_art_data[image_part][index], albumArtTuple->value->data, albumArtTuple->length);
 
         if(((albumArtIndexTuple->value->uint16 * MAX_BYTES) + albumArtTuple->length) == now_playing_album_art_size[image_part]){
@@ -172,9 +176,11 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
         }
     }
     else{
+        NSLog("Not part");
         Tuple* albumArtLengthTuple = dict_find(albumArtDict, MessageKeyAlbumArtLength);
         if(albumArtLengthTuple){
             if(image_part == 0){
+                NSLog("Destroying all album art");
                 destroy_all_album_art();
             }
 
@@ -272,6 +278,7 @@ void process_library_menu_album_art_tuple(DictionaryIterator *albumArtDict){
 
 void process_tuple(Tuple *tuple, DictionaryIterator *iter){
     uint32_t key = tuple->key;
+    NSLog("Got key %d", (int)key);
     if(key == MessageKeyCurrentState){
         s_playback_state = tuple->value->data[0];
         s_shuffle_mode = tuple->value->data[1];
@@ -341,10 +348,10 @@ void process_tuple(Tuple *tuple, DictionaryIterator *iter){
 
         vibes_double_pulse();
     }
-    else if(key == MessageKeyHeaderIcon || key == MessageKeyHeaderIconLength || key == MessageKeyHeaderIconIndex){
+    else if(key == MessageKeyHeaderIcon || key == MessageKeyHeaderIconLength){
         process_library_menu_album_art_tuple(iter);
     }
-    else{
+    else if(key == MessageKeyAlbumArt || key == MessageKeyAlbumArtLength){
         process_album_art_tuple(iter);
     }
 }

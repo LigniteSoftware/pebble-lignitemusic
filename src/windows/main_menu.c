@@ -81,8 +81,6 @@ void main_menu_send_now_playing_request(){
 }
 
 void main_menu_create(Window* window){
-    NSDebug("Creating main menu with main_menu_window %p and window %p.", main_menu_window, window);
-
     if(!main_menu_window && window){
         main_menu_window = window;
     }
@@ -133,7 +131,7 @@ void main_menu_create(Window* window){
     layer_add_child(window_get_root_layer(window), menu_layer_get_layer(main_menu_layer));
 
     if(!already_requested){
-        //app_timer_register(250, main_menu_send_now_playing_request, NULL);
+        app_timer_register(250, main_menu_send_now_playing_request, NULL);
         already_requested = true;
     }
 
@@ -146,8 +144,6 @@ void main_menu_create(Window* window){
         vibes_long_pulse();
     }
     #endif
-
-    NSDebug("Created main menu.");
 }
 
 void main_menu_destroy(){
