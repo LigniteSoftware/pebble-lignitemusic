@@ -72,6 +72,7 @@ typedef enum {
     MessageKeyWatchModel,
     MessageKeyImageParts,
     MessageKeyAppMessageSize,
+    MessageKeyShuffle, //20
     MessageKeySettingBatterySaver = 100,
     MessageKeySettingArtistLabel = 101,
     MessageKeySettingPebbleStyleControls = 102

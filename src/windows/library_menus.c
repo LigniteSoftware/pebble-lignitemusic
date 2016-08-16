@@ -4,7 +4,6 @@ LibraryMenu *menu_stack[MENU_STACK_DEPTH];
 int8_t menu_stack_count;
 
 bool send_library_request(MPMediaGrouping grouping, uint32_t offset);
-bool play_track(uint16_t index);
 
 uint16_t get_num_rows(MenuLayer* layer, uint16_t section_index, void* context);
 void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context);
@@ -65,13 +64,14 @@ bool send_library_request(MPMediaGrouping grouping, uint32_t offset) {
     return true;
 }
 
-bool play_track(uint16_t index) {
+bool play_track(uint16_t index, bool shuffle) {
     LibraryMenu *menu = menu_stack[menu_stack_count];
     iPodMessage *ipodMessage = ipod_message_outbox_get();
     if(ipodMessage->result != APP_MSG_OK){
         return false;
     }
     dict_write_uint8(ipodMessage->iter, MessageKeyRequestLibrary, menu->grouping);
+    dict_write_uint8(ipodMessage->iter, MessageKeyShuffle, shuffle);
     dict_write_uint16(ipodMessage->iter, MessageKeyPlayTrack, index);
     build_parent_history(ipodMessage->iter);
     if(app_message_outbox_send() != APP_MSG_OK){
@@ -345,13 +345,13 @@ uint16_t get_num_rows(MenuLayer* layer, uint16_t section_index, void* context) {
     if(total_count == 0){
         total_count = 1;
     }
-    return (total_count < MAX_MENU_ENTRIES ? total_count : MAX_MENU_ENTRIES) + menu->title_and_subtitle;
+    return (total_count < MAX_MENU_ENTRIES ? total_count : MAX_MENU_ENTRIES) + (menu->title_and_subtitle ? 2 : 0);
 }
 
 void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context) {
     LibraryMenu *menu = (LibraryMenu*)callback_context;
     int16_t pos = cell_index->row - menu->titles->current_entry_offset;
-    if(menu->title_and_subtitle && cell_index->row > 0){
+    if(menu->title_and_subtitle && cell_index->row > 1){
         pos--;
     }
     if(pos >= MENU_CACHE_COUNT || pos < 0) {
@@ -417,12 +417,25 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
             menu_cell_basic_draw(ctx, cell_layer, menu->title_text[0], menu->subtitle_text[0], NULL);
             #endif
         }
+        else if(cell_index->row == 1 && menu->title_and_subtitle){
+            #ifndef PBL_PLATFORM_APLITE
+            if(!menu->icon){
+                menu->icon = gbitmap_create_with_resource(RESOURCE_ID_ICON_SHUFFLE);
+                menu->icon_inverted = gbitmap_create_with_resource(RESOURCE_ID_ICON_SHUFFLE);
+                replace_gbitmap_color(GColorWhite, GColorBlack, menu->icon_inverted, NULL);
+            }
+            icon_to_draw = menu_cell_layer_is_highlighted(cell_layer) ? menu->icon_inverted : menu->icon;
+            #endif
+            menu_cell_basic_draw(ctx, cell_layer, "Shuffle", NULL, icon_to_draw);
+        }
         else{
             if(strcmp(menu->subtitles->entries[pos], "") == 0){
-                menu_cell_basic_draw(ctx, cell_layer, menu->titles->entries[pos], NULL, icon_to_draw);
+                menu_cell_basic_draw(ctx, cell_layer, menu->titles->entries[pos],
+                    NULL, menu->title_and_subtitle ? NULL : icon_to_draw);
             }
             else{
-                menu_cell_basic_draw(ctx, cell_layer, menu->titles->entries[pos], menu->subtitles->entries[pos], icon_to_draw);
+                menu_cell_basic_draw(ctx, cell_layer, menu->titles->entries[pos],
+                    menu->subtitles->entries[pos], menu->title_and_subtitle ? NULL : icon_to_draw);
             }
         }
     }
@@ -457,7 +470,7 @@ void selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIn
 void select_click(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
     LibraryMenu *menu = (LibraryMenu*)callback_context;
     if(menu->grouping == MPMediaGroupingTitle) {
-        play_track(cell_index->row-menu->title_and_subtitle);
+        play_track(cell_index->row-menu->title_and_subtitle, (menu->title_and_subtitle && cell_index->row == 1));
         now_playing_show();
     } else {
         if(menu_stack_count + 1 >= MENU_STACK_DEPTH){
