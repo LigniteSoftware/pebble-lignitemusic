@@ -2,7 +2,7 @@
 
 MessageWindow *to_destroy = NULL;
 
-void message_window_update_proc(Layer *layer, GContext *ctx){ NSLog("Hello");
+void message_window_update_proc(Layer *layer, GContext *ctx){
     MessageWindowReference *reference = (MessageWindowReference*)layer_get_data(layer);
     MessageWindow *message_window = reference->window;
 
@@ -17,9 +17,9 @@ void message_window_update_proc(Layer *layer, GContext *ctx){ NSLog("Hello");
         message_window->text_frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
 }
 
-void message_window_update_frames(MessageWindow *window){ NSLog("Hello");
+void message_window_update_frames(MessageWindow *window){
     GSize icon_size = GSize(0, 0);
-    if(window->icon){ NSLog("Hello");
+    if(window->icon){
         icon_size = gbitmap_get_bounds(window->icon).size;
     }
 
@@ -38,7 +38,7 @@ void message_window_update_frames(MessageWindow *window){ NSLog("Hello");
     layer_mark_dirty(window->root_layer);
 }
 
-MessageWindow *message_window_create(){ NSLog("Hello");
+MessageWindow *message_window_create(){
     MessageWindow *new_message_window = malloc(sizeof(MessageWindow));
 
     new_message_window->icon = NULL;
@@ -53,9 +53,9 @@ MessageWindow *message_window_create(){ NSLog("Hello");
     return new_message_window;
 }
 
-void message_window_destroy(MessageWindow *window){ NSLog("Hello");
+void message_window_destroy(MessageWindow *window){
     layer_destroy(window->root_layer);
-    if(window->destroy_bitmap){ NSLog("Hello");
+    if(window->destroy_bitmap){
         gbitmap_destroy(window->icon);
     }
 
@@ -63,13 +63,13 @@ void message_window_destroy(MessageWindow *window){ NSLog("Hello");
     window = NULL;
 }
 
-void message_window_auto_destroy(void *window){ NSLog("Hello");
+void message_window_auto_destroy(void *window){
     MessageWindow *message_window = (MessageWindow*)window;
     message_window_destroy(message_window);
 }
 
-void message_window_push_on_window(MessageWindow *message_window, Window *root_window, bool animated){ NSLog("Hello");
-    if(message_window->is_pushed){ NSLog("Hello");
+void message_window_push_on_window(MessageWindow *message_window, Window *root_window, bool animated){
+    if(message_window->is_pushed){
         return;
     }
     message_window->root_window = root_window;
@@ -77,7 +77,7 @@ void message_window_push_on_window(MessageWindow *message_window, Window *root_w
 
     GRect old_frame = GRect(0, -WINDOW_FRAME.size.h, WINDOW_FRAME.size.w, WINDOW_FRAME.size.h);
     GRect new_frame = GRect(0, 0, WINDOW_FRAME.size.w, WINDOW_FRAME.size.h);
-    if(animated){ NSLog("Hello");
+    if(animated){
         animate_layer(message_window->root_layer, &old_frame, &new_frame, 200, 0);
     }
     else{
@@ -87,17 +87,17 @@ void message_window_push_on_window(MessageWindow *message_window, Window *root_w
     message_window->is_pushed = true;
 }
 
-void message_window_pop_off_window(MessageWindow *message_window, bool animated, int auto_destroy){ NSLog("Hello");
-    if(!message_window){ NSLog("Hello");
+void message_window_pop_off_window(MessageWindow *message_window, bool animated, int auto_destroy){
+    if(!message_window){
         return;
     }
-    if(!message_window->is_pushed){ NSLog("Hello");
+    if(!message_window->is_pushed){
         return;
     }
 
     GRect old_frame = GRect(0, 0, WINDOW_FRAME.size.w, WINDOW_FRAME.size.h);
     GRect new_frame = GRect(0, -WINDOW_FRAME.size.h, WINDOW_FRAME.size.w, WINDOW_FRAME.size.h);
-    if(animated){ NSLog("Hello");
+    if(animated){
         animate_layer(message_window->root_layer, &old_frame, &new_frame, 200, 0);
     }
     else{
@@ -106,21 +106,21 @@ void message_window_pop_off_window(MessageWindow *message_window, bool animated,
 
     message_window->is_pushed = false;
 
-    if(auto_destroy && !animated){ NSLog("Hello");
+    if(auto_destroy && !animated){
         message_window_destroy(message_window);
     }
-    else if(auto_destroy && animated){ NSLog("Hello");
+    else if(auto_destroy && animated){
         app_timer_register(auto_destroy, message_window_auto_destroy, message_window);
     }
 }
 
-void message_window_set_text(MessageWindow *window, char *text){ NSLog("Hello");
+void message_window_set_text(MessageWindow *window, char *text){
     strncpy(window->message[0], text, sizeof(window->message[0]));
 
     message_window_update_frames(window);
 }
 
-void message_window_set_icon(MessageWindow *window, GBitmap *icon, bool auto_destroy){ NSLog("Hello");
+void message_window_set_icon(MessageWindow *window, GBitmap *icon, bool auto_destroy){
     window->destroy_bitmap = auto_destroy;
     window->icon = icon;
 
