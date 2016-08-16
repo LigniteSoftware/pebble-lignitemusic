@@ -344,10 +344,14 @@ void now_playing_new_settings(Settings new_settings){
 }
 
 void now_playing_window_load(Window* window) {
-    NSDebug("Loading now playing window.");
+    NSDebug("Loading now playing window %d.", heap_bytes_free());
     Layer *window_layer = window_get_root_layer(window);
 
-    main_menu_destroy();    library_menus_pop_all();
+    #ifdef PBL_PLATFORM_APLITE
+    main_menu_destroy();
+    #endif
+
+    library_menus_pop_all();
     now_playing_settings = settings_get_settings();
 
     icon_pause = gbitmap_create_with_resource(RESOURCE_ID_ICON_PAUSE);
@@ -419,17 +423,19 @@ void now_playing_window_load(Window* window) {
     ipod_state_set_callback(now_playing_state_callback);
 
     is_shown = true;
+
     now_playing_state_callback(false);
     now_playing_action_bar_handle(false);
 
     now_playing_new_settings(settings_get_settings());
 
     settings_service_subscribe(now_playing_new_settings);
-    NSDebug("Loaded now playing");
+    NSDebug("Loaded now playing %d", heap_bytes_free());
 }
 
 void now_playing_window_unload(Window* window) {
-    NSDebug("Unloading now playing window...");
+    is_shown = false;
+
     action_bar_layer_destroy(control_action_bar);
 
     if(invert_controls_timer){
@@ -447,6 +453,7 @@ void now_playing_window_unload(Window* window) {
 
     if(no_album_art_bitmap){
         gbitmap_destroy(no_album_art_bitmap);
+        no_album_art_bitmap = NULL;
     }
     gbitmap_destroy(icon_pause);
     gbitmap_destroy(icon_play);
@@ -454,6 +461,7 @@ void now_playing_window_unload(Window* window) {
     gbitmap_destroy(icon_rewind);
     gbitmap_destroy(icon_volume_up);
     gbitmap_destroy(icon_volume_down);
+    gbitmap_destroy(icon_more);
 
     for(uint8_t i = 0; i < IMAGE_PARTS; i++){
         bitmap_layer_destroy(now_playing_album_art_layer[i]);
@@ -462,11 +470,9 @@ void now_playing_window_unload(Window* window) {
 
     window_destroy(now_playing_window);
 
-    is_shown = false;
-
+    #ifdef PBL_PLATFORM_APLITE
     main_menu_create(NULL);
-
-    NSDebug("Unloaded now playing window.");
+    #endif
 }
 
 void now_playing_show() {

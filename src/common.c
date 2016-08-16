@@ -24,10 +24,13 @@ void animate_layer(Layer *layer, GRect *start, GRect *finish, int length, int de
 
 void ipod_message_timer_fire(void *timerContext){
     iPodMessage *message = (iPodMessage*)timerContext;
+    NSDebug("Freeing %p.", message);
     free(message);
+    NSDebug("Done.");
 }
 
 void ipod_message_destroy(iPodMessage *message){
+    NSDebug("Registering to destroy %p after %dms.", message, IPOD_MESSAGE_DESTROY_TIME);
     app_timer_register(IPOD_MESSAGE_DESTROY_TIME, ipod_message_timer_fire, message);
 }
 

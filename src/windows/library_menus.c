@@ -244,6 +244,7 @@ void library_menus_window_unload(Window* window) {
     }
 }
 
+#ifndef PBL_PLATFORM_APLITE
 void library_menus_set_header_icon(GBitmap *icon){
     LibraryMenu *menu = menu_stack[menu_stack_count];
     if(!menu){
@@ -255,6 +256,7 @@ void library_menus_set_header_icon(GBitmap *icon){
     }
     menu_layer_reload_data(menu->layer);
 }
+#endif
 
 void library_menus_inbox(DictionaryIterator *received) {
     if(menu_stack_count == -1) {

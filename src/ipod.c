@@ -3,12 +3,10 @@
 Window *window;
 
 void ipod_create() {
-    NSLog("Before load %d", heap_bytes_free());
     window = window_create();
     window_stack_push(window, true);
 
     main_menu_create(window);
-    NSLog("After load %d", heap_bytes_free());
 
     library_menus_create();
     ipod_state_create();
@@ -25,13 +23,14 @@ void tick_handler(struct tm *t, TimeUnits units) {
 }
 
 void dropped_inbox_handler(AppMessageResult reason, void *context){
-    NSWarn("Dropped inbox, reason %d", reason);
+    NSError("Dropped inbox, reason %d", reason);
     vibes_double_pulse();
 }
 
 void failed_outbox_handler(DictionaryIterator *iterator, AppMessageResult reason, void *context){
-    NSWarn("Failed outbox, reason %d", reason);
+    NSError("Failed outbox, reason %d", reason);
 
+    /*
     MessageWindow *failed_outbox_window = message_window_create();
     static char outbox_buffer[65];
     snprintf(outbox_buffer, sizeof(outbox_buffer), "Error %d. Make sure the phone app is open too and try again.", reason);
@@ -41,6 +40,7 @@ void failed_outbox_handler(DictionaryIterator *iterator, AppMessageResult reason
     vibes_long_pulse();
 
     message_window_pop_off_window(failed_outbox_window, true, 10000);
+    */
 }
 
 void pebblekit_connection_handler(bool connected){

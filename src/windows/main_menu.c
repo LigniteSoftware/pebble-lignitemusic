@@ -88,7 +88,6 @@ void main_menu_create(Window* window){
         window = main_menu_window;
     }
     if(!main_menu_window && !window){
-        NSError("Windows error: both windows are NULL. Rejecting, gutlessly.");
         return;
     }
 
