@@ -72,11 +72,20 @@ typedef enum {
     MessageKeyWatchModel,
     MessageKeyImageParts,
     MessageKeyAppMessageSize,
-    MessageKeyShuffle, //20
+    MessageKeyTrackPlayMode, //20
     MessageKeySettingBatterySaver = 100,
     MessageKeySettingArtistLabel = 101,
     MessageKeySettingPebbleStyleControls = 102
 } MessageKey;
+
+typedef enum {
+    TrackPlayModeSelectSong = 0,
+    TrackPlayModeShuffleAll = 10,
+    TrackPlayModeRepeatModeDefault = 20,
+    TrackPlayModeRepeatModeNone = 21,
+    TrackPlayModeRepeatModeOne = 22,
+    TrackPlayModeRepeatModeAll = 23
+} TrackPlayMode;
 
 /**
  * The type of media grouping.

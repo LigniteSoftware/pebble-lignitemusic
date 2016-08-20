@@ -71,7 +71,7 @@ bool play_track(uint16_t index, bool shuffle) {
         return false;
     }
     dict_write_uint8(ipodMessage->iter, MessageKeyRequestLibrary, menu->grouping);
-    dict_write_uint8(ipodMessage->iter, MessageKeyShuffle, shuffle);
+    dict_write_uint8(ipodMessage->iter, MessageKeyTrackPlayMode, shuffle);
     dict_write_uint16(ipodMessage->iter, MessageKeyPlayTrack, index);
     build_parent_history(ipodMessage->iter);
     if(app_message_outbox_send() != APP_MSG_OK){
@@ -342,17 +342,18 @@ void library_menus_inbox(DictionaryIterator *received) {
 uint16_t get_num_rows(MenuLayer* layer, uint16_t section_index, void* context) {
     LibraryMenu *menu = (LibraryMenu*)context;
     uint16_t total_count = menu->titles->total_entry_count;
-    if(total_count == 0){
+    bool notLoaded = total_count == 0;
+    if(notLoaded){
         total_count = 1;
     }
-    return (total_count < MAX_MENU_ENTRIES ? total_count : MAX_MENU_ENTRIES) + (menu->title_and_subtitle ? 2 : 0);
+    return (total_count < MAX_MENU_ENTRIES ? total_count : MAX_MENU_ENTRIES) + (notLoaded ? 0 : (menu->title_and_subtitle ? 3 : 0));
 }
 
 void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context) {
     LibraryMenu *menu = (LibraryMenu*)callback_context;
     int16_t pos = cell_index->row - menu->titles->current_entry_offset;
-    if(menu->title_and_subtitle && cell_index->row > 1){
-        pos--;
+    if(menu->title_and_subtitle && cell_index->row > 2){
+        pos -= 3;
     }
     if(pos >= MENU_CACHE_COUNT || pos < 0) {
         return;
@@ -428,6 +429,18 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
             #endif
             menu_cell_basic_draw(ctx, cell_layer, "Shuffle", NULL, icon_to_draw);
         }
+        else if(cell_index->row == 2 && menu->title_and_subtitle){
+            NSWarn("Major key");
+            #ifndef PBL_PLATFORM_APLITE
+            if(!menu->icon){
+                menu->icon = gbitmap_create_with_resource(RESOURCE_ID_ICON_REPEAT);
+                menu->icon_inverted = gbitmap_create_with_resource(RESOURCE_ID_ICON_REPEAT);
+                replace_gbitmap_color(GColorWhite, GColorBlack, menu->icon_inverted, NULL);
+            }
+            icon_to_draw = menu_cell_layer_is_highlighted(cell_layer) ? menu->icon_inverted : menu->icon;
+            #endif
+            menu_cell_basic_draw(ctx, cell_layer, "Repeat All", NULL, icon_to_draw);
+        }
         else{
             if(strcmp(menu->subtitles->entries[pos], "") == 0){
                 menu_cell_basic_draw(ctx, cell_layer, menu->titles->entries[pos],
@@ -469,8 +482,14 @@ void selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIn
 
 void select_click(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context) {
     LibraryMenu *menu = (LibraryMenu*)callback_context;
+    if(menu->titles->total_entry_count == 0){
+        return;
+    }
     if(menu->grouping == MPMediaGroupingTitle) {
-        play_track(cell_index->row-menu->title_and_subtitle, (menu->title_and_subtitle && cell_index->row == 1));
+        if(cell_index->row == 2 && menu->title_and_subtitle){
+            return;
+        }
+        play_track(cell_index->row-(menu->title_and_subtitle ? 3 : 0), (menu->title_and_subtitle && cell_index->row == 1));
         now_playing_show();
     } else {
         if(menu_stack_count + 1 >= MENU_STACK_DEPTH){
