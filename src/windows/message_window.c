@@ -61,6 +61,8 @@ void message_window_destroy(MessageWindow *window){
 
     free(window);
     window = NULL;
+
+    NSLog("Free: %d", heap_bytes_free());
 }
 
 void message_window_auto_destroy(void *window){
@@ -73,7 +75,6 @@ void message_window_push_on_window(MessageWindow *message_window, Window *root_w
         return;
     }
     message_window->root_window = root_window;
-    layer_add_child(window_get_root_layer(root_window), message_window->root_layer);
 
     GRect old_frame = GRect(0, -WINDOW_FRAME.size.h, WINDOW_FRAME.size.w, WINDOW_FRAME.size.h);
     GRect new_frame = GRect(0, 0, WINDOW_FRAME.size.w, WINDOW_FRAME.size.h);
@@ -83,6 +84,8 @@ void message_window_push_on_window(MessageWindow *message_window, Window *root_w
     else{
         layer_set_frame(message_window->root_layer, new_frame);
     }
+
+    layer_add_child(window_get_root_layer(root_window), message_window->root_layer);
 
     message_window->is_pushed = true;
 }
@@ -106,12 +109,7 @@ void message_window_pop_off_window(MessageWindow *message_window, bool animated,
 
     message_window->is_pushed = false;
 
-    if(auto_destroy && !animated){
-        message_window_destroy(message_window);
-    }
-    else if(auto_destroy && animated){
-        app_timer_register(auto_destroy, message_window_auto_destroy, message_window);
-    }
+    app_timer_register(500, message_window_auto_destroy, message_window);
 }
 
 void message_window_set_text(MessageWindow *window, char *text){

@@ -94,13 +94,17 @@ void clear_library_entry_data(LibraryMenuEntryData *data){
     memset(data->entries, 0, MENU_CACHE_COUNT * MENU_ENTRY_LENGTH);
 }
 
-GBitmap *library_menus_gbitmap_from_media_grouping(MPMediaGrouping grouping){
+GBitmap *library_menus_gbitmap_from_media_grouping(MPMediaGrouping grouping, bool icon_no_matter_what){
     uint32_t resource_id = 0;
     switch(grouping){
         case MPMediaGroupingTitle:
-            return NULL;
-            //resource_id = RESOURCE_ID_ICON_TITLE;
-            //break;
+            if(icon_no_matter_what){
+                resource_id = RESOURCE_ID_ICON_TITLE;
+            }
+            else{
+                return NULL;
+            }
+            break;
         case MPMediaGroupingAlbum:
             resource_id = RESOURCE_ID_ICON_ALBUMS;
             break;
@@ -135,14 +139,11 @@ void library_menus_display_view(MPMediaGrouping grouping, char *title, char *sub
         destroy_all_album_art();
     }
 
-    NSDebug("Before menu load: %d", heap_bytes_free());
-
     menu_stack_count++;
 
     if(!menu_stack[menu_stack_count]){
         menu_stack[menu_stack_count] = malloc(sizeof(LibraryMenu));
         if(!menu_stack[menu_stack_count]){
-            NSError("Failed!");
             return;
         }
     }
@@ -173,8 +174,8 @@ void library_menus_display_view(MPMediaGrouping grouping, char *title, char *sub
     menu->icon = NULL;
     menu->icon_inverted = NULL;
     #else
-    menu->icon = library_menus_gbitmap_from_media_grouping(menu->grouping);
-    menu->icon_inverted = library_menus_gbitmap_from_media_grouping(menu->grouping);
+    menu->icon = library_menus_gbitmap_from_media_grouping(menu->grouping, false);
+    menu->icon_inverted = library_menus_gbitmap_from_media_grouping(menu->grouping, false);
     replace_gbitmap_color(GColorWhite, GColorBlack, menu->icon_inverted, NULL);
     #endif
 
@@ -208,13 +209,12 @@ void library_menus_display_view(MPMediaGrouping grouping, char *title, char *sub
     #ifndef PBL_PLATFORM_APLITE
     menu->loading_window = message_window_create();
     message_window_set_text(menu->loading_window, "Loading...");
-    message_window_set_icon(menu->loading_window, menu->icon, false);
+    message_window_set_icon(menu->loading_window,
+        library_menus_gbitmap_from_media_grouping(menu->grouping, true), true);
     message_window_push_on_window(menu->loading_window, menu->window, false);
     #endif
 
     send_library_request(grouping, 0);
-
-    NSDebug("After menu load: %d", heap_bytes_free());
 }
 
 void library_menus_window_unload(Window* window) {
@@ -236,6 +236,10 @@ void library_menus_window_unload(Window* window) {
     if(library_menu != NULL){
         menu_layer_destroy(library_menu->layer);
         window_destroy(library_menu->window);
+
+        #ifndef PBL_PLATFORM_APLITE
+        library_menu->loading_window = NULL;
+        #endif
 
         if(library_menu->icon){
             gbitmap_destroy(library_menu->icon);
@@ -291,7 +295,7 @@ void library_menus_inbox(DictionaryIterator *received) {
         uint32_t total_size = tuple->value->data[1];
         uint32_t offset = tuple->value->data[3];
 
-        NSLog("Got total size %d, offset %d, is_subtitles %d", (int)total_size, (int)offset, is_subtitles);
+        //NSLog("Got total size %d, offset %d, is_subtitles %d", (int)total_size, (int)offset, is_subtitles);
 
         LibraryMenuEntryData *entry_data = is_subtitles ? menu->subtitles : menu->titles;
 
@@ -338,7 +342,7 @@ void library_menus_inbox(DictionaryIterator *received) {
 
         menu_layer_reload_data(menu->layer);
         #ifndef PBL_PLATFORM_APLITE
-        message_window_pop_off_window(menu->loading_window, true, 500);
+        message_window_pop_off_window(menu->loading_window, true, false);
         #endif
 
         if(!menu->has_autoselected && menu->title_and_subtitle){
@@ -372,7 +376,11 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
 
     //NSLog("Drawing for position %d", pos);
     if(menu->titles->total_entry_count == 0){
+        #ifdef PBL_PLATFORM_APLITE
         menu_cell_basic_draw(ctx, cell_layer, "Loading...", NULL, icon_to_draw);
+        #else
+        menu_cell_basic_draw(ctx, cell_layer, "Hold on...", NULL, icon_to_draw);
+        #endif
     }
     else{
         if(cell_index->row == 0 && menu->title_and_subtitle){
