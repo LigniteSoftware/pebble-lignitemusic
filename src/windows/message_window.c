@@ -61,8 +61,6 @@ void message_window_destroy(MessageWindow *window){
 
     free(window);
     window = NULL;
-
-    NSLog("Free: %d", heap_bytes_free());
 }
 
 void message_window_auto_destroy(void *window){
