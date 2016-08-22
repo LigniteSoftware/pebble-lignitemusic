@@ -73,19 +73,36 @@ typedef enum {
     MessageKeyImageParts,
     MessageKeyAppMessageSize,
     MessageKeyTrackPlayMode, //20
+    MessageKeyFirstOpen,
     MessageKeySettingBatterySaver = 100,
     MessageKeySettingArtistLabel = 101,
     MessageKeySettingPebbleStyleControls = 102
 } MessageKey;
 
+/**
+ * This is the info on how the track that is being selected should play.
+ * In every track list menu, there are options for shuffling all and
+ * changing the repeat mode. Should the user use those, the phone will
+ * adapt accordingly.
+ */
 typedef enum {
-    TrackPlayModeSelectSong = 0,
     TrackPlayModeShuffleAll = 10,
-    TrackPlayModeRepeatModeDefault = 20,
-    TrackPlayModeRepeatModeNone = 21,
-    TrackPlayModeRepeatModeOne = 22,
-    TrackPlayModeRepeatModeAll = 23
+    TrackPlayModeRepeatModeNone = 20,
+    TrackPlayModeRepeatModeOne = 21,
+    TrackPlayModeRepeatModeAll = 22
 } TrackPlayMode;
+
+/**
+ * The NowPlayingRequestType is the type of now playing data that is being
+ * requested.
+ * This is to make more efficient the use of the tiny buffer sizes going in
+ * and out of the watch.
+ */
+typedef enum {
+    NowPlayingRequestTypeAllData = 0,
+    NowPlayingRequestTypeOnlyTrackInfo,
+    NowPlayingRequestTypeOnlyAlbumArt
+} NowPlayingRequestType;
 
 /**
  * The type of media grouping.

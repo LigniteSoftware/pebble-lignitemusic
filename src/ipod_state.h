@@ -11,7 +11,7 @@ typedef void(*iPodStateCallback)(bool track_data);
 
 /**
  * Destroys all album art that's currently loaded (and sets the image layers
- * data to NULL) to save memory. 
+ * data to NULL) to save memory.
  */
 void destroy_all_album_art();
 
@@ -93,7 +93,7 @@ void ipod_set_repeat_mode(MPMusicRepeatMode repeat);
 
 /**
  * Sends a request to the phone asking for the current now playing data.
- * @param force_reload Whether or not the phone should ignore logic (ie. sending
- * album art image twice) and instead just make sure it sends all data required.
+ * @param request_type The data request type that is being requested. See
+ * associated enum for more details.
  */
-void now_playing_request(bool force_reload);
+void now_playing_request(NowPlayingRequestType request_type);

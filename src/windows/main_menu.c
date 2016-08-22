@@ -77,7 +77,7 @@ void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *da
 }
 
 void main_menu_send_now_playing_request(){
-    now_playing_request(true);
+    now_playing_request(NowPlayingRequestTypeOnlyTrackInfo);
 }
 
 void main_menu_create(Window* window){

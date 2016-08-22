@@ -38,6 +38,7 @@ typedef struct {
     uint16_t current_selection;
     LibraryMenuEntryData *titles;
     LibraryMenuEntryData *subtitles;
+    MPMusicRepeatMode repeat_mode;
     #ifndef PBL_PLATFORM_APLITE
     MessageWindow *loading_window;
     #endif

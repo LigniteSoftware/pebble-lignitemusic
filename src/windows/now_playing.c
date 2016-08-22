@@ -430,6 +430,8 @@ void now_playing_window_load(Window* window) {
     now_playing_new_settings(settings_get_settings());
 
     settings_service_subscribe(now_playing_new_settings);
+
+    now_playing_request(NowPlayingRequestTypeOnlyAlbumArt);
     NSDebug("Loaded now playing %d", heap_bytes_free());
 }
 

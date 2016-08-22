@@ -3,6 +3,8 @@
 LibraryMenu *menu_stack[MENU_STACK_DEPTH];
 int8_t menu_stack_count;
 
+GBitmap *shuffle_icon, *shuffle_icon_inverted, *repeat_icon, *repeat_icon_inverted;
+
 bool send_library_request(MPMediaGrouping grouping, uint32_t offset);
 
 uint16_t get_num_rows(MenuLayer* layer, uint16_t section_index, void* context);
@@ -21,6 +23,10 @@ int16_t library_menu_get_cell_height(MenuLayer *menu_layer, MenuIndex *cell_inde
     return MENU_CELL_ROUND_FOCUSED_TALL_CELL_HEIGHT;
 }
 #endif
+
+char *repeat_modes[] = {
+    "Stop", "Nothing", "The selected track", "Everything here"
+};
 
 void library_menus_pop_all(){
     for(uint8_t i = 0; i < MENU_STACK_DEPTH; i++){
@@ -71,7 +77,8 @@ bool play_track(uint16_t index, bool shuffle) {
         return false;
     }
     dict_write_uint8(ipodMessage->iter, MessageKeyRequestLibrary, menu->grouping);
-    dict_write_uint8(ipodMessage->iter, MessageKeyTrackPlayMode, shuffle);
+    dict_write_uint8(ipodMessage->iter, MessageKeyTrackPlayMode,
+        shuffle ? TrackPlayModeShuffleAll : TrackPlayModeRepeatModeNone+(menu->repeat_mode-1));
     dict_write_uint16(ipodMessage->iter, MessageKeyPlayTrack, index);
     build_parent_history(ipodMessage->iter);
     if(app_message_outbox_send() != APP_MSG_OK){
@@ -149,6 +156,7 @@ void library_menus_display_view(MPMediaGrouping grouping, char *title, char *sub
     menu->title_and_subtitle = false;
     menu->has_autoselected = false;
     menu->header_icon = NULL;
+    menu->repeat_mode = MPMusicRepeatModeNone;
 
     if(strcmp(title, "") != 0){ //Title and subtitle exists
         menu->title_and_subtitle = true;
@@ -241,13 +249,14 @@ void library_menus_window_unload(Window* window) {
 
         free(library_menu);
         menu_stack[i] = NULL;
+        NSLog("menu %d destroyed.", i);
     }
 }
 
 #ifndef PBL_PLATFORM_APLITE
 void library_menus_set_header_icon(GBitmap *icon){
     LibraryMenu *menu = menu_stack[menu_stack_count];
-    if(!menu){
+    if(!menu || menu_stack_count == -1){
         return;
     }
     menu->header_icon = icon;
@@ -390,7 +399,7 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
             title_frame.origin.x = header_icon_frame.origin.x + header_icon_frame.size.w + padding;
             title_frame.origin.y = header_icon_frame.origin.y-8; //The -8 is a stupid offset we have to add.
             title_frame.size.w   = WINDOW_FRAME.size.w-title_frame.origin.x;
-            title_frame.size.h   = 28;
+            title_frame.size.h   = 24;
 
             if(strcmp(menu->subtitle_text[0], "") == 0){
                 title_frame.origin.y += 8;
@@ -409,7 +418,7 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
 
             graphics_draw_bitmap_in_rect(ctx, menu->header_icon, header_icon_frame);
 
-            graphics_draw_text(ctx, menu->title_text[0], fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD), title_frame,
+            graphics_draw_text(ctx, menu->title_text[0], fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD), title_frame,
                 GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
 
             graphics_draw_text(ctx, menu->subtitle_text[0], fonts_get_system_font(FONT_KEY_GOTHIC_14), subtitle_frame,
@@ -419,27 +428,28 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
             #endif
         }
         else if(cell_index->row == 1 && menu->title_and_subtitle){
+            GBitmap *to_draw = NULL;
             #ifndef PBL_PLATFORM_APLITE
-            if(!menu->icon){
-                menu->icon = gbitmap_create_with_resource(RESOURCE_ID_ICON_SHUFFLE);
-                menu->icon_inverted = gbitmap_create_with_resource(RESOURCE_ID_ICON_SHUFFLE);
-                replace_gbitmap_color(GColorWhite, GColorBlack, menu->icon_inverted, NULL);
+            if(!shuffle_icon){
+                shuffle_icon = gbitmap_create_with_resource(RESOURCE_ID_ICON_SHUFFLE);
+                shuffle_icon_inverted = gbitmap_create_with_resource(RESOURCE_ID_ICON_SHUFFLE);
+                replace_gbitmap_color(GColorWhite, GColorBlack, shuffle_icon_inverted, NULL);
             }
-            icon_to_draw = menu_cell_layer_is_highlighted(cell_layer) ? menu->icon_inverted : menu->icon;
+            to_draw = menu_cell_layer_is_highlighted(cell_layer) ? shuffle_icon_inverted : shuffle_icon;
             #endif
-            menu_cell_basic_draw(ctx, cell_layer, "Shuffle", NULL, icon_to_draw);
+            menu_cell_basic_draw(ctx, cell_layer, "Shuffle All", NULL, to_draw);
         }
         else if(cell_index->row == 2 && menu->title_and_subtitle){
-            NSWarn("Major key");
+            GBitmap *to_draw = NULL;
             #ifndef PBL_PLATFORM_APLITE
-            if(!menu->icon){
-                menu->icon = gbitmap_create_with_resource(RESOURCE_ID_ICON_REPEAT);
-                menu->icon_inverted = gbitmap_create_with_resource(RESOURCE_ID_ICON_REPEAT);
-                replace_gbitmap_color(GColorWhite, GColorBlack, menu->icon_inverted, NULL);
+            if(!repeat_icon){
+                repeat_icon = gbitmap_create_with_resource(RESOURCE_ID_ICON_REPEAT);
+                repeat_icon_inverted = gbitmap_create_with_resource(RESOURCE_ID_ICON_REPEAT);
+                replace_gbitmap_color(GColorWhite, GColorBlack, repeat_icon_inverted, NULL);
             }
-            icon_to_draw = menu_cell_layer_is_highlighted(cell_layer) ? menu->icon_inverted : menu->icon;
+            to_draw = menu_cell_layer_is_highlighted(cell_layer) ? repeat_icon_inverted : repeat_icon;
             #endif
-            menu_cell_basic_draw(ctx, cell_layer, "Repeat All", NULL, icon_to_draw);
+            menu_cell_basic_draw(ctx, cell_layer, "Repeat", repeat_modes[menu->repeat_mode], to_draw);
         }
         else{
             if(strcmp(menu->subtitles->entries[pos], "") == 0){
@@ -487,6 +497,11 @@ void select_click(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *cal
     }
     if(menu->grouping == MPMediaGroupingTitle) {
         if(cell_index->row == 2 && menu->title_and_subtitle){
+            menu->repeat_mode++;
+            if(menu->repeat_mode > MPMusicRepeatModeAll){
+                menu->repeat_mode = MPMusicRepeatModeNone;
+            }
+            menu_layer_reload_data(menu->layer);
             return;
         }
         play_track(cell_index->row-(menu->title_and_subtitle ? 3 : 0), (menu->title_and_subtitle && cell_index->row == 1));

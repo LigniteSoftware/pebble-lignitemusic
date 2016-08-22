@@ -77,7 +77,8 @@ char* ipod_get_title() {
 void ipod_set_shuffle_mode(MPMusicShuffleMode shuffle) {}
 void ipod_set_repeat_mode(MPMusicRepeatMode repeat) {}
 
-void now_playing_request(bool force_reload) {
+bool first_open = true;
+void now_playing_request(NowPlayingRequestType request_type) {
     // NSWarn("Rejecting request");
     // return;
 
@@ -86,13 +87,14 @@ void now_playing_request(bool force_reload) {
         return;
     }
 
-    //100 will indicate a force reload, any other value that's within int8_t and non-zero will
-    //simply let iOS handle the logic (ie. not sending the same album art twice)
-    uint8_t value = force_reload ? 100 : 200;
-    dict_write_int8(ipodMessage->iter, MessageKeyNowPlaying, value);
+    dict_write_int8(ipodMessage->iter, MessageKeyNowPlaying, request_type);
     dict_write_int8(ipodMessage->iter, MessageKeyWatchModel, watch_info_get_model());
     dict_write_int8(ipodMessage->iter, MessageKeyImageParts, IMAGE_PARTS);
     dict_write_int16(ipodMessage->iter, MessageKeyAppMessageSize, PHONE_MAX_BYTES);
+    if(first_open){
+        dict_write_int8(ipodMessage->iter, MessageKeyFirstOpen, true);
+        first_open = false;
+    }
 
     app_message_outbox_send();
 }

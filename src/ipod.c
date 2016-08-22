@@ -63,7 +63,7 @@ int main() {
 
     app_message_register_inbox_dropped(dropped_inbox_handler);
     app_message_register_outbox_failed(failed_outbox_handler);
-    app_message_open(APP_MESSAGE_SIZE, APP_MESSAGE_SIZE);
+    app_message_open(APP_MESSAGE_SIZE, APP_MESSAGE_SIZE/4);
 
     tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
     connection_service_subscribe((ConnectionHandlers){
