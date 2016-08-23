@@ -80,6 +80,10 @@ void main_menu_send_now_playing_request(){
     now_playing_request(NowPlayingRequestTypeOnlyTrackInfo);
 }
 
+void main_menu_appear(Window *window){
+    connection_window_set_wakeup_cookie(WakeupCookieMainMenu);
+}
+
 void main_menu_create(Window* window){
     if(!main_menu_window && window){
         main_menu_window = window;
@@ -90,6 +94,10 @@ void main_menu_create(Window* window){
     if(!main_menu_window && !window){
         return;
     }
+
+    window_set_window_handlers(window, (WindowHandlers){
+        .appear = main_menu_appear
+    });
 
     static char *titles[AMOUNT_OF_MAIN_MENU_ITEMS] = {
         "Now Playing", "Playlists", "Artists", "Albums", "Composers", "Genres"
@@ -143,10 +151,25 @@ void main_menu_create(Window* window){
         vibes_long_pulse();
     }
     #endif
+
+    if(launch_reason() == APP_LAUNCH_WAKEUP) {
+        WakeupId id = 0;
+        int32_t reason = 0;
+
+        wakeup_get_launch_event(&id, &reason);
+
+        switch(reason){
+            case WakeupCookieMainMenu:
+                break;
+            case WakeupCookieNowPlaying:
+                NSLog("Firing now playing window");
+                app_timer_register(125, now_playing_show, NULL);
+                break;
+        }
+    }
 }
 
 void main_menu_destroy(){
-    NSDebug("Before destroy %d", heap_bytes_free());
     #ifndef PBL_PLATFORM_APLITE
     for(int i = 0; i < AMOUNT_OF_MAIN_MENU_ITEMS; i++){
         gbitmap_destroy(main_menu_icons[i]);
@@ -155,7 +178,6 @@ void main_menu_destroy(){
     #endif
 
     menu_layer_destroy(main_menu_layer);
-    NSDebug("After destroy %d", heap_bytes_free());
 }
 
 void open_now_playing(int index, void *context){

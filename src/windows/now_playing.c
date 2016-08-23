@@ -477,6 +477,10 @@ void now_playing_window_unload(Window* window) {
     #endif
 }
 
+void now_playing_window_appear(Window *window){
+    connection_window_set_wakeup_cookie(WakeupCookieNowPlaying);
+}
+
 void now_playing_show() {
     if(is_shown){
         NSLog("Already shown!");
@@ -489,6 +493,7 @@ void now_playing_show() {
     window_set_window_handlers(now_playing_window, (WindowHandlers){
         .unload = now_playing_window_unload,
         .load = now_playing_window_load,
+        .appear = now_playing_window_appear
     });
 
     window_stack_push(now_playing_window, true);

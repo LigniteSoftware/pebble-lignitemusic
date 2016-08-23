@@ -74,6 +74,7 @@ typedef enum {
     MessageKeyAppMessageSize,
     MessageKeyTrackPlayMode, //20
     MessageKeyFirstOpen,
+    MessageKeyConnectionTest,
     MessageKeySettingBatterySaver = 100,
     MessageKeySettingArtistLabel = 101,
     MessageKeySettingPebbleStyleControls = 102

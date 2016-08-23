@@ -1,28 +1,15 @@
 #include <lignite_music.h>
 
 ConnectionWindow *connection_window;
+WakeupCookie current_tasty_cookie;
 
 void connection_window_click_select(ClickRecognizerRef ref, void *context){
     const time_t future_timestamp = time(NULL) + 1;
-
-    // Choose a 'cookie' value representing the reason for the wakeup
-    const int cookie = 0;
-
-    // If true, the user will be notified if they missed the wakeup
-    // (i.e. their watch was off)
-    const bool notify_if_missed = true;
-
-    // Schedule wakeup event
-    WakeupId id = wakeup_schedule(future_timestamp, cookie, notify_if_missed);
-
-    // Check the scheduling was successful
+    
+    WakeupId id = wakeup_schedule(future_timestamp, current_tasty_cookie, false);
     if(id >= 0) {
-        // Persist the ID so that a future launch can query it
-        const int wakeup_id_key = 43;
-        persist_write_int(wakeup_id_key, id);
         window_stack_pop_all(true);
     }
-    NSLog("%d", (int)id);
 }
 
 void connection_window_click_back(ClickRecognizerRef ref, void *context){
@@ -47,17 +34,21 @@ void connection_window_load(Window *window){
 
     NSLog("%d", connection_window->error);
     switch(connection_window->error){
+        case ConnectionErrorReconnecting:
+            snprintf(title, sizeof(title), "Hold on...");
+            snprintf(description, sizeof(description), "The watchapp is currently testing its connection... or press select to reboot the watchapp.");
+            break;
         case ConnectionErrorPebbleAppDisconnected:
-            snprintf(title, sizeof(title), "Pebble App Not Connected");
+            snprintf(title, sizeof(title), "Pebble Disconnected");
             snprintf(description, sizeof(description), "The Pebble app isn't connected. Please make sure your watch is connected and Pebble app open in the background. This will disappear when reconnected.");
             break;
         case ConnectionErrorPebbleKitDisconnected:
-            snprintf(title, sizeof(title), "Lignite App Not Connected");
+            snprintf(title, sizeof(title), "Lignite Disconnected");
             snprintf(description, sizeof(description), "The Lignite app isn't connected. Please make sure the Lignite app is open in the background. This will disappear when reconnected.");
             break;
         case ConnectionErrorOutboxDropped:
             snprintf(title, sizeof(title), "Failed to Send");
-            snprintf(description, sizeof(description), "The watchapp is having a tough time getting messages to the phone, error code X. Press select to retry and contact us if this issue continues.");
+            snprintf(description, sizeof(description), "The watchapp is having a tough time getting messages to the phone (error code %d). Press select to restart the watchapp and contact us with the error code if this issue continues.", connection_window->error_code);
             break;
         case ConnectionErrorAppMessageBusy: //Worst error in the world
             snprintf(title, sizeof(title), "Pebble Internal Error");
@@ -65,18 +56,21 @@ void connection_window_load(Window *window){
             break;
         case ConnectionErrorOther:
             snprintf(title, sizeof(title), "Other Error");
-            snprintf(description, sizeof(description), "There was an unknown error while preforming this operation. Please try pressing the select button to reboot the app and try again.");
+            snprintf(description, sizeof(description), "Spooky! There was an unknown error while preforming this operation (error code %d). Please try pressing the select button to reboot the app and try again.", connection_window->error_code);
+            break;
+        default:
             break;
     }
 
-    GRect title_layer_frame = GRect(0, PBL_IF_ROUND_ELSE(10, 0), WINDOW_FRAME.size.w, 2000);
-    GSize title_size = graphics_text_layout_get_content_size(title, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD), title_layer_frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter);
+    GRect title_layer_frame = GRect(0, PBL_IF_ROUND_ELSE(10, 0), WINDOW_FRAME.size.w, 250);
+    GSize title_size = graphics_text_layout_get_content_size(title, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD), title_layer_frame, GTextOverflowModeWordWrap, GTextAlignmentCenter);
     title_layer_frame = GRect(0, PBL_IF_ROUND_ELSE(10, 0), WINDOW_FRAME.size.w, title_size.h);
 
     connection_window->title_layer = text_layer_create(title_layer_frame);
     text_layer_set_text(connection_window->title_layer, title);
     text_layer_set_font(connection_window->title_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
     text_layer_set_text_color(connection_window->title_layer, GColorWhite);
+    text_layer_set_overflow_mode(connection_window->title_layer, GTextOverflowModeWordWrap);
     text_layer_set_background_color(connection_window->title_layer, GColorBlack);
 
     GRect description_layer_frame = GRect(0, title_layer_frame.origin.y+title_layer_frame.size.h+4, WINDOW_FRAME.size.w, 2000);
@@ -87,13 +81,11 @@ void connection_window_load(Window *window){
     text_layer_set_background_color(connection_window->description_layer, GColorBlack);
     GSize max_size = graphics_text_layout_get_content_size(description, fonts_get_system_font(FONT_KEY_GOTHIC_24), description_layer_frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter);
     max_size.w = WINDOW_FRAME.size.w;
-    max_size.h += PBL_IF_ROUND_ELSE(150, 4);
     description_layer_frame.size.h = max_size.h;
-    text_layer_set_size(connection_window->description_layer, max_size);
 
     int content_height = description_layer_frame.origin.y+description_layer_frame.size.h+4;
 
-    connection_window->background_layer = layer_create(GRect(0, 0, WINDOW_FRAME.size.w, content_height));
+    connection_window->background_layer = layer_create(GRect(0, 0, WINDOW_FRAME.size.w, content_height*PBL_IF_ROUND_ELSE(2, 1)));
     layer_set_update_proc(connection_window->background_layer, connection_window_background_proc);
 
     connection_window->root_layer = scroll_layer_create(WINDOW_FRAME);
@@ -118,54 +110,125 @@ void connection_window_load(Window *window){
 }
 
 void connection_window_unload(Window *window){
+    layer_destroy(connection_window->background_layer);
+    text_layer_destroy(connection_window->title_layer);
+    text_layer_destroy(connection_window->description_layer);
+    scroll_layer_destroy(connection_window->root_layer);
+}
 
+void connection_window_send_test_message(){
+    if(!connection_window){
+        return;
+    }
+
+    iPodMessage *message = ipod_message_outbox_get();
+
+    if(message->result != APP_MSG_OK){
+        connection_window->error = ConnectionErrorOther;
+        connection_window->error_code = message->result;
+        return;
+    }
+
+    dict_write_int8(message->iter, MessageKeyConnectionTest, 1);
+
+    AppMessageResult test_result = app_message_outbox_send();
+    if(test_result != APP_MSG_OK){
+        connection_window->error = ConnectionErrorOutboxDropped;
+        connection_window->error_code = test_result;
+    }
+    else{
+        connection_window->error = ConnectionErrorReconnecting;
+    }
+}
+
+void connection_window_reload(ConnectionError error){
+    connection_window_unload(connection_window->window);
+
+    if(error == ConnectionErrorNoError){ //Automatically check for errors
+        connection_window->pebblekit_connected = connection_service_peek_pebblekit_connection();
+        connection_window->pebble_app_connected = connection_service_peek_pebble_app_connection();
+
+        if(!connection_window->pebble_app_connected){
+            connection_window->error = ConnectionErrorPebbleAppDisconnected;
+        }
+        else if(!connection_window->pebblekit_connected){
+            connection_window->error = ConnectionErrorPebbleKitDisconnected;
+        }
+        else{
+            connection_window_send_test_message();
+        }
+    }
+    else{
+        connection_window->error = error;
+    }
+
+    connection_window_load(connection_window->window);
 }
 
 void connection_window_push(ConnectionError error){
     if(connection_window){
-        NSWarn("Connection window already exists!");
+        connection_window_reload(error);
         return;
     }
     connection_window = malloc(sizeof(ConnectionWindow));
     connection_window->error = error;
+
+    connection_window->pebble_app_connected = connection_service_peek_pebble_app_connection();
+    connection_window->pebblekit_connected = connection_service_peek_pebblekit_connection();
+
+    if(!connection_window->pebble_app_connected){
+        connection_window->error = ConnectionErrorPebbleAppDisconnected;
+    }
+    if(!connection_window->pebblekit_connected && connection_window->pebble_app_connected){
+        connection_window->error = ConnectionErrorPebbleKitDisconnected;
+    }
 
     connection_window->window = window_create();
     window_set_window_handlers(connection_window->window, (WindowHandlers){
         .load = connection_window_load,
         .unload = connection_window_unload
     });
-
-    switch(error){
-        case ConnectionErrorPebbleAppDisconnected:
-        case ConnectionErrorPebbleKitDisconnected:
-            connection_window->pebble_app_connected = connection_service_peek_pebble_app_connection();
-            connection_window->pebblekit_connected = connection_service_peek_pebblekit_connection();
-            break;
-        default:
-            break;
-    }
-
     window_stack_push(connection_window->window, true);
 }
 
 void connection_window_inbox_dropped_handler(AppMessageResult reason, void *context){
-    NSError("Dropped inbox, reason %d", reason);
+    if(reason == APP_MSG_BUSY){
+        connection_window_push(ConnectionErrorAppMessageBusy);
+    }
+    else{
+        connection_window_push(ConnectionErrorOther);
+    }
 }
 
 void connection_window_outbox_failed_handler(DictionaryIterator *iterator, AppMessageResult reason, void *context){
-    NSError("Failed outbox, reason %d", reason);
+    connection_window_push(ConnectionErrorOutboxDropped);
 }
 
 void connection_window_pebble_app_connection_handler(bool connected){
-
+    if(!connected){
+        connection_window_push(ConnectionErrorPebbleAppDisconnected);
+    }
+    else if(connection_window){
+        connection_window_push(ConnectionErrorNoError);
+    }
 }
 
 void connection_window_pebblekit_connection_handler(bool connected){
-
+    if(!connected){
+        connection_window_push(ConnectionErrorPebbleKitDisconnected);
+    }
+    else if(connection_window){
+        connection_window_push(ConnectionErrorNoError);
+    }
 }
 
-void connection_window_debug_fire(){
-    connection_window_push(ConnectionErrorAppMessageBusy);
+void connection_window_got_test_message(){
+    window_stack_pop(true);
+    connection_window = NULL;
+}
+
+void connection_window_set_wakeup_cookie(WakeupCookie tasty_cookie){
+    current_tasty_cookie = tasty_cookie;
 }
 
 void connection_window_attach(){
@@ -177,8 +240,6 @@ void connection_window_attach(){
 
     app_message_register_inbox_dropped(connection_window_inbox_dropped_handler);
     app_message_register_outbox_failed(connection_window_outbox_failed_handler);
-
-    app_timer_register(1000, connection_window_debug_fire, NULL);
 }
 
 void connection_window_detach(){

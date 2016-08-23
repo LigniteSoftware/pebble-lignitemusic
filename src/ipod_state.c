@@ -354,6 +354,9 @@ void process_tuple(Tuple *tuple, DictionaryIterator *iter){
     else if(key == MessageKeyAlbumArt || key == MessageKeyAlbumArtLength){
         process_album_art_tuple(iter);
     }
+    else if(key == MessageKeyConnectionTest){
+        connection_window_got_test_message();
+    }
 }
 
 void ipod_received_handler(DictionaryIterator *iter, void *context){
