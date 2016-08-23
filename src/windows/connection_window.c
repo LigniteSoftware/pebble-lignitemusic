@@ -3,9 +3,22 @@
 ConnectionWindow *connection_window;
 WakeupCookie current_tasty_cookie;
 
+const char *connection_titles[] = {
+    "Hold on...", "Pebble Disconnected", "Lignite Disconnected", "Failed", "Pebble Internal Error", "Error"
+};
+
+const char *connection_descriptions[] = {
+    "The watchapp is currently testing its connection... or press select to reboot the watchapp.",
+    "The Pebble app isn't connected. Please make sure your watch is connected and Pebble app open in the background. This will disappear when reconnected.",
+    "The Lignite app isn't connected. Please make sure the Lignite app is open in the background. This will disappear when reconnected.",
+    "",
+    "Pebble has an annoying bug where a watchapp's communication will lock up. Please press the select button to reboot the watchapp to fix this issue.",
+    ""
+};
+
 void connection_window_click_select(ClickRecognizerRef ref, void *context){
     const time_t future_timestamp = time(NULL) + 1;
-    
+
     WakeupId id = wakeup_schedule(future_timestamp, current_tasty_cookie, false);
     if(id >= 0) {
         window_stack_pop_all(true);
@@ -32,34 +45,20 @@ void connection_window_load(Window *window){
 
     static char title[30], description[150];
 
-    NSLog("%d", connection_window->error);
-    switch(connection_window->error){
-        case ConnectionErrorReconnecting:
-            snprintf(title, sizeof(title), "Hold on...");
-            snprintf(description, sizeof(description), "The watchapp is currently testing its connection... or press select to reboot the watchapp.");
-            break;
-        case ConnectionErrorPebbleAppDisconnected:
-            snprintf(title, sizeof(title), "Pebble Disconnected");
-            snprintf(description, sizeof(description), "The Pebble app isn't connected. Please make sure your watch is connected and Pebble app open in the background. This will disappear when reconnected.");
-            break;
-        case ConnectionErrorPebbleKitDisconnected:
-            snprintf(title, sizeof(title), "Lignite Disconnected");
-            snprintf(description, sizeof(description), "The Lignite app isn't connected. Please make sure the Lignite app is open in the background. This will disappear when reconnected.");
-            break;
-        case ConnectionErrorOutboxDropped:
-            snprintf(title, sizeof(title), "Failed to Send");
-            snprintf(description, sizeof(description), "The watchapp is having a tough time getting messages to the phone (error code %d). Press select to restart the watchapp and contact us with the error code if this issue continues.", connection_window->error_code);
-            break;
-        case ConnectionErrorAppMessageBusy: //Worst error in the world
-            snprintf(title, sizeof(title), "Pebble Internal Error");
-            snprintf(description, sizeof(description), "Pebble has an annoying bug where a watchapp's communication will lock up. Please press the select button to reboot the watchapp to fix this issue.");
-            break;
-        case ConnectionErrorOther:
-            snprintf(title, sizeof(title), "Other Error");
-            snprintf(description, sizeof(description), "Spooky! There was an unknown error while preforming this operation (error code %d). Please try pressing the select button to reboot the app and try again.", connection_window->error_code);
-            break;
-        default:
-            break;
+    if(connection_window->error != ConnectionErrorNoError){
+        snprintf(title, sizeof(title), connection_titles[connection_window->error]);
+
+        switch(connection_window->error){
+            case ConnectionErrorOutboxDropped:
+                snprintf(description, sizeof(description), "The watchapp is having a tough time getting messages to the phone (error code %d). Press select to restart the watchapp and contact us if this continues.", connection_window->error_code);
+                break;
+            case ConnectionErrorOther:
+                snprintf(description, sizeof(description), "Spooky! There was an unknown error while preforming this operation (error code %d). Please try pressing the select button to reboot the app and try again.", connection_window->error_code);
+                break;
+            default:
+                snprintf(description, sizeof(description), connection_descriptions[connection_window->error]);
+                break;
+        }
     }
 
     GRect title_layer_frame = GRect(0, PBL_IF_ROUND_ELSE(10, 0), WINDOW_FRAME.size.w, 250);
@@ -244,4 +243,6 @@ void connection_window_attach(){
 
 void connection_window_detach(){
     connection_service_unsubscribe();
+    app_message_register_inbox_dropped(NULL);
+    app_message_register_outbox_failed(NULL);
 }

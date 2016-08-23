@@ -30,26 +30,14 @@ void settings_prepare_defaults(){
     current_settings.artist_label = true;
 }
 
-int settings_load(){
+void settings_load(){
     int bytes_read = persist_read_data(SETTINGS_KEY, &current_settings, sizeof(Settings));
-
-    #ifdef DEBUG_LOGS
-        NSLog("Read %d bytes from storage into settings.", bytes_read);
-    #endif
 
     if(bytes_read < 0){
         settings_prepare_defaults();
     }
-
-    return bytes_read;
 }
 
-int settings_save(){
-    int bytes_written = persist_write_data(SETTINGS_KEY, &current_settings, sizeof(Settings));
-
-    #ifdef DEBUG_LOGS
-        NSLog("Wrote %d bytes into storage from settings.", bytes_written);
-    #endif
-
-    return bytes_written;
+void settings_save(){
+    persist_write_data(SETTINGS_KEY, &current_settings, sizeof(Settings));
 }

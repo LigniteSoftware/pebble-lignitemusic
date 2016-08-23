@@ -46,10 +46,8 @@ bool now_playing_is_playing_music(){
 
 void now_playing_check_for_no_music(){
     if(strcmp(ipod_get_title(), "") == 0){
-        marquee_text_layer_set_text(now_playing_title_layer, "Start music on your phone or watch");
-        uint8_t len = (uint8_t)sizeof("No Music");
-        strncpy(ipod_get_artist(), "No Music", (size_t)len);
-        marquee_text_layer_set_text(now_playing_artist_layer, "No Music");
+        strncpy(ipod_get_artist(), "No Music", 9);
+        strncpy(ipod_get_title(), "Start music on your phone or watch", 35);
     }
 }
 
@@ -70,9 +68,9 @@ void now_playing_state_callback(bool track_data) {
     }
 
     if(track_data) {
+        now_playing_check_for_no_music();
         marquee_text_layer_set_text(now_playing_artist_layer, ipod_get_artist());
         marquee_text_layer_set_text(now_playing_title_layer, ipod_get_title());
-        now_playing_check_for_no_music();
     }
     else {
         if(previous_play_status != now_playing_is_playing_music()){
@@ -184,19 +182,24 @@ void now_playing_graphics_proc(Layer *layer, GContext *ctx){
 }
 
 bool now_playing_action_bar_is_showing = true;
+#ifndef PBL_PLATFORM_APLITE
 uint16_t action_bar_showing = 0, action_bar_hidden = 0;
+#endif
 
 void animate_action_bar(void *action_bar_pointer){
     ActionBarLayer *action_bar = (ActionBarLayer*)action_bar_pointer;
-
     Layer *action_bar_layer = action_bar_layer_get_layer(action_bar);
 
+    #ifndef PBL_PLATFORM_APLITE
     GRect current_frame = layer_get_frame(action_bar_layer);
     GRect next_frame;
 
     next_frame = GRect(now_playing_action_bar_is_showing ? action_bar_hidden : action_bar_showing, current_frame.origin.y, current_frame.size.w, current_frame.size.h);
 
     animate_layer(action_bar_layer, &current_frame, &next_frame, now_playing_settings.battery_saver ? 50 : 400, 0);
+    #else
+    layer_set_hidden(action_bar_layer, now_playing_action_bar_is_showing);
+    #endif
 
     now_playing_action_bar_is_showing = !now_playing_action_bar_is_showing;
 }
@@ -344,7 +347,6 @@ void now_playing_new_settings(Settings new_settings){
 }
 
 void now_playing_window_load(Window* window) {
-    NSDebug("Loading now playing window %d.", heap_bytes_free());
     Layer *window_layer = window_get_root_layer(window);
 
     #ifdef PBL_PLATFORM_APLITE
@@ -414,9 +416,11 @@ void now_playing_window_load(Window* window) {
     action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_SELECT, icon_play, false);
     controlling_volume = false;
     now_playing_action_bar_is_showing = true;
+    #ifndef PBL_PLATFORM_APLITE
     GRect current_actionbar_frame = layer_get_frame(action_bar_layer_get_layer(control_action_bar));
     action_bar_showing = current_actionbar_frame.origin.x;
     action_bar_hidden = action_bar_showing+ACTION_BAR_WIDTH;
+    #endif
 
     previous_play_status = now_playing_is_playing_music();
 
@@ -432,7 +436,6 @@ void now_playing_window_load(Window* window) {
     settings_service_subscribe(now_playing_new_settings);
 
     now_playing_request(NowPlayingRequestTypeOnlyAlbumArt);
-    NSDebug("Loaded now playing %d", heap_bytes_free());
 }
 
 void now_playing_window_unload(Window* window) {
@@ -483,7 +486,6 @@ void now_playing_window_appear(Window *window){
 
 void now_playing_show() {
     if(is_shown){
-        NSLog("Already shown!");
         return;
     }
     background_colour = GColorBlack;

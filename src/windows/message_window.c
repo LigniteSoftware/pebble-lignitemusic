@@ -1,5 +1,6 @@
 #include <lignite_music.h>
 
+#ifndef PBL_PLATFORM_APLITE
 MessageWindow *to_destroy = NULL;
 
 void message_window_update_proc(Layer *layer, GContext *ctx){
@@ -122,3 +123,4 @@ void message_window_set_icon(MessageWindow *window, GBitmap *icon, bool auto_des
 
     message_window_update_frames(window);
 }
+#endif

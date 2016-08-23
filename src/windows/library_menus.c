@@ -5,8 +5,6 @@ int8_t menu_stack_count;
 
 GBitmap *shuffle_icon, *shuffle_icon_inverted, *repeat_icon, *repeat_icon_inverted;
 
-bool send_library_request(MPMediaGrouping grouping, uint32_t offset);
-
 uint16_t get_num_rows(MenuLayer* layer, uint16_t section_index, void* context);
 void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, void *callback_context);
 void selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context);
@@ -53,38 +51,29 @@ bool build_parent_history(DictionaryIterator *iter) {
     return true;
 }
 
-bool send_library_request(MPMediaGrouping grouping, uint32_t offset) {
+void send_library_request(MPMediaGrouping grouping, uint32_t offset) {
     iPodMessage *ipodMessage = ipod_message_outbox_get();
     if(ipodMessage->result != APP_MSG_OK){
-        NSError("Failed to generate iPodMessage, got result: %d", ipodMessage->result);
-        return false;
+        return;
     }
-    NSLog("Sending library request with grouping %d and offset %d.", grouping, (int)offset);
     dict_write_uint8(ipodMessage->iter, MessageKeyRequestLibrary, grouping);
     dict_write_uint32(ipodMessage->iter, MessageKeyRequestOffset, offset);
     build_parent_history(ipodMessage->iter);
-    AppMessageResult outbox_result = app_message_outbox_send();
-    if(outbox_result != APP_MSG_OK){
-        return false;
-    }
-    return true;
+    app_message_outbox_send();
 }
 
-bool play_track(uint16_t index, bool shuffle) {
+void play_track(uint16_t index, bool shuffle) {
     LibraryMenu *menu = menu_stack[menu_stack_count];
     iPodMessage *ipodMessage = ipod_message_outbox_get();
     if(ipodMessage->result != APP_MSG_OK){
-        return false;
+        return;
     }
     dict_write_uint8(ipodMessage->iter, MessageKeyRequestLibrary, menu->grouping);
     dict_write_uint8(ipodMessage->iter, MessageKeyTrackPlayMode,
         shuffle ? TrackPlayModeShuffleAll : TrackPlayModeRepeatModeNone+(menu->repeat_mode-1));
     dict_write_uint16(ipodMessage->iter, MessageKeyPlayTrack, index);
     build_parent_history(ipodMessage->iter);
-    if(app_message_outbox_send() != APP_MSG_OK){
-        return false;
-    }
-    return true;
+    app_message_outbox_send();
 }
 
 void clear_library_entry_data(LibraryMenuEntryData *data){
@@ -130,12 +119,10 @@ GBitmap *library_menus_gbitmap_from_media_grouping(MPMediaGrouping grouping, boo
 
 void library_menus_display_view(MPMediaGrouping grouping, char *title, char *subtitle) {
     if(menu_stack_count >= MENU_STACK_DEPTH){
-        NSError("Depth of menu stack too great at %d! Rejecting.", menu_stack_count);
         return;
     }
 
     if(heap_bytes_free() < 1500){
-        NSWarn("Destroying album art to make room.");
         destroy_all_album_art();
     }
 
@@ -146,9 +133,6 @@ void library_menus_display_view(MPMediaGrouping grouping, char *title, char *sub
         if(!menu_stack[menu_stack_count]){
             return;
         }
-    }
-    else{
-        NSWarn("Menu stack %p already exists (index %d).", menu_stack[menu_stack_count], menu_stack_count);
     }
 
     LibraryMenu* menu = menu_stack[menu_stack_count];
@@ -253,7 +237,6 @@ void library_menus_window_unload(Window* window) {
 
         free(library_menu);
         menu_stack[i] = NULL;
-        NSLog("menu %d destroyed.", i);
     }
 }
 
@@ -273,7 +256,6 @@ void library_menus_set_header_icon(GBitmap *icon){
 
 void library_menus_inbox(DictionaryIterator *received) {
     if(menu_stack_count == -1) {
-        NSError("menu_stack_count is -1!");
         return;
     }
 
@@ -288,8 +270,7 @@ void library_menus_inbox(DictionaryIterator *received) {
                                 || (menu->grouping == MPMediaGroupingPlaylist && grouping == MPMediaGroupingPodcastTitle); //Playlist song count
 
             if(!is_subtitles){
-                NSError("grouping != menu->grouping!");
-                return; // Not what we wanted.
+                return;
             }
         }
         uint32_t total_size = tuple->value->data[1];

@@ -18,7 +18,6 @@ MPMusicPlaybackState s_playback_state;
 NowPlayingType current_type;
 uint32_t s_duration;
 uint32_t s_current_time;
-static char s_album[100];
 static char s_artist[100];
 static char s_title[100];
 
@@ -61,10 +60,6 @@ MPMusicShuffleMode ipod_get_shuffle_mode() {
     return s_shuffle_mode;
 }
 
-char* ipod_get_album() {
-    return s_album;
-}
-
 char* ipod_get_artist() {
     return s_artist;
 }
@@ -73,15 +68,8 @@ char* ipod_get_title() {
     return s_title;
 }
 
-//TODO: add support for these
-void ipod_set_shuffle_mode(MPMusicShuffleMode shuffle) {}
-void ipod_set_repeat_mode(MPMusicRepeatMode repeat) {}
-
 bool first_open = true;
 void now_playing_request(NowPlayingRequestType request_type) {
-    // NSWarn("Rejecting request");
-    // return;
-
     iPodMessage *ipodMessage = ipod_message_outbox_get();
     if(!ipodMessage->iter){
         return;
@@ -108,7 +96,6 @@ void call_callback(bool track_data) {
         first_call = false;
     }
     if(!ipod_state_callback){
-        //NSError("State callback doesn't exist! Gutlessly rejecting.");
         return;
     }
     ipod_state_callback(track_data);
@@ -129,9 +116,7 @@ void create_bitmap(uint8_t image_part){
         return;
     }
 
-    //APP_LOG(APP_LOG_LEVEL_DEBUG,"png_header for %p: %c%c%c", album_art_data[image_part], *((char*)(album_art_data[image_part]+1)), *((char*)(album_art_data[image_part]+2)), *((char*)(album_art_data[image_part]+3)));
-
-    NSLog("Creating bitmap with data %p, size %d and heap free %d.", album_art_data[image_part], now_playing_album_art_size[image_part], heap_bytes_free());
+    //NSLog("Creating bitmap with data %p, size %d and heap free %d.", album_art_data[image_part], now_playing_album_art_size[image_part], heap_bytes_free());
     album_art_bitmap[image_part] = gbitmap_create_from_png_data(album_art_data[image_part], now_playing_album_art_size[image_part]);
 
     GSize size = gbitmap_get_bounds(album_art_bitmap[image_part]).size;
@@ -163,7 +148,6 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
 
         Tuple *albumArtIndexTuple = dict_find(albumArtDict, MessageKeyAlbumArtIndex);
         if(!albumArtIndexTuple){
-            NSError("Index tuple doesn't exist");
             return;
         }
         size_t index = albumArtIndexTuple->value->uint16 * MAX_BYTES;
@@ -183,9 +167,7 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
 
             uint16_t length = albumArtLengthTuple->value->uint16;
 
-            NSLog("Got size for image %d: %d, heap free %d", image_part, length, heap_bytes_free());
             if(album_art_data[image_part]){
-                NSLog("Freeing album art data for part %d.", image_part);
                 free(album_art_data[image_part]);
             }
             if(album_art_bitmap[image_part]){
@@ -194,16 +176,10 @@ void process_album_art_tuple(DictionaryIterator *albumArtDict){
                 album_art_bitmap[image_part] = NULL;
             }
             album_art_data[image_part] = malloc(length);
-            if(!album_art_data[image_part]){
-                NSError("Album art data FAILED to create with a size of %d bytes!", length);
-            }
             now_playing_album_art_size[image_part] = length;
 
             if(now_playing_album_art_size[image_part] == 1){ //No album art
                 now_playing_set_album_art(image_part, NULL);
-            }
-            else{
-                NSDebug("Ready for image input.");
             }
         }
     }
@@ -291,16 +267,12 @@ void process_tuple(Tuple *tuple, DictionaryIterator *iter){
     else if(key == MessageKeyNowPlaying){
         Tuple *typeTuple = dict_find(iter, MessageKeyNowPlayingResponseType);
         if(!typeTuple){
-            NSError("Type tuple doesn't exist!");
             return;
         }
         current_type = typeTuple->value->uint8;
 
         char* target = NULL;
         switch(current_type) {
-            case NowPlayingAlbum:
-                target = s_album;
-                break;
             case NowPlayingArtist:
                 target = s_artist;
                 break;
@@ -375,6 +347,5 @@ void ipod_received_handler(DictionaryIterator *iter, void *context){
 void ipod_state_create() {
     app_message_register_inbox_received(ipod_received_handler);
     s_artist[0] = '\0';
-    s_album[0] = '\0';
     s_title[0] = '\0';
 }

@@ -3,7 +3,7 @@
 static uint32_t s_sequence_number = 0xFFFFFFFE;
 
 void on_animation_stopped(Animation *anim, bool finished, void *context){
-    #ifdef PBL_BW
+    #ifdef PBL_PLATFORM_APLITE
         property_animation_destroy((PropertyAnimation*) anim);
     #endif
 }

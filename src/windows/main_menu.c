@@ -44,6 +44,7 @@ int16_t menu_get_cell_height(MenuLayer *menu_layer, MenuIndex *cell_index, void 
 MenuIndex highlight_index;
 
 void update_highlight_colours(){
+    #ifndef PBL_PLATFORM_APLITE
     if(highlight_index.row != 0){
         menu_layer_set_highlight_colors(main_menu_layer, GColorWhite, GColorBlack);
     }
@@ -51,6 +52,7 @@ void update_highlight_colours(){
         menu_layer_set_highlight_colors(main_menu_layer, GColorRed, GColorWhite);
     }
     layer_mark_dirty(menu_layer_get_layer(main_menu_layer));
+    #endif
 }
 
 void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context){
@@ -59,6 +61,7 @@ void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, M
 }
 
 void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data){
+    #ifndef PBL_PLATFORM_APLITE
     graphics_context_set_compositing_mode(ctx, GCompOpSet);
 
     main_menu_items[cell_index->row].icon = main_menu_icons[cell_index->row];
@@ -68,6 +71,7 @@ void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *c
             main_menu_items[cell_index->row].icon = main_menu_icons_inverted[cell_index->row];
         }
     }
+    #endif
 
     menu_cell_basic_draw(ctx, cell_layer, main_menu_items[cell_index->row].title, NULL, main_menu_items[cell_index->row].icon);
 }
@@ -141,16 +145,6 @@ void main_menu_create(Window* window){
         app_timer_register(250, main_menu_send_now_playing_request, NULL);
         already_requested = true;
     }
-
-    #ifndef PBL_PLATFORM_APLITE
-    if(!bluetooth_connection_service_peek()){ //Phone not connected
-        MessageWindow *not_connected_window = message_window_create();
-        message_window_set_text(not_connected_window, "Your phone isn't connected! Lignite Music needs a phone...");
-        message_window_push_on_window(not_connected_window, window, 10000);
-
-        vibes_long_pulse();
-    }
-    #endif
 
     if(launch_reason() == APP_LAUNCH_WAKEUP) {
         WakeupId id = 0;

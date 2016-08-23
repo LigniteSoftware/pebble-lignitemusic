@@ -45,12 +45,10 @@ void settings_set_settings(Settings new_settings);
 
 /**
  * Loads settings from persistent storage.
- * @return The bytes read from storage. See status_t for error codes.
  */
-int settings_load();
+void settings_load();
 
 /**
  * Saves the current settings into persistent storage.
- * @return The bytes read from storage. See status_t for error codes.
  */
-int settings_save();
+void settings_save();
