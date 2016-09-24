@@ -118,7 +118,9 @@ void main_menu_create(Window* window){
         #ifndef PBL_PLATFORM_APLITE
         main_menu_icons[i] = gbitmap_create_with_resource(resource_ids[i]);
         main_menu_icons_inverted[i] = gbitmap_create_with_resource(resource_ids[i]);
+        #ifndef PBL_BW
         replace_gbitmap_color(GColorWhite, GColorBlack, main_menu_icons_inverted[i], NULL);
+        #endif
         #endif
 
         main_menu_items[i].callback = callbacks[i];

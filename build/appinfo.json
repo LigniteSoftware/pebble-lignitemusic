@@ -2,14 +2,15 @@
     "targetPlatforms": [
         "aplite", 
         "basalt", 
-        "chalk"
+        "chalk", 
+        "diorite"
     ], 
     "displayName": "Lignite Music", 
     "name": "Lignite Music", 
     "messageKeys": {}, 
     "companyName": "Edwin Finch", 
     "enableMultiJS": false, 
-    "versionLabel": "0.4", 
+    "versionLabel": "0.6", 
     "capabilities": [], 
     "sdkVersion": "3", 
     "appKeys": {}, 

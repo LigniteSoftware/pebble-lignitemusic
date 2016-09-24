@@ -160,7 +160,9 @@ void library_menus_display_view(MPMediaGrouping grouping, char *title, char *sub
     #else
     menu->icon = library_menus_gbitmap_from_media_grouping(menu->grouping, false);
     menu->icon_inverted = library_menus_gbitmap_from_media_grouping(menu->grouping, false);
+    #ifndef PBL_BW //TODO Check this on diorite
     replace_gbitmap_color(GColorWhite, GColorBlack, menu->icon_inverted, NULL);
+    #endif
     #endif
 
     menu->window = window_create();
@@ -422,7 +424,9 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
             if(!shuffle_icon){
                 shuffle_icon = gbitmap_create_with_resource(RESOURCE_ID_ICON_SHUFFLE);
                 shuffle_icon_inverted = gbitmap_create_with_resource(RESOURCE_ID_ICON_SHUFFLE);
+                #ifndef PBL_BW
                 replace_gbitmap_color(GColorWhite, GColorBlack, shuffle_icon_inverted, NULL);
+                #endif
             }
             to_draw = menu_cell_layer_is_highlighted(cell_layer) ? shuffle_icon_inverted : shuffle_icon;
             #endif
@@ -434,7 +438,9 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
             if(!repeat_icon){
                 repeat_icon = gbitmap_create_with_resource(RESOURCE_ID_ICON_REPEAT);
                 repeat_icon_inverted = gbitmap_create_with_resource(RESOURCE_ID_ICON_REPEAT);
+                #ifndef PBL_BW
                 replace_gbitmap_color(GColorWhite, GColorBlack, repeat_icon_inverted, NULL);
+                #endif
             }
             to_draw = menu_cell_layer_is_highlighted(cell_layer) ? repeat_icon_inverted : repeat_icon;
             #endif
