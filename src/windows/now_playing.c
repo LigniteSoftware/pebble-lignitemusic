@@ -183,13 +183,11 @@ void now_playing_graphics_proc(Layer *layer, GContext *ctx){
     if(now_playing_settings.show_time){
         graphics_context_set_fill_color(ctx, GColorBlack);
 
-        #ifndef PBL_PLATFORM_CHALK
-        GRect bar_frame = GRect(0, 0, WINDOW_FRAME.size.w, 6);
+        GRect bar_frame = GRect(0, 0, WINDOW_FRAME.size.w, PBL_IF_ROUND_ELSE(10, 6));
         graphics_fill_rect(ctx, bar_frame, 0, GCornerNone);
-        #endif
 
         uint8_t time_width = 40;
-        GRect time_frame = GRect((WINDOW_FRAME.size.w/2)-(time_width/2), 0, time_width, 18);
+        GRect time_frame = GRect((WINDOW_FRAME.size.w/2)-(time_width/2), PBL_IF_ROUND_ELSE(4, 0), time_width, 18);
         graphics_fill_rect(ctx, time_frame, 2, GCornersAll);
 
         struct tm *t;
@@ -212,6 +210,7 @@ void now_playing_graphics_proc(Layer *layer, GContext *ctx){
         graphics_draw_pixel(ctx, GPoint(bar_frame.size.w-1, bar_frame.size.h));
         graphics_draw_pixel(ctx, GPoint(bar_frame.size.w-2, bar_frame.size.h));
         graphics_draw_pixel(ctx, GPoint(bar_frame.size.w-1, bar_frame.size.h+1));
+        #endif
 
         graphics_draw_pixel(ctx, GPoint(time_frame.origin.x-1, bar_frame.size.h));
         graphics_draw_pixel(ctx, GPoint(time_frame.origin.x-2, bar_frame.size.h));
@@ -220,7 +219,6 @@ void now_playing_graphics_proc(Layer *layer, GContext *ctx){
         graphics_draw_pixel(ctx, GPoint(time_frame.origin.x+time_frame.size.w, bar_frame.size.h));
         graphics_draw_pixel(ctx, GPoint(time_frame.origin.x+time_frame.size.w+1, bar_frame.size.h));
         graphics_draw_pixel(ctx, GPoint(time_frame.origin.x+time_frame.size.w, bar_frame.size.h+1));
-        #endif
         #endif
     }
 

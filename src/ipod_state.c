@@ -33,7 +33,7 @@ void ipod_state_tick() {
             }
 
             now_playing_request(NowPlayingRequestTypeAllData);
-            
+
             already_requested_new_song = true;
         }
     }
@@ -255,6 +255,9 @@ void process_library_menu_album_art_tuple(DictionaryIterator *albumArtDict){
 #endif
 
 void process_tuple(Tuple *tuple, DictionaryIterator *iter){
+    Settings current_settings = settings_get_settings();
+    bool do_vibe = false;
+
     uint32_t key = tuple->key;
     if(key == MessageKeyCurrentState){
         s_playback_state = tuple->value->data[0];
@@ -301,25 +304,24 @@ void process_tuple(Tuple *tuple, DictionaryIterator *iter){
         library_menus_inbox(iter);
     }
     else if(key == MessageKeySettingBatterySaver){
-        Settings current_settings = settings_get_settings();
         current_settings.battery_saver = tuple->value->uint8;
-        settings_set_settings(current_settings);
 
-        vibes_double_pulse();
+        do_vibe = true;
     }
     else if(key == MessageKeySettingArtistLabel){
-        Settings current_settings = settings_get_settings();
         current_settings.artist_label = tuple->value->uint8;
-        settings_set_settings(current_settings);
 
-        vibes_double_pulse();
+        do_vibe = true;
     }
     else if(key == MessageKeySettingPebbleStyleControls){
-        Settings current_settings = settings_get_settings();
         current_settings.pebble_controls = tuple->value->uint8;
-        settings_set_settings(current_settings);
 
-        vibes_double_pulse();
+        do_vibe = true;
+    }
+    else if(key == MessageKeySettingShowTime){
+        current_settings.show_time = tuple->value->uint8;
+
+        do_vibe = true;
     }
     #ifndef PBL_PLATFORM_APLITE
     else if(key == MessageKeyHeaderIcon || key == MessageKeyHeaderIconLength){
@@ -331,6 +333,12 @@ void process_tuple(Tuple *tuple, DictionaryIterator *iter){
     }
     else if(key == MessageKeyConnectionTest){
         connection_window_got_test_message();
+    }
+
+    settings_set_settings(current_settings);
+
+    if(do_vibe){
+        vibes_double_pulse();
     }
 }
 

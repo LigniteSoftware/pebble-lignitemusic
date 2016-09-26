@@ -9,7 +9,6 @@ void settings_service_subscribe(SettingsCallback settings_callback){
 }
 
 Settings settings_get_settings(){
-    current_settings.show_time = true;
     return current_settings;
 }
 
@@ -23,11 +22,11 @@ void settings_set_settings(Settings new_settings){
     }
 }
 
-//Prepares the current settings struct with default settings in case settings
-//don't exist.
+// Prepares the current settings struct with default settings in case settings
+// don't exist.
 void settings_prepare_defaults(){
     current_settings.battery_saver = false;
-    current_settings.pebble_controls = false;
+    current_settings.pebble_controls = true;
     current_settings.artist_label = true;
     current_settings.show_time = false;
 }

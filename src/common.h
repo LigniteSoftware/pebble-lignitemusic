@@ -77,7 +77,8 @@ typedef enum {
     MessageKeyConnectionTest,
     MessageKeySettingBatterySaver = 100,
     MessageKeySettingArtistLabel = 101,
-    MessageKeySettingPebbleStyleControls = 102
+    MessageKeySettingPebbleStyleControls = 102,
+    MessageKeySettingShowTime = 103
 } MessageKey;
 
 /**
