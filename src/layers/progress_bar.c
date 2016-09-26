@@ -46,12 +46,10 @@ void progress_bar_layer_set_value(ProgressBarLayer* bar, int32_t value) {
 
 static void progress_bar_update_proc(Layer* layer, GContext *ctx) {
     ProgressBarLayer* bar = ((ProgressBarData*)layer_get_data(layer))->progress_bar;
-    GRect layer_frame = layer_get_frame(layer);
 
     GRect bounds = layer_get_bounds(layer);
     #ifdef PBL_ROUND
-    // graphics_context_set_fill_color(ctx, GColorBlack);
-    // graphics_fill_radial(ctx, bounds, GOvalScaleModeFitCircle, 5, 0, DEG_TO_TRIGANGLE(360));
+    GRect layer_frame = layer_get_frame(layer);
     int max_width = 60;
 	int x_offset = (layer_frame.size.w-max_width)/2;
 	int battery_bar_width = (bar->value*max_width)/bar->max;
@@ -60,12 +58,6 @@ static void progress_bar_update_proc(Layer* layer, GContext *ctx) {
 	graphics_fill_rect(ctx, GRect(x_offset, layer_frame.size.h-(actual_battery_bar_height*3)-4, max_width, actual_battery_bar_height), 2, GCornersAll);
 	graphics_context_set_fill_color(ctx, GColorRed);
 	graphics_fill_rect(ctx, GRect(x_offset, layer_frame.size.h-(actual_battery_bar_height*3)-4, battery_bar_width, actual_battery_bar_height), 2, GCornersAll);
-
-    /*
-    int percentage = (((bar->value)*100)/bar->max);
-    graphics_context_set_fill_color(ctx, bar->bar_colour);
-    graphics_fill_radial(ctx, bounds, GOvalScaleModeFitCircle, 5, 0, DEG_TO_TRIGANGLE(percentage*3.6));
-    */
     #else
     bounds.size.w = ((bar->value - bar->min) * bounds.size.w) / (bar->max - bar->min);
     graphics_context_set_fill_color(ctx, bar->bar_colour);

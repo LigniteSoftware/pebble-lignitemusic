@@ -242,7 +242,7 @@ void process_library_menu_album_art_tuple(DictionaryIterator *albumArtDict){
             }
             library_icon_album_art_data = malloc(length);
             if(!library_icon_album_art_data){
-                NSError("Album art data FAILED to create with a size of %d bytes!", length);
+                //NSError("Album art data FAILED to create with a size of %d bytes!", length);
             }
             header_icon_album_art_size = length;
 
