@@ -41,6 +41,7 @@ typedef struct {
     MPMusicRepeatMode repeat_mode;
     #ifndef PBL_PLATFORM_APLITE
     MessageWindow *loading_window;
+    bool popped_loading_window;
     #endif
 } LibraryMenu;
 

@@ -10,6 +10,8 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
 void selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context);
 void select_click(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context);
 
+bool poppedt = false;
+
 void library_menus_window_unload(Window* window);
 
 void library_menus_create() {
@@ -142,6 +144,9 @@ void library_menus_display_view(MPMediaGrouping grouping, char *title, char *sub
     menu->has_autoselected = false;
     menu->header_icon = NULL;
     menu->repeat_mode = MPMusicRepeatModeNone;
+    #ifndef PBL_PLATFORM_APLITE
+    menu->popped_loading_window = false;
+    #endif
 
     if(strcmp(title, "") != 0){ //Title and subtitle exists
         menu->title_and_subtitle = true;
@@ -197,6 +202,8 @@ void library_menus_display_view(MPMediaGrouping grouping, char *title, char *sub
         library_menus_gbitmap_from_media_grouping(menu->grouping, true), true);
     message_window_push_on_window(menu->loading_window, menu->window, false);
     #endif
+
+    poppedt = false;
 
     send_library_request(grouping, 0);
 }
@@ -265,7 +272,7 @@ void library_menus_inbox(DictionaryIterator *received) {
         MPMediaGrouping grouping = tuple->value->data[0];
         bool is_subtitles = false;
         if(grouping != menu->grouping){
-            is_subtitles = (menu->grouping == MPMediaGroupingAlbum && grouping == MPMediaGroupingAlbumArtist) //Artist name for albums
+            is_subtitles =         (menu->grouping == MPMediaGroupingAlbum && grouping == MPMediaGroupingAlbumArtist) //Artist name for albums
                                 || (menu->grouping == MPMediaGroupingTitle && grouping == MPMediaGroupingPodcastTitle) //Artist name and track duration for tracks
                                 || (menu->grouping == MPMediaGroupingPlaylist && grouping == MPMediaGroupingPodcastTitle); //Playlist song count
 
@@ -288,6 +295,7 @@ void library_menus_inbox(DictionaryIterator *received) {
             if(insert_pos < -5) {
                 skipping = -5 - insert_pos;
             }
+            //NSLog("Moving entry data entries");
             memmove(&entry_data->entries[5], &entry_data->entries[0], (MENU_CACHE_COUNT - 5) * MENU_ENTRY_LENGTH);
             entry_data->last_entry += 5;
             entry_data->current_entry_offset = (entry_data->current_entry_offset < 5) ? 0 : entry_data->current_entry_offset - 5;
@@ -296,40 +304,61 @@ void library_menus_inbox(DictionaryIterator *received) {
             }
             insert_pos = 0;
         }
-        for(int i = insert_pos, j = 5; i < MENU_CACHE_COUNT && j < tuple->length; ++i) {
+        for(int i = insert_pos, j = 5; (i < MENU_CACHE_COUNT) && (j < tuple->length); ++i) {
             uint8_t len = tuple->value->data[j++];
+            //NSDebug("-----");
+            //NSLog("Got a length of %d for j=%d", len, j);
             if(skipping) {
+                //NSLog("Skipping down.");
                 skipping--;
             }
             else {
+                //NSLog("Memset clear of 0 to %d with length %d", i, MENU_ENTRY_LENGTH);
                 memset(entry_data->entries[i], 0, MENU_ENTRY_LENGTH);
-                memcpy(entry_data->entries[i], &tuple->value->data[j], len < MENU_ENTRY_LENGTH - 1 ? len : MENU_ENTRY_LENGTH - 1);
+                //NSLog("Memcpy to %d from %d", i, j);
+                memcpy(entry_data->entries[i], &tuple->value->data[j], (len < (MENU_ENTRY_LENGTH - 1)) ? len : (MENU_ENTRY_LENGTH - 1));
                 if(i > entry_data->last_entry) {
+                    //NSLog("i is greater than last entry, setting last entry to i");
                     entry_data->last_entry = i;
                 }
                 if(i == MENU_CACHE_COUNT - 1) {
+                    //NSLog("i is equal to one less than the menu cache count of %d", MENU_CACHE_COUNT);
                     // Shift back if we're out of space, unless we're too far ahead already.
                     if(menu->current_selection - entry_data->current_entry_offset <= 10){
+                        //NSLog("Breaking loop since menu's current selection subtract the current offset is less than or equal to 10");
                         break;
                     }
+                    //NSLog("Moving entries at index 5 to entries at index 0 with a sizeof %d", ((MENU_CACHE_COUNT - 5) * MENU_ENTRY_LENGTH));
                     memmove(&entry_data->entries[0], &entry_data->entries[5], (MENU_CACHE_COUNT - 5) * MENU_ENTRY_LENGTH);
                     entry_data->last_entry -= 5;
                     entry_data->current_entry_offset += 5;
                     i -= 5;
                 }
             }
+            //NSDebug("-----");
+
             j += len;
         }
+        //NSLog("Done loop");
 
         menu_layer_reload_data(menu->layer);
+
+        //NSLog("Reloaded data.");
         #ifndef PBL_PLATFORM_APLITE
-        message_window_pop_off_window(menu->loading_window, true, false);
+        if(!menu->popped_loading_window){
+            //NSLog("Popping off window");
+            message_window_pop_off_window(menu->loading_window, true, false);
+            menu->popped_loading_window = true;
+            //NSLog("Popped");
+        }
         #endif
 
+        /*
         if(!menu->has_autoselected && menu->title_and_subtitle){
             menu_layer_set_selected_index(menu->layer, (MenuIndex){.section = 0, .row = 1}, MenuRowAlignNone, false);
             menu->has_autoselected = true;
         }
+        */
     }
 }
 

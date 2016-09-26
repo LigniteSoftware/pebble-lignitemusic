@@ -33,26 +33,7 @@ void ipod_state_tick() {
             }
 
             now_playing_request(NowPlayingRequestTypeAllData);
-
-            /*
-            iPodMessage *ipodMessage = ipod_message_outbox_get();
-            if(!ipodMessage->iter){
-                return;
-            }
-
-            dict_write_int8(ipodMessage->iter, MessageKeyChangeState, NowPlayingStateSkipNext);
-            app_message_outbox_send();
-            */
-
-            /*
-            iPodMessage *ipodMessage = ipod_message_outbox_get();
-            if(!ipodMessage->iter){
-                return;
-            }
-            dict_write_int8(ipodMessage->iter, MessageKeyNowPlaying, 2);
-            app_message_outbox_send();
-            */
-
+            
             already_requested_new_song = true;
         }
     }
