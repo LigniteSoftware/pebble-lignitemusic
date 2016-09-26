@@ -9,6 +9,7 @@ void settings_service_subscribe(SettingsCallback settings_callback){
 }
 
 Settings settings_get_settings(){
+    current_settings.show_time = true;
     return current_settings;
 }
 
@@ -28,6 +29,7 @@ void settings_prepare_defaults(){
     current_settings.battery_saver = false;
     current_settings.pebble_controls = false;
     current_settings.artist_label = true;
+    current_settings.show_time = false;
 }
 
 void settings_load(){

@@ -156,7 +156,6 @@ void main_menu_create(Window* window){
             case WakeupCookieMainMenu:
                 break;
             case WakeupCookieNowPlaying:
-                NSLog("Firing now playing window");
                 app_timer_register(125, now_playing_show, NULL);
                 break;
         }

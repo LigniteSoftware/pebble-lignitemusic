@@ -13,11 +13,14 @@
  * playing screen.
  * @member pebble_controls If enabled, controls will mimic the default Pebble
  * music app controls.
+ * @member show_time       If enabled, this will display the current time at
+ * the top of the now playing screen
  */
 typedef struct {
     bool battery_saver;
     bool artist_label;
     bool pebble_controls;
+    bool show_time;
 } Settings;
 
 /**

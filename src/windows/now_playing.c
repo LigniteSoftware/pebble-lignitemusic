@@ -179,6 +179,62 @@ void now_playing_graphics_proc(Layer *layer, GContext *ctx){
         }
         graphics_fill_rect(ctx, GRect(x, artist_frame.origin.y+1, width, 18), 2, GCornersAll);
     }
+
+    if(now_playing_settings.show_time){
+        graphics_context_set_fill_color(ctx, GColorBlack);
+
+        #ifndef PBL_PLATFORM_CHALK
+        GRect bar_frame = GRect(0, 0, WINDOW_FRAME.size.w, 6);
+        graphics_fill_rect(ctx, bar_frame, 0, GCornerNone);
+        #endif
+
+        uint8_t time_width = 40;
+        GRect time_frame = GRect((WINDOW_FRAME.size.w/2)-(time_width/2), 0, time_width, 18);
+        graphics_fill_rect(ctx, time_frame, 2, GCornersAll);
+
+        struct tm *t;
+      	time_t temp;
+      	temp = time(NULL);
+      	t = localtime(&temp);
+
+        static char time_buffer[] = "00:00";
+        strftime(time_buffer, sizeof(time_buffer), clock_is_24h_style() ? "%H:%M" : "%I:%M", t);
+
+        graphics_context_set_text_color(ctx, GColorWhite);
+        graphics_draw_text(ctx, time_buffer, fonts_get_system_font(FONT_KEY_GOTHIC_14), time_frame, GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL);
+
+        #ifndef PBL_PLATFORM_APLITE
+        #ifndef PBL_PLATFORM_CHALK
+        graphics_draw_pixel(ctx, GPoint(0, bar_frame.size.h));
+        graphics_draw_pixel(ctx, GPoint(1, bar_frame.size.h));
+        graphics_draw_pixel(ctx, GPoint(0, bar_frame.size.h+1));
+
+        graphics_draw_pixel(ctx, GPoint(bar_frame.size.w-1, bar_frame.size.h));
+        graphics_draw_pixel(ctx, GPoint(bar_frame.size.w-2, bar_frame.size.h));
+        graphics_draw_pixel(ctx, GPoint(bar_frame.size.w-1, bar_frame.size.h+1));
+
+        graphics_draw_pixel(ctx, GPoint(time_frame.origin.x-1, bar_frame.size.h));
+        graphics_draw_pixel(ctx, GPoint(time_frame.origin.x-2, bar_frame.size.h));
+        graphics_draw_pixel(ctx, GPoint(time_frame.origin.x-1, bar_frame.size.h+1));
+
+        graphics_draw_pixel(ctx, GPoint(time_frame.origin.x+time_frame.size.w, bar_frame.size.h));
+        graphics_draw_pixel(ctx, GPoint(time_frame.origin.x+time_frame.size.w+1, bar_frame.size.h));
+        graphics_draw_pixel(ctx, GPoint(time_frame.origin.x+time_frame.size.w, bar_frame.size.h+1));
+        #endif
+        #endif
+    }
+
+    #ifndef PBL_PLATFORM_APLITE
+    #ifndef PBL_PLATFORM_CHALK
+    graphics_draw_pixel(ctx, GPoint(0, title_frame.origin.y-1));
+    graphics_draw_pixel(ctx, GPoint(1, title_frame.origin.y-1));
+    graphics_draw_pixel(ctx, GPoint(0, title_frame.origin.y-2));
+
+    graphics_draw_pixel(ctx, GPoint(title_frame.size.w-1, title_frame.origin.y-1));
+    graphics_draw_pixel(ctx, GPoint(title_frame.size.w-2, title_frame.origin.y-1));
+    graphics_draw_pixel(ctx, GPoint(title_frame.size.w-1, title_frame.origin.y-2));
+    #endif
+    #endif
 }
 
 bool now_playing_action_bar_is_showing = true;

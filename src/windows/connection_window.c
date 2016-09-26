@@ -43,7 +43,7 @@ void connection_window_background_proc(Layer *layer, GContext *ctx){
 void connection_window_load(Window *window){
     Layer *window_layer = window_get_root_layer(window);
 
-    static char title[30], description[200];
+    static char title[30], description[190];
 
     if(connection_window->error != ConnectionErrorNoError){
         snprintf(title, sizeof(title), connection_titles[connection_window->error]);

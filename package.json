@@ -79,6 +79,12 @@
             "file": "images/genres.png"
         },
         {
+            "type": "png",
+            "name": "MENU_ICON",
+            "file": "menu_icon.png",
+            "menuIcon":true
+        },
+        {
             "type":"png",
             "name":"NO_ALBUM_ART",
             "file":"images/no_album_art.png"
