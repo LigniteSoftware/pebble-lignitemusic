@@ -1,8 +1,8 @@
 #include <lignite_music.h>
 
-#ifdef PBL_COLOR
-
 //#define SHOW_APP_LOGS
+
+#ifdef PBL_COLOR
 
 char* get_gbitmapformat_text(GBitmapFormat format){
 	switch (format) {
@@ -31,9 +31,43 @@ int get_num_palette_colors(GBitmap *b){
 
 }
 
+#endif
+
+#ifndef PBL_PLATFORM_APLITE //To support diorite
+
+const char * GColorsNames[]= {
+ "GColorBlack", "GColorOxfordBlue", "GColorDukeBlue", "GColorBlue",
+ "GColorDarkGreen", "GColorMidnightGreen", "GColorCobaltBlue", "GColorBlueMoon",
+ "GColorIslamicGreen", "GColorJaegerGreen", "GColorTiffanyBlue", "GColorVividCerulean",
+ "GColorGreen", "GColorMalachite", "GColorMediumSpringGreen", "GColorCyan",
+ "GColorBulgarianRose", "GColorImperialPurple", "GColorIndigo", "GColorElectricUltramarine",
+ "GColorArmyGreen", "GColorDarkGray", "GColorLiberty", "GColorVeryLightBlue",
+ "GColorKellyGreen", "GColorMayGreen", "GColorCadetBlue", "GColorPictonBlue",
+ "GColorBrightGreen", "GColorScreaminGreen", "GColorMediumAquamarine", "GColorElectricBlue",
+ "GColorDarkCandyAppleRed", "GColorJazzberryJam", "GColorPurple", "GColorVividViolet",
+ "GColorWindsorTan", "GColorRoseVale", "GColorPurpureus", "GColorLavenderIndigo",
+ "GColorLimerick", "GColorBrass", "GColorLightGray", "GColorBabyBlueEyes",
+ "GColorSpringBud", "GColorInchworm", "GColorMintGreen", "GColorCeleste",
+ "GColorRed", "GColorFolly", "GColorFashionMagenta", "GColorMagenta",
+ "GColorOrange", "GColorSunsetOrange", "GColorBrilliantRose", "GColorShockingPink",
+ "GColorChromeYellow", "GColorRajah", "GColorMelon", "GColorRichBrilliantLavender",
+ "GColorYellow", "GColorIcterine", "GColorPastelYellow", "GColorWhite"
+};
+
+const char* get_gcolor_text(GColor m_color){
+	if(gcolor_equal(m_color, GColorClear))
+		return "GColorClear";
+	return GColorsNames[m_color.argb & 0x3F];
+
+}
+
 void replace_gbitmap_color(GColor color_to_replace, GColor replace_with_color, GBitmap *im, BitmapLayer *bml){
 	//First determine what the number of colors in the palette
+	#ifdef PBL_PLATFORM_DIORITE
+	int num_palette_items = 2;
+	#else
 	int num_palette_items = get_num_palette_colors(im);
+	#endif
 
 	#ifdef SHOW_APP_LOGS
 	APP_LOG(APP_LOG_LEVEL_DEBUG, "Palette has %d items", num_palette_items);
@@ -41,6 +75,14 @@ void replace_gbitmap_color(GColor color_to_replace, GColor replace_with_color, G
 
 	//Get the gbitmap's current palette
 	GColor *current_palette = gbitmap_get_palette(im);
+
+	//APP_LOG(APP_LOG_LEVEL_WARNING, "Current image exists: %p, %s", current_palette,
+		//(im != NULL) ? "Yeah" : "NO!!!");
+
+	if(im == NULL){
+		//APP_LOG(APP_LOG_LEVEL_ERROR, "Bitmap is NULL.");
+		return;
+	}
 
 	//Iterate through the palette finding the color we want to replace and replacing
 	//it with the new color
@@ -75,6 +117,10 @@ void replace_gbitmap_color(GColor color_to_replace, GColor replace_with_color, G
 	}
 
 }
+
+#endif
+
+#ifdef PBL_COLOR
 
 void gbitmap_fill_all_except(GColor color_to_not_change, GColor fill_color, bool fill_gcolorclear, GBitmap *im, BitmapLayer *bml){
 
@@ -163,29 +209,4 @@ void spit_gbitmap_color_palette(GBitmap *im){
 
 }
 
-const char * GColorsNames[]= {
- "GColorBlack", "GColorOxfordBlue", "GColorDukeBlue", "GColorBlue",
- "GColorDarkGreen", "GColorMidnightGreen", "GColorCobaltBlue", "GColorBlueMoon",
- "GColorIslamicGreen", "GColorJaegerGreen", "GColorTiffanyBlue", "GColorVividCerulean",
- "GColorGreen", "GColorMalachite", "GColorMediumSpringGreen", "GColorCyan",
- "GColorBulgarianRose", "GColorImperialPurple", "GColorIndigo", "GColorElectricUltramarine",
- "GColorArmyGreen", "GColorDarkGray", "GColorLiberty", "GColorVeryLightBlue",
- "GColorKellyGreen", "GColorMayGreen", "GColorCadetBlue", "GColorPictonBlue",
- "GColorBrightGreen", "GColorScreaminGreen", "GColorMediumAquamarine", "GColorElectricBlue",
- "GColorDarkCandyAppleRed", "GColorJazzberryJam", "GColorPurple", "GColorVividViolet",
- "GColorWindsorTan", "GColorRoseVale", "GColorPurpureus", "GColorLavenderIndigo",
- "GColorLimerick", "GColorBrass", "GColorLightGray", "GColorBabyBlueEyes",
- "GColorSpringBud", "GColorInchworm", "GColorMintGreen", "GColorCeleste",
- "GColorRed", "GColorFolly", "GColorFashionMagenta", "GColorMagenta",
- "GColorOrange", "GColorSunsetOrange", "GColorBrilliantRose", "GColorShockingPink",
- "GColorChromeYellow", "GColorRajah", "GColorMelon", "GColorRichBrilliantLavender",
- "GColorYellow", "GColorIcterine", "GColorPastelYellow", "GColorWhite"
-};
-
-const char* get_gcolor_text(GColor m_color){
-	if(gcolor_equal(m_color, GColorClear))
-		return "GColorClear";
-	return GColorsNames[m_color.argb & 0x3F];
-
-}
 #endif

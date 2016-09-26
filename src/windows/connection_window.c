@@ -12,7 +12,7 @@ const char *connection_descriptions[] = {
     "The Pebble app isn't connected. Please make sure your watch is connected and Pebble app open in the background. This will disappear when reconnected.",
     "The Lignite app isn't connected. Please make sure the Lignite app is open in the background. This will disappear when reconnected.",
     "",
-    "Pebble has an annoying bug where a watchapp's communication will lock up. Please press the select button to reboot the watchapp to fix this issue.",
+    "Pebble has a very annoying bug where a watchapp's communication will lock up. Please press select to reboot the watchapp to fix this temporarily. A fix for this is coming in firmware 4.2.",
     ""
 };
 
@@ -43,10 +43,14 @@ void connection_window_background_proc(Layer *layer, GContext *ctx){
 void connection_window_load(Window *window){
     Layer *window_layer = window_get_root_layer(window);
 
-    static char title[30], description[150];
+    static char title[30], description[200];
 
     if(connection_window->error != ConnectionErrorNoError){
         snprintf(title, sizeof(title), connection_titles[connection_window->error]);
+
+        if(connection_window->error == ConnectionErrorOutboxDropped && connection_window->error_code == APP_MSG_OK){
+            connection_window->error = ConnectionErrorPebbleKitDisconnected;
+        }
 
         switch(connection_window->error){
             case ConnectionErrorOutboxDropped:

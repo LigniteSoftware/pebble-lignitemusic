@@ -20,18 +20,40 @@ uint32_t s_duration;
 uint32_t s_current_time;
 static char s_artist[100];
 static char s_title[100];
+bool already_requested_new_song = false;
 
 void ipod_state_tick() {
     if(s_playback_state == MPMusicPlaybackStatePlaying) {
         if(s_current_time < s_duration) {
             ++s_current_time;
+            already_requested_new_song = false;
         } else {
+            if(already_requested_new_song){
+                return;
+            }
+
+            now_playing_request(NowPlayingRequestTypeAllData);
+
+            /*
+            iPodMessage *ipodMessage = ipod_message_outbox_get();
+            if(!ipodMessage->iter){
+                return;
+            }
+
+            dict_write_int8(ipodMessage->iter, MessageKeyChangeState, NowPlayingStateSkipNext);
+            app_message_outbox_send();
+            */
+
+            /*
             iPodMessage *ipodMessage = ipod_message_outbox_get();
             if(!ipodMessage->iter){
                 return;
             }
             dict_write_int8(ipodMessage->iter, MessageKeyNowPlaying, 2);
             app_message_outbox_send();
+            */
+
+            already_requested_new_song = true;
         }
     }
 }
