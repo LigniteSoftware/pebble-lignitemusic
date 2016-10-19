@@ -1,7 +1,7 @@
 {
   "name": "Lignite Music",
   "author": "Edwin Finch",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "keywords": ["pebble-app"],
   "private": true,
   "dependencies": {},

@@ -299,6 +299,7 @@ void now_playing_reset_invert_controls(){
     }
     if(invert_controls_timer){
         app_timer_cancel(invert_controls_timer);
+        invert_controls_timer = NULL;
     }
     invert_controls_timer = app_timer_register(3000, now_playing_invert_button_controls, NULL);
 }
@@ -386,15 +387,16 @@ void now_playing_new_settings(Settings new_settings){
 
     layer_mark_dirty(now_playing_graphics_layer);
 
-    if(new_settings.pebble_controls){
-        action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_SELECT, now_playing_is_playing_music() ? icon_more : icon_play, true);
-        if(controlling_volume){
-            now_playing_invert_button_controls();
-        }
-    }
-    else{
-        action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_SELECT, now_playing_is_playing_music() ? icon_pause : icon_play, true);
-    }
+    // if(new_settings.pebble_controls){
+    //     // action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_SELECT, now_playing_is_playing_music() ? icon_more : icon_play, true);
+    //     if(controlling_volume){
+    //         NSLog("Inverting from new settings");
+    //         //now_playing_invert_button_controls();
+    //     }
+    // }
+    // else{
+    //     // action_bar_layer_set_icon_animated(control_action_bar, BUTTON_ID_SELECT, now_playing_is_playing_music() ? icon_pause : icon_play, true);
+    // }
 
     app_timer_cancel(now_playing_timer);
     now_playing_animation_tick();
