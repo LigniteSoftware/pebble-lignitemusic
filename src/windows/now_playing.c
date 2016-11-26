@@ -164,20 +164,18 @@ void now_playing_graphics_proc(Layer *layer, GContext *ctx){
     graphics_context_set_fill_color(ctx, background_colour);
     graphics_fill_rect(ctx, title_frame, 0, GCornerNone);
 
-    if(!now_playing_settings.artist_label){
-        return;
-    }
-
-    GSize artist_text_size = graphics_text_layout_get_content_size(ipod_get_artist(), artist_font, artist_frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter);
-    uint8_t padding = 4;
-    if(artist_text_size.w > 0){
-        int x = (WINDOW_FRAME.size.w/2)-(artist_text_size.w/2)-padding;
-        int width = artist_text_size.w+(padding*2);
-        if(x < 22){
-            x = 22-padding;
-            width = (WINDOW_FRAME.size.w-44)+(padding*2);
+    if(now_playing_settings.artist_label){
+        GSize artist_text_size = graphics_text_layout_get_content_size(ipod_get_artist(), artist_font, artist_frame, GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter);
+        uint8_t padding = 4;
+        if(artist_text_size.w > 0){
+            int x = (WINDOW_FRAME.size.w/2)-(artist_text_size.w/2)-padding;
+            int width = artist_text_size.w+(padding*2);
+            if(x < 22){
+                x = 22-padding;
+                width = (WINDOW_FRAME.size.w-44)+(padding*2);
+            }
+            graphics_fill_rect(ctx, GRect(x, artist_frame.origin.y+1, width, 18), 2, GCornersAll);
         }
-        graphics_fill_rect(ctx, GRect(x, artist_frame.origin.y+1, width, 18), 2, GCornersAll);
     }
 
     if(now_playing_settings.show_time){
