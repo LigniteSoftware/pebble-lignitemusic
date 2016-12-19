@@ -58,7 +58,7 @@ void send_library_request(MPMediaGrouping grouping, uint32_t offset) {
     if(ipodMessage->result != APP_MSG_OK){
         return;
     }
-    NSLog("Sending library request for offset %d", (int)offset);
+    // NSLog("Sending library request for offset %d", (int)offset);
     dict_write_uint8(ipodMessage->iter, MessageKeyRequestLibrary, grouping);
     dict_write_uint32(ipodMessage->iter, MessageKeyRequestOffset, offset);
     build_parent_history(ipodMessage->iter);
@@ -284,9 +284,10 @@ void library_menus_inbox(DictionaryIterator *received) {
         uint16_t total_size = 0;
         memcpy(&total_size, tuple->value->data + 1, 2);
 
-        uint16_t offset = tuple->value->data[3];
+        uint16_t offset = 0;
+        memcpy(&offset, tuple->value->data + 3, 2);
 
-        NSLog("Got total size %d data 2 %d, offset %d, is_subtitles %d", (int)total_size, (int)tuple->value->data[2], (int)offset, is_subtitles);
+        // NSLog("Got total size %d data 2 %d, offset %d, is_subtitles %d", (int)total_size, (int)tuple->value->data[2], (int)offset, is_subtitles);
 
         LibraryMenuEntryData *entry_data = is_subtitles ? menu->subtitles : menu->titles;
 
@@ -387,8 +388,9 @@ void draw_row(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, voi
 
     GBitmap *icon_to_draw = menu_cell_layer_is_highlighted(cell_layer) ? menu->icon_inverted : menu->icon;
 
-    if(strcmp(menu->subtitles->entries[pos], "04:13 | Rihanna") == 0){
-        NSLog("Position %d row %d", pos, cell_index->row);
+    if(cell_index->row == MAX_MENU_ENTRIES-1){
+        menu_cell_basic_draw(ctx, cell_layer, "Pebble's limit", "You hit it, sorry", icon_to_draw);
+        return;
     }
 
     if(menu->titles->total_entry_count == 0){
@@ -503,7 +505,7 @@ void selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIn
     if(down) {
         if(pos >= menu->titles->last_entry - 4) {
             if(menu->titles->current_entry_offset + menu->titles->last_entry >= menu->titles->total_entry_count-1) {
-                NSLog("Rejecting request at %d because it's over the total count of %d.", (int)(menu->titles->current_entry_offset + menu->titles->last_entry), (int)(menu->titles->total_entry_count-1));
+                // NSLog("Rejecting request at %d because it's over the total count of %d.", (int)(menu->titles->current_entry_offset + menu->titles->last_entry), (int)(menu->titles->total_entry_count-1));
                 return;
             }
             send_library_request(menu->grouping, menu->titles->last_entry + menu->titles->current_entry_offset);
