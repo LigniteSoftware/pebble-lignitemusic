@@ -12,7 +12,7 @@ const char *connection_descriptions[] = {
     "The Pebble app isn't connected. Please make sure your watch is connected and Pebble app open in the background. This will disappear when reconnected.",
     "The Lignite app isn't connected. Please make sure the Lignite app is open in the background. This will disappear when reconnected.",
     "",
-    "Pebble has a very annoying bug where a watchapp's communication will lock up. Please press select to reboot the watchapp to fix this temporarily. A fix for this is coming in firmware 4.2.",
+    "Pebble has a very annoying bug where a watchapp's communication will lock up. Please press select to reboot the watchapp to fix this temporarily.",
     ""
 };
 
